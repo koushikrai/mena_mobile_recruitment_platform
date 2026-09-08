@@ -1,0 +1,69 @@
+{
+  "@@locale": "en",
+  "appTitle": "Global Jobs By Suhana",
+  "navJobs": "Jobs",
+  "navApplications": "Applications",
+  "navVault": "Vault",
+  "navProfile": "Profile",
+  "searchHint": "Search jobs, skills, companies...",
+  "filterVisaSponsored": "Visa Sponsored",
+  "filterTransferableIqama": "Transferable Iqama",
+  "filterImmediateHiring": "Immediate Hiring",
+  "filterHousingIncluded": "Housing Included",
+  "applyNow": "Apply Now",
+  "quickApply": "Quick Apply with Smart CV",
+  "saveProfile": "Save & Complete Profile",
+  "uploadCV": "Upload Resume",
+  "parseAndContinue": "Parse & Continue to Review",
+  "taxFree": "Tax-Free",
+  "perMonth": "/ mo",
+  "perYear": "/ yr",
+  "closingIn": "Closing in {days} days",
+  "@closingIn": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "activeApplications": "{count} Active",
+  "@activeApplications": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "profileReadiness": "{percent}% Ready for GCC Relocation",
+  "@profileReadiness": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "stageApplied": "Applied & CV Parsed",
+  "stageScreening": "Recruiter Screening",
+  "stageInterview": "Technical/Client Interview",
+  "stageOffer": "Job Offer Issued",
+  "stageVisa": "GCC Visa & Relocation",
+  "stageFlight": "Flight & Onboarding",
+  "verifiedEmployer": "Verified Employer",
+  "visaProvided": "Work Permit Provided",
+  "housingAllowance": "Housing Allowance",
+  "fullySponsored": "Fully Sponsored Employment Visa",
+  "passportValid": "Valid for Visa Issuance",
+  "passportExpiring": "Expires in < 6 Months - Renewal Required",
+  "confirmSaveVault": "Confirm & Save to Vault",
+  "retakeScan": "Retake Scan",
+  "uploadDocument": "Upload Document to Vault",
+  "addCertification": "Add Certification or License",
+  "updatePassport": "Update Passport Details",
+  "activelySeekingGcc": "Actively Seeking GCC Relocation",
+  "settingsLanguage": "Language",
+  "settingsSecurity": "Security",
+  "settingsNotifications": "Notifications",
+  "settingsPrivacy": "Privacy",
+  "logout": "Logout",
+  "deleteAccount": "Delete Account",
+  "countryUAE": "UAE",
+  "countryKSA": "KSA",
+  "countryQatar": "Qatar",
+  "countryKuwait": "Kuwait",
+  "countryOman": "Oman",
+  "countryBahrain": "Bahrain"
+}

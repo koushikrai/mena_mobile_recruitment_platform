@@ -1,0 +1,69 @@
+{
+  "@@locale": "ar",
+  "appTitle": "وظائف عالمية من سهانا",
+  "navJobs": "الوظائف",
+  "navApplications": "طلباتي",
+  "navVault": "المستندات",
+  "navProfile": "الملف الشخصي",
+  "searchHint": "ابحث عن وظائف، مهارات، شركات...",
+  "filterVisaSponsored": "تأشيرة مكفولة",
+  "filterTransferableIqama": "إقامة قابلة للتحويل",
+  "filterImmediateHiring": "توظيف فوري",
+  "filterHousingIncluded": "سكن متوفر",
+  "applyNow": "تقدم الآن",
+  "quickApply": "تقديم سريع بالسيرة الذكية",
+  "saveProfile": "حفظ وإكمال الملف",
+  "uploadCV": "رفع السيرة الذاتية",
+  "parseAndContinue": "تحليل ومتابعة المراجعة",
+  "taxFree": "معفى من الضرائب",
+  "perMonth": "/ شهر",
+  "perYear": "/ سنة",
+  "closingIn": "ينتهي خلال {days} أيام",
+  "@closingIn": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "activeApplications": "{count} نشطة",
+  "@activeApplications": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "profileReadiness": "{percent}% جاهز للانتقال إلى دول الخليج",
+  "@profileReadiness": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "stageApplied": "تم التقديم وتحليل السيرة",
+  "stageScreening": "فحص المرشحين",
+  "stageInterview": "المقابلة التقنية",
+  "stageOffer": "عرض العمل",
+  "stageVisa": "تأشيرة وانتقال الخليج",
+  "stageFlight": "الرحلة والتأهيل",
+  "verifiedEmployer": "جهة عمل موثقة",
+  "visaProvided": "تصريح عمل متوفر",
+  "housingAllowance": "بدل سكن",
+  "fullySponsored": "تأشيرة عمل مكفولة بالكامل",
+  "passportValid": "صالح لإصدار التأشيرة",
+  "passportExpiring": "ينتهي خلال أقل من 6 أشهر - يلزم التجديد",
+  "confirmSaveVault": "تأكيد وحفظ في الخزنة",
+  "retakeScan": "إعادة المسح",
+  "uploadDocument": "رفع مستند إلى الخزنة",
+  "addCertification": "إضافة شهادة أو رخصة",
+  "updatePassport": "تحديث بيانات جواز السفر",
+  "activelySeekingGcc": "أبحث بنشاط عن انتقال للخليج",
+  "settingsLanguage": "اللغة",
+  "settingsSecurity": "الأمان",
+  "settingsNotifications": "الإشعارات",
+  "settingsPrivacy": "الخصوصية",
+  "logout": "تسجيل الخروج",
+  "deleteAccount": "حذف الحساب",
+  "countryUAE": "الإمارات",
+  "countryKSA": "السعودية",
+  "countryQatar": "قطر",
+  "countryKuwait": "الكويت",
+  "countryOman": "عُمان",
+  "countryBahrain": "البحرين"
+}
