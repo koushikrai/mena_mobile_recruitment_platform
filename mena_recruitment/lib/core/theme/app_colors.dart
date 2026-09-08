@@ -3,71 +3,63 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Color scheme constants
-  static const Color primaryNavy = Color(0xFF0F1E36);
+  // Primary Crimson Brand Colors from Stitch
+  static const Color primary = Color(0xFF990000);
+  static const Color primaryDark = Color(0xFF6E0000);
+  static const Color primaryContainer = Color(0xFF990000);
   static const Color onPrimary = Color(0xFFFFFFFF);
-  static const Color primaryContainer = Color(0xFF0F1E36);
-  static const Color onPrimaryContainer = Color(0xFF7886A3);
+  static const Color onPrimaryContainer = Color(0xFFFFA092);
+  static const Color primaryFixed = Color(0xFFFFDAD4);
+  static const Color primaryFixedDim = Color(0xFFFFB4A8);
 
-  static const Color secondaryAmber = Color(0xFFD97706);
-  static const Color secondary = Color(0xFF904D00);
+  // Secondary & Accents
+  static const Color secondary = Color(0xFF5A5F67);
+  static const Color secondaryContainer = Color(0xFFBA1A1A);
   static const Color onSecondary = Color(0xFFFFFFFF);
-  static const Color secondaryContainer = Color(0xFFFE932C);
-  static const Color onSecondaryContainer = Color(0xFF663500);
-
-  static const Color tertiaryEmerald = Color(0xFF059669);
-  static const Color tertiary = Color(0xFF000703);
+  static const Color onSecondaryContainer = Color(0xFFFFFFFF);
+  static const Color tertiary = Color(0xFF6D0016);
+  static const Color tertiaryContainer = Color(0xFF960824);
   static const Color onTertiary = Color(0xFFFFFFFF);
-  static const Color tertiaryContainer = Color(0xFF002416);
-  static const Color onTertiaryContainer = Color(0xFF0E996B);
 
+  // Status Colors
+  static const Color emerald = Color(0xFF059669);
+  static const Color emeraldDark = Color(0xFF065F46);
+  static const Color emeraldBg = Color(0xFFECFDF5);
+  static const Color amber = Color(0xFF6E0000);
+  static const Color amberDark = Color(0xFF92400E);
+  static const Color amberBg = Color(0xFFFFFBEB);
   static const Color error = Color(0xFFBA1A1A);
   static const Color onError = Color(0xFFFFFFFF);
-  static const Color errorContainer = Color(0xFFFFDAD6);
-  static const Color onErrorContainer = Color(0xFF93000A);
 
-  static const Color surface = Color(0xFFF8F9FF);
-  static const Color onSurface = Color(0xFF0B1C30);
-  static const Color surfaceContainer = Color(0xFFE5EEFF);
-  static const Color surfaceContainerHigh = Color(0xFFDCE9FF);
-  static const Color surfaceContainerHighest = Color(0xFFD3E4FE);
-  static const Color surfaceContainerLow = Color(0xFFEFF4FF);
+  // Surfaces & Backgrounds
+  static const Color surface = Color(0xFFFCF9F9);
+  static const Color surfaceBright = Color(0xFFFFFFFF);
+  static const Color surfaceDim = Color(0xFFE8E5E8);
   static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
-  static const Color surfaceDim = Color(0xFFCBDBF5);
-  static const Color surfaceBright = Color(0xFFF8F9FF);
+  static const Color surfaceContainerLow = Color(0xFFF9F4F4);
+  static const Color surfaceContainer = Color(0xFFF3ECEC);
+  static const Color surfaceContainerHigh = Color(0xFFEDE4E4);
+  static const Color surfaceContainerHighest = Color(0xFFE4DADB);
+  static const Color background = Color(0xFFFCF9F9);
 
-  static const Color outline = Color(0xFF75777E);
-  static const Color outlineVariant = Color(0xFFC5C6CE);
+  // Text & Outlines
+  static const Color onSurface = Color(0xFF1E1B1B);
+  static const Color onSurfaceVariant = Color(0xFF5B403C);
+  static const Color outline = Color(0xFF8F706B);
+  static const Color outlineVariant = Color(0xFFE4BEB8);
+  static const Color border = Color(0xFFE4DADB);
+  static const Color borderSubtle = Color(0xFFF0DCD9);
+  static const Color textPrimary = Color(0xFF1E1B1B);
+  static const Color textSecondary = Color(0xFF5B403C);
+  static const Color textMuted = Color(0xFF8F706B);
 
-  static const Color inverseSurface = Color(0xFF213145);
-  static const Color inverseOnSurface = Color(0xFFEAF1FF);
-  static const Color inversePrimary = Color(0xFFB8C7E6);
+  // Dark card surface for interview/highlight widgets
+  static const Color darkCard = Color(0xFF1C222B);
 
-  static const Color surfaceTint = Color(0xFF515F7A);
-
-  static const Color background = Color(0xFFF8F9FF);
-  static const Color onBackground = Color(0xFF0B1C30);
-  
-  static const Color surfaceVariant = Color(0xFFD3E4FE);
-  static const Color onSurfaceVariant = Color(0xFF44474D);
-
-  // Convenience aliases matching design tokens and widgets
-  static const Color primary = primaryNavy;
-  static const Color amber = secondaryAmber;
-  static const Color emerald = tertiaryEmerald;
-  static const Color slate = Color(0xFF64748B);
-  static const Color textPrimary = onSurface;
-  static const Color textSecondary = Color(0xFF64748B);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color border = Color(0xFFE2E8F0);
-  static const Color borderSubtle = Color(0xFFCBD5E1);
-  static const Color cardBg = Color(0xFFFFFFFF);
-  static const Color scaffoldBg = Color(0xFFF8FAFC);
-
-  // Generate ColorScheme
+  // Material 3 ColorScheme
   static const ColorScheme colorScheme = ColorScheme(
     brightness: Brightness.light,
-    primary: primaryNavy,
+    primary: primary,
     onPrimary: onPrimary,
     primaryContainer: primaryContainer,
     onPrimaryContainer: onPrimaryContainer,
@@ -78,29 +70,25 @@ class AppColors {
     tertiary: tertiary,
     onTertiary: onTertiary,
     tertiaryContainer: tertiaryContainer,
-    onTertiaryContainer: onTertiaryContainer,
+    onTertiaryContainer: onTertiary,
     error: error,
     onError: onError,
-    errorContainer: errorContainer,
-    onErrorContainer: onErrorContainer,
+    errorContainer: Color(0xFFFFDAD6),
+    onErrorContainer: Color(0xFF93000A),
     background: background,
-    onBackground: onBackground,
+    onBackground: onSurface,
     surface: surface,
     onSurface: onSurface,
-    surfaceVariant: surfaceVariant,
+    surfaceVariant: surfaceContainerHigh,
     onSurfaceVariant: onSurfaceVariant,
     outline: outline,
     outlineVariant: outlineVariant,
-    inverseSurface: inverseSurface,
-    onInverseSurface: inverseOnSurface,
-    inversePrimary: inversePrimary,
-    surfaceTint: surfaceTint,
   );
 }
 
 class StatusColors {
   StatusColors._();
-  
+
   static const Color verifiedBg = Color(0xFFECFDF5);
   static const Color verifiedText = Color(0xFF065F46);
   static const Color verifiedBorder = Color(0xFFA7F3D0);
@@ -114,6 +102,6 @@ class StatusColors {
   static const Color criticalBorder = Color(0xFFFECACA);
 
   static const Color infoBg = Color(0xFFF1F5F9);
-  static const Color infoText = Color(0xFF0F1E36);
+  static const Color infoText = Color(0xFF990000);
   static const Color infoBorder = Color(0xFFCBD5E1);
 }

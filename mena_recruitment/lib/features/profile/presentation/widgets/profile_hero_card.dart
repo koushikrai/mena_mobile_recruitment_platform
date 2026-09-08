@@ -10,7 +10,7 @@ class ProfileHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: const Color(0xFF0F1E36),
+      color: const Color(0xFF990000),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(

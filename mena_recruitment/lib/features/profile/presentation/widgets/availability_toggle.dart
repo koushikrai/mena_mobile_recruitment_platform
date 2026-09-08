@@ -19,7 +19,7 @@ class AvailabilityToggle extends StatelessWidget {
       child: SwitchListTile(
         title: const Text(
           'Actively Seeking GCC Relocation',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F1E36)),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF990000)),
         ),
         subtitle: const Text('Recruiters can find your profile'),
         value: isActivelyLooking,

@@ -70,11 +70,11 @@ class _AppTextFieldState extends State<AppTextField> {
   Widget build(BuildContext context) {
     final hasError = widget.errorText != null && widget.errorText!.isNotEmpty;
     
-    Color borderColor = const Color(0xFFE2E8F0);
+    Color borderColor = const Color(0xFFE4DADB);
     if (hasError) {
       borderColor = Colors.red;
     } else if (_isFocused) {
-      borderColor = const Color(0xFF0F1E36); // Navy primary
+      borderColor = const Color(0xFF990000); // Navy primary
     }
 
     List<BoxShadow>? shadows;
@@ -106,7 +106,7 @@ class _AppTextFieldState extends State<AppTextField> {
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF0F1E36),
+              color: Color(0xFF990000),
             ),
           ),
           const SizedBox(height: 8),
@@ -145,7 +145,7 @@ class _AppTextFieldState extends State<AppTextField> {
                   ),
                   style: const TextStyle(
                     fontSize: 16,
-                    color: Color(0xFF0F1E36),
+                    color: Color(0xFF990000),
                   ),
                 ),
               ),

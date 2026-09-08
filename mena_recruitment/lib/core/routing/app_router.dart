@@ -20,7 +20,7 @@ final isAuthenticatedProvider = StateProvider<bool>((ref) => true);
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: RouteNames.onboarding,
+    initialLocation: RouteNames.jobs,
     routes: [
       GoRoute(
         path: RouteNames.onboarding,
@@ -33,11 +33,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           if (location.startsWith(RouteNames.jobs) || location == RouteNames.home) {
             currentIndex = 0;
           } else if (location.startsWith(RouteNames.applications)) {
-            currentIndex = 1;
-          } else if (location.startsWith(RouteNames.vault)) {
             currentIndex = 2;
-          } else if (location.startsWith(RouteNames.profile)) {
+          } else if (location.startsWith(RouteNames.vault)) {
             currentIndex = 3;
+          } else if (location.startsWith(RouteNames.profile)) {
+            currentIndex = 4;
           }
 
           return Scaffold(
@@ -50,12 +50,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     context.go(RouteNames.jobs);
                     break;
                   case 1:
-                    context.go(RouteNames.applications);
+                    context.go(RouteNames.jobs); // Or filters by sector
                     break;
                   case 2:
-                    context.go(RouteNames.vault);
+                    context.go(RouteNames.applications);
                     break;
                   case 3:
+                    context.go(RouteNames.vault);
+                    break;
+                  case 4:
                     context.go(RouteNames.profile);
                     break;
                 }

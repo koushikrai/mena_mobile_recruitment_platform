@@ -24,7 +24,7 @@ class OnboardingScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F1E36),
+                  color: Color(0xFF990000),
                   fontFamily: 'Plus Jakarta Sans',
                 ),
               ),
@@ -43,7 +43,7 @@ class OnboardingScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F1E36),
+                  color: Color(0xFF990000),
                 ),
               ),
               const SizedBox(height: 16),
@@ -54,7 +54,7 @@ class OnboardingScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F1E36),
+                  color: Color(0xFF990000),
                 ),
               ),
               const SizedBox(height: 16),
@@ -84,7 +84,7 @@ class OnboardingScreen extends ConsumerWidget {
                 height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F1E36),
+                    backgroundColor: const Color(0xFF990000),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () {
@@ -99,7 +99,7 @@ class OnboardingScreen extends ConsumerWidget {
                 height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD97706),
+                    backgroundColor: const Color(0xFF6E0000),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () {
@@ -114,8 +114,8 @@ class OnboardingScreen extends ConsumerWidget {
                 height: 52,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF0F1E36),
-                    side: const BorderSide(color: Color(0xFF0F1E36)),
+                    foregroundColor: const Color(0xFF990000),
+                    side: const BorderSide(color: Color(0xFF990000)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () {

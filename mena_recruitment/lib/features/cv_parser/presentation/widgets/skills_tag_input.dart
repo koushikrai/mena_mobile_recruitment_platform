@@ -20,7 +20,7 @@ class SkillsTagInput extends StatelessWidget {
           label: Text(skill),
           onDeleted: () => onRemove(skill),
           backgroundColor: const Color(0xFFF8F9FF),
-          deleteIconColor: const Color(0xFF0F1E36),
+          deleteIconColor: const Color(0xFF990000),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9999)),
         )),
         ActionChip(

@@ -23,19 +23,19 @@ class VaultDocumentTile extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F1E36).withOpacity(0.1),
+            color: const Color(0xFF990000).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
             _getIconForCategory(document.category),
-            color: const Color(0xFF0F1E36),
+            color: const Color(0xFF990000),
           ),
         ),
         title: Text(
           document.title,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: Color(0xFF0F1E36),
+            color: Color(0xFF990000),
             fontFamily: 'Plus Jakarta Sans',
           ),
         ),
@@ -56,7 +56,7 @@ class VaultDocumentTile extends StatelessWidget {
                 if (document.isVerified)
                   _buildBadge('Verified', const Color(0xFF059669))
                 else
-                  _buildBadge('Pending', const Color(0xFFD97706)),
+                  _buildBadge('Pending', const Color(0xFF6E0000)),
                 if (document.expiryDate != null) ...[
                   const SizedBox(width: 8),
                   _buildExpiryCountdown(document.expiryDate!),
@@ -106,7 +106,7 @@ class VaultDocumentTile extends StatelessWidget {
 
   Widget _buildExpiryCountdown(DateTime expiry) {
     final days = expiry.difference(DateTime.now()).inDays;
-    final color = days < 30 ? Colors.red : (days < 90 ? const Color(0xFFD97706) : Colors.grey);
+    final color = days < 30 ? Colors.red : (days < 90 ? const Color(0xFF6E0000) : Colors.grey);
     return Text(
       days > 0 ? '$days days left' : 'Expired',
       style: TextStyle(

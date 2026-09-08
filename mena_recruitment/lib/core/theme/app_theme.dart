@@ -11,7 +11,7 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: AppColors.colorScheme,
       textTheme: AppTypography.textTheme,
-      scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+      scaffoldBackgroundColor: const Color(0xFFFCF9F9),
       appBarTheme: AppBarTheme(
         elevation: 0,
         backgroundColor: AppColors.colorScheme.surface,
@@ -24,11 +24,11 @@ class AppTheme {
         fillColor: AppColors.colorScheme.surface,
         border: const OutlineInputBorder(
           borderRadius: AppRadius.borderLg,
-          borderSide: BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+          borderSide: BorderSide(color: Color(0xFFE4DADB), width: 1.5),
         ),
         enabledBorder: const OutlineInputBorder(
           borderRadius: AppRadius.borderLg,
-          borderSide: BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+          borderSide: BorderSide(color: Color(0xFFE4DADB), width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: AppRadius.borderLg,
@@ -45,7 +45,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 52),
+          minimumSize: const Size(64, 48),
           shape: const RoundedRectangleBorder(
             borderRadius: AppRadius.borderLg,
           ),

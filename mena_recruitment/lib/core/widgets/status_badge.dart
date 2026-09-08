@@ -32,7 +32,7 @@ class StatusBadge extends StatelessWidget {
       case StatusType.pending:
       case StatusType.review:
         bg = const Color(0xFFFEF3C7);
-        text = const Color(0xFFD97706); // Amber
+        text = const Color(0xFF6E0000); // Amber
         break;
       case StatusType.critical:
         bg = const Color(0xFFFEE2E2);
@@ -40,7 +40,7 @@ class StatusBadge extends StatelessWidget {
         break;
       case StatusType.info:
         bg = const Color(0xFFF1F5F9);
-        text = const Color(0xFF0F1E36); // Navy tint
+        text = const Color(0xFF990000); // Navy tint
         break;
     }
 

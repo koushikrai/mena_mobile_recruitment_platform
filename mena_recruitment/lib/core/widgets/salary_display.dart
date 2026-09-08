@@ -43,7 +43,7 @@ class SalaryDisplay extends StatelessWidget {
             fontFamily: 'Plus Jakarta Sans',
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0F1E36),
+            color: Color(0xFF990000),
             fontFeatures: [FontFeature.tabularFigures()],
           ),
         ),

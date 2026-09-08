@@ -24,16 +24,16 @@ class PillarCard extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F1E36).withOpacity(0.1),
+            color: const Color(0xFF990000).withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: const Color(0xFF0F1E36)),
+          child: Icon(icon, color: const Color(0xFF990000)),
         ),
         title: Text(
           title,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: Color(0xFF0F1E36),
+            color: Color(0xFF990000),
           ),
         ),
         subtitle: Padding(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DocumentCategoryTabs extends StatelessWidget {
   final List<String> categories;
@@ -26,9 +25,9 @@ class DocumentCategoryTabs extends StatelessWidget {
               label: Text(cat),
               selected: isSelected,
               onSelected: (_) => onSelected(cat),
-              selectedColor: const Color(0xFF0F1E36),
+              selectedColor: const Color(0xFF990000),
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF0F1E36),
+                color: isSelected ? Colors.white : const Color(0xFF990000),
               ),
               backgroundColor: const Color(0xFFF8F9FF),
             ),

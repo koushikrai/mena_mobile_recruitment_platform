@@ -10,9 +10,9 @@ class ApplicationCard extends StatelessWidget {
   Color _getSeverityColor(StatusSeverity severity) {
     switch (severity) {
       case StatusSeverity.verified: return const Color(0xFF059669);
-      case StatusSeverity.review: return const Color(0xFFD97706);
+      case StatusSeverity.review: return const Color(0xFF6E0000);
       case StatusSeverity.critical: return Colors.red;
-      case StatusSeverity.info: return const Color(0xFF0F1E36);
+      case StatusSeverity.info: return const Color(0xFF990000);
     }
   }
 
@@ -32,7 +32,7 @@ class ApplicationCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   backgroundColor: const Color(0xFFF8F9FF),
-                  child: const Icon(Icons.business, color: Color(0xFF0F1E36)),
+                  child: const Icon(Icons.business, color: Color(0xFF990000)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -45,7 +45,7 @@ class ApplicationCard extends StatelessWidget {
                           fontFamily: 'Plus Jakarta Sans',
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: Color(0xFF0F1E36),
+                          color: Color(0xFF990000),
                         ),
                       ),
                       Text(
@@ -87,7 +87,7 @@ class ApplicationCard extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F1E36),
+                  backgroundColor: const Color(0xFF990000),
                   minimumSize: const Size(double.infinity, 52),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

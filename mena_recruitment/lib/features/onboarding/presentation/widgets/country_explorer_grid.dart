@@ -41,7 +41,7 @@ class CountryExplorerGrid extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF0F1E36),
+                  color: Color(0xFF990000),
                 ),
               ),
             ],

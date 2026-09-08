@@ -35,7 +35,7 @@ class CountryFlag extends StatelessWidget {
         errorBuilder: (context, error, stackTrace) => Container(
           width: flagWidth,
           height: flagHeight,
-          color: const Color(0xFFE2E8F0),
+          color: const Color(0xFFE4DADB),
           child: const Icon(Icons.flag, size: 12, color: Colors.grey),
         ),
       ),
@@ -52,7 +52,7 @@ class CountryFlag extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF0F1E36),
+              color: Color(0xFF990000),
             ),
           ),
         ],

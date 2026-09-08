@@ -15,13 +15,13 @@ class MissingDocumentAlert extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFD97706).withOpacity(0.1),
+        color: const Color(0xFF6E0000).withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD97706).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFF6E0000).withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706)),
+          const Icon(Icons.warning_amber_rounded, color: Color(0xFF6E0000)),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -32,7 +32,7 @@ class MissingDocumentAlert extends StatelessWidget {
                   style: const TextStyle(
                     fontFamily: 'Plus Jakarta Sans',
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFD97706),
+                    color: Color(0xFF6E0000),
                   ),
                 ),
                 if (deadline != null)
@@ -41,7 +41,7 @@ class MissingDocumentAlert extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: 12,
-                      color: const Color(0xFFD97706).withOpacity(0.8),
+                      color: const Color(0xFF6E0000).withOpacity(0.8),
                     ),
                   ),
               ],

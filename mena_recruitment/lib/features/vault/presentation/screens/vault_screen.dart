@@ -1,185 +1,686 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mena_recruitment/features/vault/domain/vault_document_entity.dart';
-import 'package:mena_recruitment/features/vault/presentation/widgets/profile_strength_dial.dart';
-import 'package:mena_recruitment/features/vault/presentation/widgets/vault_document_tile.dart';
-import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 
 class VaultScreen extends ConsumerWidget {
-  const VaultScreen({Key? key}) : super(key: key);
+  const VaultScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final documentsAsync = ref.watch(vaultDocumentsProvider);
+    const primaryCrimson = Color(0xFF6E0000);
+    const containerCrimson = Color(0xFF990000);
+    const lightSurface = Color(0xFFF9F9FF);
+    const cardLowest = Colors.white;
+    const cardLow = Color(0xFFF1F3FD);
+    const cardHigh = Color(0xFFE5E8F2);
+    const textOnSurface = Color(0xFF181C23);
+    const textSecondary = Color(0xFF5A5F67);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Document Vault'),
-        backgroundColor: const Color(0xFF0F1E36), // Navy
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.document_scanner),
-            tooltip: 'MRZ Scanner',
-            onPressed: () => context.push('/vault/passport-scan'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.shield),
-            tooltip: 'AES-256 Encrypted',
-            onPressed: () {},
-          )
-        ],
-      ),
-      body: documentsAsync.when(
-        data: (docs) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Center(
-                  child: ProfileStrengthDial(
-                    percentage: 0.85,
-                    label: 'Ready for GCC Relocation',
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      backgroundColor: lightSurface,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Progress Header
+              Container(
+                color: cardLowest,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Missing Credentials',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF0F1E36),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.task_alt, size: 14, color: primaryCrimson),
+                            SizedBox(width: 4),
+                            Text(
+                              'STEP 4 OF 4: PROFILE READY',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.0,
+                                color: primaryCrimson,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '100% Complete',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: const LinearProgressIndicator(
+                        value: 1.0,
+                        minHeight: 5,
+                        backgroundColor: cardHigh,
+                        valueColor: AlwaysStoppedAnimation<Color>(containerCrimson),
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => context.push('/vault/certifications'),
-                      child: const Text('View All Certs'),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'Profile Setup Complete!',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: textOnSurface,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    const Text.rich(
+                      TextSpan(
+                        text: 'Your profile meets ',
+                        style: TextStyle(fontSize: 13, color: textSecondary),
+                        children: [
+                          TextSpan(
+                            text: '95%',
+                            style: TextStyle(fontWeight: FontWeight.bold, color: primaryCrimson),
+                          ),
+                          TextSpan(text: ' of Gulf employer screening requirements.'),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                _buildMissingItem(context, 'Trade License (SCE)', '+5%'),
-                _buildMissingItem(context, 'GCC Driving License', '+10%'),
-                const SizedBox(height: 24),
-                const Text(
-                  'My Documents',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0F1E36),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: docs.length,
-                  itemBuilder: (context, index) {
-                    final doc = docs[index];
-                    return VaultDocumentTile(
-                      document: doc,
-                      onTap: () {
-                        if (doc.category == DocumentCategory.passport) {
-                          context.push('/vault/passport-scan');
-                        } else {
-                          context.push('/vault/certifications');
-                        }
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF0F1E36),
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            builder: (ctx) => SafeArea(
-              child: Wrap(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.document_scanner, color: Color(0xFF0F1E36)),
-                    title: const Text('Smart Passport OCR Scan'),
-                    subtitle: const Text('Extract MRZ code and auto-validate'),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      context.push('/vault/passport-scan');
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.verified, color: Color(0xFF0F1E36)),
-                    title: const Text('Add Certification / License'),
-                    subtitle: const Text('NEBOSH, OSHA, SCE, DHA'),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      context.push('/vault/certifications');
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.edit_document, color: Color(0xFF0F1E36)),
-                    title: const Text('Update Passport Details'),
-                    subtitle: const Text('Manage renewal dates and reminders'),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      context.push('/vault/passport-update');
-                    },
-                  ),
-                ],
               ),
-            ),
-          );
-        },
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Add Document', style: TextStyle(color: Colors.white)),
-      ),
-    );
-  }
 
-  Widget _buildMissingItem(BuildContext context, String name, String boost) {
-    return InkWell(
-      onTap: () => context.push('/vault/certifications'),
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Color(0xFFD97706), size: 20),
-            const SizedBox(width: 8),
-            Text(name, style: const TextStyle(fontWeight: FontWeight.w500)),
-            const Spacer(),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFD97706).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                boost,
-                style: const TextStyle(
-                  color: Color(0xFFD97706),
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Column(
+                  children: [
+                    // 1. Profile Strength Hero Card
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: cardLowest,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              // 95% Verified Radial Dial
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 72,
+                                    height: 72,
+                                    child: CircularProgressIndicator(
+                                      value: 0.95,
+                                      strokeWidth: 6,
+                                      backgroundColor: cardHigh,
+                                      valueColor: const AlwaysStoppedAnimation<Color>(primaryCrimson),
+                                    ),
+                                  ),
+                                  const Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        '95%',
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: primaryCrimson,
+                                        ),
+                                      ),
+                                      Text(
+                                        'VERIFIED',
+                                        style: TextStyle(
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.bold,
+                                          color: textSecondary,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFDFE2EC),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: const Text(
+                                        'TIER 1 CANDIDATE',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.8,
+                                          color: Color(0xFF5B403C),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    const Text(
+                                      'Ahmed Mansoor Al-Farooq',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: textOnSurface,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 3),
+                                    const Row(
+                                      children: [
+                                        Icon(Icons.engineering, size: 14, color: primaryCrimson),
+                                        SizedBox(width: 4),
+                                        Text('Senior HSE Supervisor', style: TextStyle(fontSize: 11, color: textSecondary)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 2),
+                                    const Row(
+                                      children: [
+                                        Icon(Icons.history_toggle_off, size: 14, color: primaryCrimson),
+                                        SizedBox(width: 4),
+                                        Text('7.5 yrs GCC Experience', style: TextStyle(fontSize: 11, color: textSecondary)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          // Badges Row
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: cardLow,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _PillBadge(icon: Icons.verified, label: 'MRZ PASSPORT OK'),
+                                _PillBadge(icon: Icons.document_scanner, label: 'CV PARSED'),
+                                _PillBadge(icon: Icons.workspace_premium, label: 'NEBOSH VERIFIED'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // 2. Employer Matching Preview
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: cardLowest,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFDAD4),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.corporate_fare, color: primaryCrimson, size: 22),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'GCC Employer Match',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: textOnSurface,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text.rich(
+                                      TextSpan(
+                                        text: 'You qualify for ',
+                                        style: TextStyle(fontSize: 12, color: textSecondary),
+                                        children: [
+                                          TextSpan(
+                                            text: '48 High-Priority Vacancies',
+                                            style: TextStyle(fontWeight: FontWeight.bold, color: textOnSurface),
+                                          ),
+                                          TextSpan(text: ' across Saudi Arabia, UAE & Qatar.'),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: cardLow,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'ESTIMATED TAX-FREE SALARY RANGE',
+                                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.8, color: textSecondary),
+                                ),
+                                SizedBox(height: 4),
+                                Text.rich(
+                                  TextSpan(
+                                    text: 'SAR 14,000 - 18,500 ',
+                                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: primaryCrimson),
+                                    children: [
+                                      TextSpan(
+                                        text: '/ mo',
+                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: textSecondary),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Icon(Icons.apartment, size: 14, color: primaryCrimson),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      '+ Family Status / Free Furnished Accommodation Included',
+                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: textOnSurface),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // 3. Document Vault Inventory
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: cardLowest,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(Icons.folder_shared, size: 18, color: primaryCrimson),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Document Vault Inventory',
+                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textOnSurface),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: cardHigh,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text(
+                                  '4 Assets',
+                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textSecondary),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Asset 1: CV Document
+                          _buildAssetItem(
+                            icon: Icons.description,
+                            title: 'Ahmed_Mansoor_HSE_CV_2025.pdf',
+                            subtitle: 'Parsed & Active',
+                            statusColor: primaryCrimson,
+                            onTap: () => context.push('/cv/review'),
+                            buttonText: 'View',
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Asset 2: Passport Bio-Page
+                          _buildAssetItem(
+                            icon: Icons.badge,
+                            title: 'Passport_N8492014_Bio.jpg',
+                            subtitle: 'MRZ Validated • Exp Jan 2028',
+                            statusColor: primaryCrimson,
+                            onTap: () => context.push('/vault/passport-update'),
+                            buttonText: 'View',
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Asset 3: Safety Certificates
+                          _buildAssetItem(
+                            icon: Icons.military_tech,
+                            title: 'NEBOSH_IGC.pdf, OPITO_BOSIET.jpg',
+                            subtitle: '2 Certified GCC Credentials',
+                            statusColor: primaryCrimson,
+                            onTap: () => context.push('/vault/certifications'),
+                            buttonText: 'View',
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Asset 4: GAMCA Clearance
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: cardLow,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(color: cardHigh, borderRadius: BorderRadius.circular(6)),
+                                  child: const Icon(Icons.health_and_safety, size: 18, color: textSecondary),
+                                ),
+                                const SizedBox(width: 10),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'GAMCA Fitness Clearance',
+                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textOnSurface),
+                                      ),
+                                      Text(
+                                        'Status: Pending Center Slot',
+                                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF5B403C)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFDAD4),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'Book',
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryCrimson),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // 4. Dedicated Mobility Advisor Banner
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: cardHigh,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 42,
+                                height: 42,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: cardLowest,
+                                ),
+                                child: const Icon(Icons.support_agent, size: 24, color: primaryCrimson),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'ASSIGNED SUHANA CAREER ADVISOR',
+                                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.8, color: textSecondary),
+                                    ),
+                                    Text(
+                                      'Eng. Tariq Al-Ghamdi',
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textOnSurface),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF25D366)),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Need fast-track visa sponsorship guidance or embassy clearance answers?',
+                            style: TextStyle(fontSize: 11, color: textSecondary),
+                          ),
+                          const SizedBox(height: 10),
+                          InkWell(
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Opening WhatsApp chat with Eng. Tariq Al-Ghamdi...')),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 9),
+                              decoration: BoxDecoration(
+                                color: cardLowest,
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: const [
+                                  BoxShadow(color: Color(0x08000000), blurRadius: 4, offset: Offset(0, 1)),
+                                ],
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.chat, size: 16, color: primaryCrimson),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Chat on WhatsApp',
+                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textOnSurface),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // 5. Action Buttons
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        onPressed: () => context.go('/jobs'),
+                        icon: const Icon(Icons.arrow_forward, size: 18, color: Colors.white),
+                        label: const Text(
+                          'Browse Matching Verified Jobs',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: containerCrimson,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton.icon(
+                        onPressed: () => context.go('/applications'),
+                        icon: const Icon(Icons.timeline, size: 18, color: textSecondary),
+                        label: const Text(
+                          'View My Application Pipeline',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textOnSurface),
+                        ),
+                        style: TextButton.styleFrom(
+                          backgroundColor: cardHigh,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+
+  Widget _buildAssetItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color statusColor,
+    required VoidCallback onTap,
+    required String buttonText,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F3FD),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFDFE2EC),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(icon, size: 18, color: const Color(0xFF6E0000)),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF181C23)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Row(
+                  children: [
+                    Container(width: 5, height: 5, decoration: BoxDecoration(shape: BoxShape.circle, color: statusColor)),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        subtitle,
+                        style: const TextStyle(fontSize: 10, color: Color(0xFF5A5F67)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(6),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE5E8F2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                buttonText,
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF181C23)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+class _PillBadge extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _PillBadge({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 12, color: const Color(0xFF6E0000)),
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF181C23)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

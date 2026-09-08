@@ -17,7 +17,7 @@ class MrzVerificationPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF8F9FF),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF0F1E36).withOpacity(0.1)),
+        border: Border.all(color: const Color(0xFF990000).withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,7 +26,7 @@ class MrzVerificationPanel extends StatelessWidget {
             'Extracted Data',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xFF0F1E36),
+              color: Color(0xFF990000),
             ),
           ),
           const SizedBox(height: 12),
@@ -55,7 +55,7 @@ class MrzVerificationPanel extends StatelessWidget {
             style: const TextStyle(
               fontFamily: 'JetBrains Mono',
               fontWeight: FontWeight.bold,
-              color: Color(0xFF0F1E36),
+              color: Color(0xFF990000),
             ),
           ),
         ],

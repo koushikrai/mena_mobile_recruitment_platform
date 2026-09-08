@@ -30,9 +30,9 @@ class ApplicationFilterTabs extends StatelessWidget {
               onSelected: (selected) {
                 if (selected) onFilterChanged(filter);
               },
-              selectedColor: const Color(0xFF0F1E36),
+              selectedColor: const Color(0xFF990000),
               labelStyle: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF0F1E36),
+                color: isSelected ? Colors.white : const Color(0xFF990000),
                 fontFamily: 'Plus Jakarta Sans',
               ),
               shape: RoundedRectangleBorder(

@@ -24,7 +24,7 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = isSelected ? const Color(0xFFCBD5E1) : const Color(0xFFE2E8F0);
+    final borderColor = isSelected ? const Color(0xFFCBD5E1) : const Color(0xFFE4DADB);
     
     // Level 1 shadow by default, Level 2 if selected
     final List<BoxShadow> shadows = isSelected

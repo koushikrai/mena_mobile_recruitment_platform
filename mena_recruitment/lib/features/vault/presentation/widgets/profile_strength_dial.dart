@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProfileStrengthDial extends StatelessWidget {
   final double percentage;
@@ -35,7 +34,7 @@ class ProfileStrengthDial extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF0F1E36), // Navy
+                color: Color(0xFF990000), // Navy
               ),
             ),
           ],
@@ -46,7 +45,7 @@ class ProfileStrengthDial extends StatelessWidget {
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF0F1E36),
+            color: Color(0xFF990000),
           ),
           textAlign: TextAlign.center,
         ),

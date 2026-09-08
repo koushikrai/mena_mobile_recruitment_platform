@@ -19,7 +19,7 @@ class SecuritySettings extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: Color(0xFF0F1E36),
+                color: Color(0xFF990000),
               ),
             ),
           ),

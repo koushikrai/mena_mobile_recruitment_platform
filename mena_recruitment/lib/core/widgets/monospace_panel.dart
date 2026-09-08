@@ -15,7 +15,7 @@ class MonospacePanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: const Color(0xFFFCF9F9),
         borderRadius: BorderRadius.circular(8.0), // Rounded corners for internal panel
       ),
       child: CustomPaint(

@@ -137,7 +137,7 @@ class _StepperPipelineState extends State<StepperPipeline> with SingleTickerProv
           width: 24,
           height: 24,
           decoration: BoxDecoration(
-            color: const Color(0xFFD97706), // Amber
+            color: const Color(0xFF6E0000), // Amber
             shape: BoxShape.circle,
             border: Border.all(color: const Color(0xFFFDE68A), width: 3), // Light amber border
           ),
@@ -209,7 +209,7 @@ class _StepperPipelineState extends State<StepperPipeline> with SingleTickerProv
 
   Color _getTextColor(int index) {
     if (index < widget.currentStage.index) return const Color(0xFF059669);
-    if (index == widget.currentStage.index) return const Color(0xFFD97706);
+    if (index == widget.currentStage.index) return const Color(0xFF6E0000);
     return const Color(0xFF64748B);
   }
 }

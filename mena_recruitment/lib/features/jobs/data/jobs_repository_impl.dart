@@ -10,7 +10,7 @@ class JobsRepositoryImpl implements JobsRepository {
   Future<List<Job>> getJobs({JobFilter? filter, int page = 1, int pageSize = 20}) async {
     await Future.delayed(const Duration(milliseconds: 500));
     
-    var filtered = mockJobsData;
+    var filtered = MockJobsData.jobs;
     
     if (filter != null) {
       if (filter.searchQuery != null && filter.searchQuery!.isNotEmpty) {
@@ -52,7 +52,7 @@ class JobsRepositoryImpl implements JobsRepository {
   @override
   Future<Job> getJobById(String id) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    final job = mockJobsData.firstWhere((j) => j.id == id);
+    final job = MockJobsData.jobs.firstWhere((j) => j.id == id);
     return job.copyWith(isBookmarked: _bookmarkedIds.contains(job.id));
   }
 
@@ -69,7 +69,7 @@ class JobsRepositoryImpl implements JobsRepository {
   @override
   Future<List<Job>> getBookmarkedJobs() async {
     await Future.delayed(const Duration(milliseconds: 300));
-    return mockJobsData
+    return MockJobsData.jobs
       .where((job) => _bookmarkedIds.contains(job.id))
       .map((job) => job.copyWith(isBookmarked: true))
       .toList();

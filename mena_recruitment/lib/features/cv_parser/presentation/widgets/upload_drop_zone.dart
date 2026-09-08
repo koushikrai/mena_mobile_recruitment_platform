@@ -24,13 +24,13 @@ class UploadDropZone extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            Icon(Icons.cloud_upload_outlined, size: 48, color: Color(0xFF0F1E36)),
+            Icon(Icons.cloud_upload_outlined, size: 48, color: Color(0xFF990000)),
             SizedBox(height: 16),
             Text(
               'Choose PDF, DOCX, or Image - max 15MB',
               style: TextStyle(
                 fontFamily: 'Plus Jakarta Sans',
-                color: Color(0xFF0F1E36),
+                color: Color(0xFF990000),
                 fontWeight: FontWeight.w600,
               ),
             ),

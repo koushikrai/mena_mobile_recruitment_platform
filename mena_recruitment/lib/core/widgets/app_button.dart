@@ -72,7 +72,7 @@ class AppButton extends StatefulWidget {
     );
   }
 
-  /// Primary button: Navy #0F1E36 background, white text.
+  /// Primary button: Navy #990000 background, white text.
   const factory AppButton.primary({
     Key? key,
     required Widget child,
@@ -242,18 +242,18 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
 
     switch (widget.variant) {
       case AppButtonVariant.primary:
-        backgroundColor = widget.customBgColor ?? const Color(0xFF0F1E36);
+        backgroundColor = widget.customBgColor ?? const Color(0xFF990000);
         textColor = widget.customTextColor ?? Colors.white;
         break;
       case AppButtonVariant.secondary:
-        backgroundColor = widget.customBgColor ?? const Color(0xFFD97706);
+        backgroundColor = widget.customBgColor ?? const Color(0xFF6E0000);
         textColor = widget.customTextColor ?? Colors.white;
         break;
       case AppButtonVariant.outline:
         backgroundColor = widget.customBgColor ??
             (_isHovered ? const Color(0xFFF1F5F9) : Colors.transparent);
-        textColor = widget.customTextColor ?? const Color(0xFF0F1E36);
-        border = Border.all(color: const Color(0xFFE2E8F0), width: 1.5);
+        textColor = widget.customTextColor ?? const Color(0xFF990000);
+        border = Border.all(color: const Color(0xFFE4DADB), width: 1.5);
         break;
       case AppButtonVariant.destructive:
         backgroundColor = widget.customBgColor ?? const Color(0xFFFEF2F2);
