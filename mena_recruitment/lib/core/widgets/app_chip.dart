@@ -28,10 +28,14 @@ class AppChip extends StatelessWidget {
     required this.label,
     this.statusType,
     this.backgroundColor,
-    this.textColor,
+    Color? textColor,
+    Color? labelColor,
     this.borderColor,
-    this.leadingIcon,
-  }) : super(key: key);
+    Widget? leadingIcon,
+    Widget? icon,
+  })  : textColor = textColor ?? labelColor,
+        leadingIcon = leadingIcon ?? icon,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {

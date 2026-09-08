@@ -1,18 +1,31 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class RelocationPreferences {
+  final List<String> preferredCountries;
+  final double expectedSalary;
+  final String currency;
+  final String noticePeriod;
+  final String familyStatus;
 
-part 'relocation_preferences.freezed.dart';
-part 'relocation_preferences.g.dart';
+  const RelocationPreferences({
+    required this.preferredCountries,
+    required this.expectedSalary,
+    required this.currency,
+    required this.noticePeriod,
+    required this.familyStatus,
+  });
 
-@freezed
-class RelocationPreferences with _$RelocationPreferences {
-  const factory RelocationPreferences({
-    required List<String> preferredCountries,
-    required double expectedSalary,
-    required String currency,
-    required String noticePeriod,
-    required String familyStatus,
-  }) = _RelocationPreferences;
-
-  factory RelocationPreferences.fromJson(Map<String, dynamic> json) =>
-      _$RelocationPreferencesFromJson(json);
+  RelocationPreferences copyWith({
+    List<String>? preferredCountries,
+    double? expectedSalary,
+    String? currency,
+    String? noticePeriod,
+    String? familyStatus,
+  }) {
+    return RelocationPreferences(
+      preferredCountries: preferredCountries ?? this.preferredCountries,
+      expectedSalary: expectedSalary ?? this.expectedSalary,
+      currency: currency ?? this.currency,
+      noticePeriod: noticePeriod ?? this.noticePeriod,
+      familyStatus: familyStatus ?? this.familyStatus,
+    );
+  }
 }

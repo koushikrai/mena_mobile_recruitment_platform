@@ -19,7 +19,7 @@ class JobCard extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: AppCard(
-        onTap: () => context.push('/job/${job.id}'),
+        onTap: () => context.push('/jobs/${job.id}'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

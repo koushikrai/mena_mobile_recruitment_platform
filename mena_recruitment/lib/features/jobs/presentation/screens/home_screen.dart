@@ -172,7 +172,7 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, bottom: 24.0),
+              padding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 24.0),
               child: RelocationBanner(),
             ),
           ),

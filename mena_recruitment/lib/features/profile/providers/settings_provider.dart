@@ -1,6 +1,4 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-part 'settings_provider.g.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AppSettings {
   final bool biometricEnabled;
@@ -42,8 +40,11 @@ class AppSettings {
   }
 }
 
-@riverpod
-class Settings extends _$Settings {
+final settingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(() {
+  return SettingsNotifier();
+});
+
+class SettingsNotifier extends Notifier<AppSettings> {
   @override
   AppSettings build() => const AppSettings();
 

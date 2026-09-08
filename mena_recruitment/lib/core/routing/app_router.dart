@@ -2,111 +2,119 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
-import 'package:mena_recruitment/core/widgets/bottom_nav_bar.dart'; // Assume it exists
+import 'package:mena_recruitment/core/widgets/bottom_nav_bar.dart';
+import 'package:mena_recruitment/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:mena_recruitment/features/jobs/presentation/screens/home_screen.dart';
+import 'package:mena_recruitment/features/jobs/presentation/screens/job_details_screen.dart';
+import 'package:mena_recruitment/features/applications/presentation/screens/applications_screen.dart';
+import 'package:mena_recruitment/features/vault/presentation/screens/vault_screen.dart';
+import 'package:mena_recruitment/features/vault/presentation/screens/passport_scan_screen.dart';
+import 'package:mena_recruitment/features/vault/presentation/screens/passport_update_screen.dart';
+import 'package:mena_recruitment/features/vault/presentation/screens/certifications_screen.dart';
+import 'package:mena_recruitment/features/profile/presentation/screens/settings_screen.dart';
+import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_upload_screen.dart';
+import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_review_screen.dart';
 
-// Placeholder Auth State
-final isAuthenticatedProvider = StateProvider<bool>((ref) => false);
+// Auth State Provider
+final isAuthenticatedProvider = StateProvider<bool>((ref) => true);
 
 final goRouterProvider = Provider<GoRouter>((ref) {
-  final isAuthenticated = ref.watch(isAuthenticatedProvider);
-
   return GoRouter(
     initialLocation: RouteNames.onboarding,
-    redirect: (context, state) {
-      final isAuthRoute = state.matchedLocation.startsWith('/auth');
-      final isOnboarding = state.matchedLocation == RouteNames.onboarding;
-
-      if (!isAuthenticated && !isAuthRoute && !isOnboarding) {
-        return RouteNames.onboarding;
-      }
-      return null;
-    },
     routes: [
       GoRoute(
         path: RouteNames.onboarding,
-        builder: (context, state) => const _PlaceholderScreen(title: 'Onboarding'),
-      ),
-      GoRoute(
-        path: RouteNames.login,
-        builder: (context, state) => const _PlaceholderScreen(title: 'Login'),
-      ),
-      GoRoute(
-        path: RouteNames.register,
-        builder: (context, state) => const _PlaceholderScreen(title: 'Register'),
-      ),
-      GoRoute(
-        path: RouteNames.otp,
-        builder: (context, state) => const _PlaceholderScreen(title: 'OTP'),
+        builder: (context, state) => const OnboardingScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) {
+          int currentIndex = 0;
+          final location = state.matchedLocation;
+          if (location.startsWith(RouteNames.jobs) || location == RouteNames.home) {
+            currentIndex = 0;
+          } else if (location.startsWith(RouteNames.applications)) {
+            currentIndex = 1;
+          } else if (location.startsWith(RouteNames.vault)) {
+            currentIndex = 2;
+          } else if (location.startsWith(RouteNames.profile)) {
+            currentIndex = 3;
+          }
+
           return Scaffold(
             body: child,
-            bottomNavigationBar: const BottomNavBar(),
+            bottomNavigationBar: BottomNavBar(
+              currentIndex: currentIndex,
+              onTap: (index) {
+                switch (index) {
+                  case 0:
+                    context.go(RouteNames.jobs);
+                    break;
+                  case 1:
+                    context.go(RouteNames.applications);
+                    break;
+                  case 2:
+                    context.go(RouteNames.vault);
+                    break;
+                  case 3:
+                    context.go(RouteNames.profile);
+                    break;
+                }
+              },
+            ),
           );
         },
         routes: [
           GoRoute(
             path: RouteNames.home,
-            builder: (context, state) => const _PlaceholderScreen(title: 'Home'),
+            builder: (context, state) => const HomeScreen(),
           ),
           GoRoute(
             path: RouteNames.jobs,
-            builder: (context, state) => const _PlaceholderScreen(title: 'Jobs'),
+            builder: (context, state) => const HomeScreen(),
           ),
           GoRoute(
             path: RouteNames.applications,
-            builder: (context, state) => const _PlaceholderScreen(title: 'Applications'),
+            builder: (context, state) => const ApplicationsScreen(),
           ),
           GoRoute(
             path: RouteNames.vault,
-            builder: (context, state) => const _PlaceholderScreen(title: 'Vault'),
+            builder: (context, state) => const VaultScreen(),
             routes: [
               GoRoute(
                 path: 'passport-scan',
-                builder: (context, state) => const _PlaceholderScreen(title: 'Passport Scan'),
+                builder: (context, state) => const PassportScanScreen(),
               ),
               GoRoute(
                 path: 'passport-update',
-                builder: (context, state) => const _PlaceholderScreen(title: 'Passport Update'),
+                builder: (context, state) => const PassportUpdateScreen(),
               ),
               GoRoute(
                 path: 'certifications',
-                builder: (context, state) => const _PlaceholderScreen(title: 'Certifications'),
+                builder: (context, state) => const CertificationsScreen(),
               ),
             ],
           ),
           GoRoute(
             path: RouteNames.profile,
-            builder: (context, state) => const _PlaceholderScreen(title: 'Profile'),
+            builder: (context, state) => const SettingsScreen(),
           ),
         ],
       ),
       GoRoute(
         path: RouteNames.jobDetails,
-        builder: (context, state) => _PlaceholderScreen(title: 'Job Details: ${state.pathParameters['id']}'),
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '1';
+          return JobDetailsScreen(jobId: id);
+        },
       ),
       GoRoute(
         path: RouteNames.cvUpload,
-        builder: (context, state) => const _PlaceholderScreen(title: 'CV Upload'),
+        builder: (context, state) => const CVUploadScreen(),
       ),
       GoRoute(
         path: RouteNames.cvReview,
-        builder: (context, state) => const _PlaceholderScreen(title: 'CV Review'),
+        builder: (context, state) => const CVReviewScreen(),
       ),
     ],
   );
 });
-
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-  const _PlaceholderScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(child: Text(title)),
-    );
-  }
-}

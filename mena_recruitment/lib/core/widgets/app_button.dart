@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mena_recruitment/core/theme/app_colors.dart';
-import 'package:mena_recruitment/core/theme/app_dimensions.dart';
-import 'package:mena_recruitment/core/theme/app_typography.dart';
 
 /// The variant of the AppButton to determine its styling.
 enum AppButtonVariant { primary, secondary, outline, destructive }
+
+/// Alias for compatibility with widgets expecting ButtonType
+typedef ButtonType = AppButtonVariant;
 
 /// A versatile button widget that adheres to the Gulf Maritime & Amber Horizon design system.
 class AppButton extends StatefulWidget {
@@ -26,6 +26,12 @@ class AppButton extends StatefulWidget {
   /// The visual variant of the button.
   final AppButtonVariant variant;
 
+  /// Optional custom background color
+  final Color? customBgColor;
+
+  /// Optional custom text color
+  final Color? customTextColor;
+
   const AppButton._({
     Key? key,
     required this.child,
@@ -34,7 +40,37 @@ class AppButton extends StatefulWidget {
     this.isFullWidth = false,
     this.leadingIcon,
     required this.variant,
+    this.customBgColor,
+    this.customTextColor,
   }) : super(key: key);
+
+  /// Convenient default constructor supporting text, child, type, backgroundColor, and textColor
+  factory AppButton({
+    Key? key,
+    String? text,
+    Widget? child,
+    VoidCallback? onPressed,
+    bool isLoading = false,
+    bool isFullWidth = false,
+    Widget? leadingIcon,
+    AppButtonVariant variant = AppButtonVariant.primary,
+    AppButtonVariant? type,
+    Color? backgroundColor,
+    Color? textColor,
+  }) {
+    final Widget effectiveChild = child ?? Text(text ?? '');
+    return AppButton._(
+      key: key,
+      child: effectiveChild,
+      onPressed: onPressed,
+      isLoading: isLoading,
+      isFullWidth: isFullWidth,
+      leadingIcon: leadingIcon,
+      variant: type ?? variant,
+      customBgColor: backgroundColor,
+      customTextColor: textColor,
+    );
+  }
 
   /// Primary button: Navy #0F1E36 background, white text.
   const factory AppButton.primary({
@@ -200,37 +236,40 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    // Resolve colors and styles based on variant
     Color backgroundColor;
     Color textColor;
     Border? border;
 
     switch (widget.variant) {
       case AppButtonVariant.primary:
-        backgroundColor = const Color(0xFF0F1E36); // AppColors.primary
-        textColor = Colors.white;
+        backgroundColor = widget.customBgColor ?? const Color(0xFF0F1E36);
+        textColor = widget.customTextColor ?? Colors.white;
         break;
       case AppButtonVariant.secondary:
-        backgroundColor = const Color(0xFFD97706); // AppColors.secondary
-        textColor = Colors.white;
+        backgroundColor = widget.customBgColor ?? const Color(0xFFD97706);
+        textColor = widget.customTextColor ?? Colors.white;
         break;
       case AppButtonVariant.outline:
-        backgroundColor = _isHovered ? const Color(0xFFF1F5F9) : Colors.transparent;
-        textColor = const Color(0xFF0F1E36); // AppColors.primary
+        backgroundColor = widget.customBgColor ??
+            (_isHovered ? const Color(0xFFF1F5F9) : Colors.transparent);
+        textColor = widget.customTextColor ?? const Color(0xFF0F1E36);
         border = Border.all(color: const Color(0xFFE2E8F0), width: 1.5);
         break;
       case AppButtonVariant.destructive:
-        backgroundColor = const Color(0xFFFEF2F2);
-        textColor = const Color(0xFF991B1B);
+        backgroundColor = widget.customBgColor ?? const Color(0xFFFEF2F2);
+        textColor = widget.customTextColor ?? const Color(0xFF991B1B);
         border = Border.all(color: const Color(0xFFFECACA), width: 1.0);
         break;
     }
 
     if (widget.onPressed == null) {
-      backgroundColor = backgroundColor.withOpacity(0.5);
-      textColor = textColor.withOpacity(0.5);
+      backgroundColor = backgroundColor.withValues(alpha: 0.5);
+      textColor = textColor.withValues(alpha: 0.5);
       if (border != null) {
-        border = Border.all(color: border.top.color.withOpacity(0.5), width: border.top.width);
+        border = Border.all(
+          color: border.top.color.withValues(alpha: 0.5),
+          width: border.top.width,
+        );
       }
     }
 
@@ -260,7 +299,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
               color: textColor,
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              fontFamily: 'Plus Jakarta Sans', // Fallback if AppTypography is generic
+              fontFamily: 'Plus Jakarta Sans',
             ),
             child: widget.child,
           ),
@@ -277,12 +316,12 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
         child: ScaleTransition(
           scale: _scaleAnimation,
           child: Container(
-            height: 52.0, // AppDimensions.buttonHeightPrimary
+            height: 52.0,
             width: widget.isFullWidth ? double.infinity : null,
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             decoration: BoxDecoration(
               color: backgroundColor,
-              borderRadius: BorderRadius.circular(12.0), // AppDimensions.radiusButton
+              borderRadius: BorderRadius.circular(12.0),
               border: border,
             ),
             child: content,

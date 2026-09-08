@@ -53,14 +53,14 @@ class AppTheme {
           foregroundColor: AppColors.colorScheme.onPrimary,
         ),
       ),
-      cardTheme: CardTheme(
-        shape: const RoundedRectangleBorder(
+      cardTheme: const CardThemeData(
+        shape: RoundedRectangleBorder(
           borderRadius: AppRadius.borderXl,
         ),
         elevation: 1,
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
-        color: AppColors.colorScheme.surface,
+        color: AppColors.surface,
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.colorScheme.surface.withOpacity(0.9), // For frosted glass effect wrapper

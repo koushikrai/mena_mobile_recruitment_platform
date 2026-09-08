@@ -1,13 +1,14 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mena_recruitment/features/profile/domain/candidate_profile_entity.dart';
 import 'package:mena_recruitment/features/profile/data/profile_repository_impl.dart';
 
-part 'profile_provider.g.dart';
-
 final profileRepositoryProvider = Provider((ref) => ProfileRepositoryImpl());
 
-@riverpod
-class Profile extends _$Profile {
+final profileProvider = AsyncNotifierProvider<ProfileNotifier, CandidateProfile>(() {
+  return ProfileNotifier();
+});
+
+class ProfileNotifier extends AsyncNotifier<CandidateProfile> {
   @override
   Future<CandidateProfile> build() async {
     return ref.watch(profileRepositoryProvider).getProfile();

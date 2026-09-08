@@ -1,6 +1,4 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-part 'passport_reminders_provider.g.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class PassportRemindersState {
   final bool sixMonthReminder;
@@ -8,8 +6,11 @@ class PassportRemindersState {
   const PassportRemindersState({required this.sixMonthReminder, required this.threeMonthReminder});
 }
 
-@riverpod
-class PassportReminders extends _$PassportReminders {
+final passportRemindersProvider = NotifierProvider<PassportRemindersNotifier, PassportRemindersState>(() {
+  return PassportRemindersNotifier();
+});
+
+class PassportRemindersNotifier extends Notifier<PassportRemindersState> {
   @override
   PassportRemindersState build() => const PassportRemindersState(sixMonthReminder: true, threeMonthReminder: false);
 

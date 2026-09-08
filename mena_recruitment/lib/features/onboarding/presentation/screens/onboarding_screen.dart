@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/features/onboarding/presentation/widgets/country_explorer_grid.dart';
 import 'package:mena_recruitment/features/onboarding/presentation/widgets/pillar_card.dart';
 
@@ -85,7 +87,9 @@ class OnboardingScreen extends ConsumerWidget {
                     backgroundColor: const Color(0xFF0F1E36),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    context.go(RouteNames.jobs);
+                  },
                   child: const Text('Explore Jobs Now', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
@@ -98,7 +102,9 @@ class OnboardingScreen extends ConsumerWidget {
                     backgroundColor: const Color(0xFFD97706),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    context.push(RouteNames.cvUpload);
+                  },
                   child: const Text('Upload CV for AI Match', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
@@ -112,8 +118,10 @@ class OnboardingScreen extends ConsumerWidget {
                     side: const BorderSide(color: Color(0xFF0F1E36)),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: () {},
-                  child: const Text('Check Visa Eligibility', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  onPressed: () {
+                    context.go(RouteNames.vault);
+                  },
+                  child: const Text('Check Visa Eligibility & Vault', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 32),

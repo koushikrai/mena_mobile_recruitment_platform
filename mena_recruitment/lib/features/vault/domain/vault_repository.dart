@@ -1,5 +1,5 @@
 import 'package:mena_recruitment/features/vault/domain/vault_document_entity.dart';
-import 'package:mena_recruitment/features/vault/domain/passport_mrz_entity.dart';
+
 import 'package:mena_recruitment/features/vault/domain/certification_entity.dart';
 
 abstract class VaultRepository {

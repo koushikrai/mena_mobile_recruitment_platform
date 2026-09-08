@@ -51,6 +51,19 @@ class AppColors {
   static const Color surfaceVariant = Color(0xFFD3E4FE);
   static const Color onSurfaceVariant = Color(0xFF44474D);
 
+  // Convenience aliases matching design tokens and widgets
+  static const Color primary = primaryNavy;
+  static const Color amber = secondaryAmber;
+  static const Color emerald = tertiaryEmerald;
+  static const Color slate = Color(0xFF64748B);
+  static const Color textPrimary = onSurface;
+  static const Color textSecondary = Color(0xFF64748B);
+  static const Color textMuted = Color(0xFF94A3B8);
+  static const Color border = Color(0xFFE2E8F0);
+  static const Color borderSubtle = Color(0xFFCBD5E1);
+  static const Color cardBg = Color(0xFFFFFFFF);
+  static const Color scaffoldBg = Color(0xFFF8FAFC);
+
   // Generate ColorScheme
   static const ColorScheme colorScheme = ColorScheme(
     brightness: Brightness.light,

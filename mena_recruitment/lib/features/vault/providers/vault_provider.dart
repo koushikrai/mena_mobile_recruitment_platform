@@ -1,13 +1,14 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mena_recruitment/features/vault/domain/vault_document_entity.dart';
 import 'package:mena_recruitment/features/vault/data/vault_repository_impl.dart';
 
-part 'vault_provider.g.dart';
-
 final vaultRepositoryProvider = Provider((ref) => VaultRepositoryImpl());
 
-@riverpod
-class VaultDocuments extends _$VaultDocuments {
+final vaultDocumentsProvider = AsyncNotifierProvider<VaultDocumentsNotifier, List<VaultDocument>>(() {
+  return VaultDocumentsNotifier();
+});
+
+class VaultDocumentsNotifier extends AsyncNotifier<List<VaultDocument>> {
   @override
   Future<List<VaultDocument>> build() async {
     return ref.watch(vaultRepositoryProvider).getDocuments();

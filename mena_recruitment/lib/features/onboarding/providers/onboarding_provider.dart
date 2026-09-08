@@ -1,13 +1,14 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-part 'onboarding_provider.g.dart';
-
-@riverpod
-class OnboardingCompleted extends _$OnboardingCompleted {
-  @override
-  bool build() => false;
+class OnboardingCompletedNotifier extends StateNotifier<bool> {
+  OnboardingCompletedNotifier() : super(false);
 
   void completeOnboarding() {
     state = true;
   }
 }
+
+final onboardingCompletedProvider =
+    StateNotifierProvider<OnboardingCompletedNotifier, bool>((ref) {
+  return OnboardingCompletedNotifier();
+});
