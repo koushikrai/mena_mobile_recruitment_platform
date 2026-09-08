@@ -11,12 +11,228 @@ class CertificationsScreen extends ConsumerStatefulWidget {
 
 class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
   bool _isMedicalActive = false;
-  final TextEditingController _medicalLicenseController = TextEditingController();
+  bool _isMedicalVerified = false;
+  final TextEditingController _medicalLicenseController = TextEditingController(text: 'DHA-P-0029319');
+
+  bool _hasAramcoCard = false;
+  String _aramcoCardNumber = 'SAP-772918';
+
+  final List<String> _gccDrivingLicenses = [
+    'Saudi Driving License (Valid) • Exp: 2028',
+  ];
+
+  final List<Map<String, String>> _extraCredentials = [];
 
   @override
   void dispose() {
     _medicalLicenseController.dispose();
     super.dispose();
+  }
+
+  void _showAddCredentialDialog() {
+    final titleCtrl = TextEditingController();
+    final issuerCtrl = TextEditingController();
+    final codeCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Verified Credential', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Certificate Title', border: OutlineInputBorder(), isDense: true)),
+            const SizedBox(height: 10),
+            TextField(controller: issuerCtrl, decoration: const InputDecoration(labelText: 'Issuing Body', border: OutlineInputBorder(), isDense: true)),
+            const SizedBox(height: 10),
+            TextField(controller: codeCtrl, decoration: const InputDecoration(labelText: 'Credential # (optional)', border: OutlineInputBorder(), isDense: true)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (titleCtrl.text.trim().isNotEmpty) {
+                setState(() {
+                  _extraCredentials.add({
+                    'title': titleCtrl.text.trim(),
+                    'issuer': issuerCtrl.text.trim().isEmpty ? 'Accredited Board' : issuerCtrl.text.trim(),
+                    'code': codeCtrl.text.trim(),
+                    'file': '${titleCtrl.text.trim().toLowerCase().replaceAll(" ", "_")}_cert.pdf',
+                  });
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('✓ Credential added to Suhana Verified Vault!'), backgroundColor: Color(0xFF059669)),
+                );
+              }
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6E0000), foregroundColor: Colors.white),
+            child: const Text('Add to Vault'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReplaceDialog(String certName) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Replace $certName', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Select a new PDF or JPEG scan from your device.', style: TextStyle(fontSize: 12, color: Color(0xFF5B403C))),
+            SizedBox(height: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.cloud_upload_outlined, size: 36, color: Color(0xFF6E0000)),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('✓ Successfully replaced document for $certName!'), backgroundColor: const Color(0xFF059669)),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6E0000), foregroundColor: Colors.white),
+            child: const Text('Upload New File'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAramcoUploadModal() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          top: 20,
+          left: 20,
+          right: 20,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.badge, color: Color(0xFF6E0000)),
+                SizedBox(width: 8),
+                Text('Upload Saudi Aramco Approval Card', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Upload front and back scan of your Aramco SAP ID card or Safety Work Permit Receiver card.',
+              style: TextStyle(fontSize: 12, color: Color(0xFF5B403C)),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'SAP ID / Badge #',
+                hintText: 'e.g. SAP-772918',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              onChanged: (v) => _aramcoCardNumber = v,
+            ),
+            const SizedBox(height: 14),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(ctx);
+                setState(() => _hasAramcoCard = true);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('✓ Saudi Aramco Approval Card verified & attached!'), backgroundColor: Color(0xFF059669)),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6E0000),
+                foregroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(44),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              icon: const Icon(Icons.cloud_upload),
+              label: const Text('Confirm Upload & Verify Card', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _verifyMedicalLicense() async {
+    final text = _medicalLicenseController.text.trim();
+    if (text.isEmpty) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: Color(0xFF6E0000)),
+                SizedBox(width: 16),
+                Text('Verifying with DHA/MOH Healthcare Registry...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+    Navigator.pop(context);
+
+    setState(() => _isMedicalVerified = true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('✓ License $text verified active in MHRSD & DHA Registry!'), backgroundColor: const Color(0xFF059669)),
+    );
+  }
+
+  void _showAddLicenseDialog() {
+    final nameCtrl = TextEditingController(text: 'UAE Light Vehicle License (Valid) • Exp: 2029');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add GCC License', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: nameCtrl,
+          decoration: const InputDecoration(labelText: 'License details', border: OutlineInputBorder(), isDense: true),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (nameCtrl.text.trim().isNotEmpty) {
+                setState(() => _gccDrivingLicenses.add(nameCtrl.text.trim()));
+              }
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('✓ Added GCC driving license!'), backgroundColor: Color(0xFF059669)),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6E0000), foregroundColor: Colors.white),
+            child: const Text('Add License'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -187,7 +403,7 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                           ],
                         ),
                         InkWell(
-                          onTap: () {},
+                          onTap: _showAddCredentialDialog,
                           child: const Row(
                             children: [
                               Icon(Icons.add, size: 16, color: primaryCrimson),
@@ -199,6 +415,20 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                       ],
                     ),
                     const SizedBox(height: 10),
+
+                    // Additional user-added credentials
+                    ..._extraCredentials.map((extra) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: _buildCertificateCard(
+                            issuer: extra['issuer']!,
+                            code: extra['code']?.isEmpty ?? true ? null : extra['code'],
+                            title: extra['title']!,
+                            validText: 'Valid: Dec 2028',
+                            fileName: extra['file']!,
+                            fileMeta: 'PDF Document • 1.9 MB',
+                            icon: Icons.verified,
+                          ),
+                        )),
 
                     // Certificate 1: NEBOSH
                     _buildCertificateCard(
@@ -240,68 +470,82 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFDAD6),
+                              color: _hasAramcoCard ? const Color(0xFFD1FAE5) : const Color(0xFFFFDAD6),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.priority_high, size: 13, color: Color(0xFFBA1A1A)),
-                                SizedBox(width: 4),
+                                Icon(
+                                  _hasAramcoCard ? Icons.verified : Icons.priority_high,
+                                  size: 13,
+                                  color: _hasAramcoCard ? const Color(0xFF065F46) : const Color(0xFFBA1A1A),
+                                ),
+                                const SizedBox(width: 4),
                                 Text(
-                                  'Document Scan Missing',
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFBA1A1A)),
+                                  _hasAramcoCard ? 'Verified Active Aramco Approval' : 'Document Scan Missing',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: _hasAramcoCard ? const Color(0xFF065F46) : const Color(0xFFBA1A1A),
+                                  ),
                                 ),
                               ],
                             ),
                           ),
                           const SizedBox(height: 6),
-                          const Text(
-                            'Saudi Aramco SAP ID / Safety Work Permit Receiver',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textOnSurface),
+                          Text(
+                            _hasAramcoCard ? 'Saudi Aramco Approval Card ($_aramcoCardNumber)' : 'Saudi Aramco SAP ID / Safety Work Permit Receiver',
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textOnSurface),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            'Identified in CV text. Please upload front/back scan of your Aramco Approval Card to verify.',
-                            style: TextStyle(fontSize: 11, color: textSecondary),
+                          Text(
+                            _hasAramcoCard
+                                ? '✓ Verified in Aramco Contractor Registry. Valid for Yanbu & Jubail operations.'
+                                : 'Identified in CV text. Please upload front/back scan of your Aramco Approval Card to verify.',
+                            style: const TextStyle(fontSize: 11, color: textSecondary),
                           ),
                           const SizedBox(height: 12),
 
-                          // Upload Box with Red Outline
+                          // Upload Box with Red/Green Outline
                           InkWell(
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Selecting Aramco card file...')),
-                              );
-                            },
+                            onTap: _showAramcoUploadModal,
                             borderRadius: BorderRadius.circular(10),
                             child: Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(vertical: 18),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFF6F6),
+                                color: _hasAramcoCard ? const Color(0xFFF0FDF4) : const Color(0xFFFFF6F6),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: containerCrimson.withValues(alpha: 0.35),
+                                  color: _hasAramcoCard ? const Color(0xFF059669) : containerCrimson.withValues(alpha: 0.35),
                                   width: 1.5,
                                 ),
                               ),
-                              child: const Column(
+                              child: Column(
                                 children: [
                                   CircleAvatar(
                                     radius: 20,
                                     backgroundColor: cardLowest,
-                                    child: Icon(Icons.cloud_upload, color: primaryCrimson, size: 22),
+                                    child: Icon(
+                                      _hasAramcoCard ? Icons.check_circle : Icons.cloud_upload,
+                                      color: _hasAramcoCard ? const Color(0xFF059669) : primaryCrimson,
+                                      size: 22,
+                                    ),
                                   ),
-                                  SizedBox(height: 6),
+                                  const SizedBox(height: 6),
                                   Text(
-                                    '+ Upload Aramco Card',
-                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: primaryCrimson),
+                                    _hasAramcoCard ? 'Replace Aramco Card Scan' : '+ Upload Aramco Card',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: _hasAramcoCard ? const Color(0xFF059669) : primaryCrimson,
+                                    ),
                                   ),
-                                  SizedBox(height: 2),
+                                  const SizedBox(height: 2),
                                   Text(
-                                    'JPEG, PNG, or PDF (Max 10MB)',
-                                    style: TextStyle(fontSize: 10, color: textSecondary),
+                                    _hasAramcoCard ? 'aramco_approval_card_scan.pdf • 1.6 MB' : 'JPEG, PNG, or PDF (Max 10MB)',
+                                    style: const TextStyle(fontSize: 10, color: textSecondary),
                                   ),
                                 ],
                               ),
@@ -403,7 +647,7 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     ElevatedButton(
-                                      onPressed: () {},
+                                      onPressed: _verifyMedicalLicense,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: primaryCrimson,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -414,6 +658,23 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                                     ),
                                   ],
                                 ),
+                                if (_isMedicalVerified) ...[
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFD1FAE5),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Icon(Icons.check_circle, color: Color(0xFF059669), size: 14),
+                                        SizedBox(width: 6),
+                                        Text('✓ Verified Active in MHRSD / DHA Practitioner Database', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF065F46))),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ],
@@ -458,48 +719,45 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: cardLow,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Row(
+
+                          ..._gccDrivingLicenses.map((lic) => Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: cardLow,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('🇸🇦', style: TextStyle(fontSize: 20)),
-                                    SizedBox(width: 8),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    Row(
                                       children: [
-                                        Text('Saudi Driving License (Valid)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textOnSurface)),
-                                        Text('Private & Light Commercial • Exp: 2028', style: TextStyle(fontSize: 10, color: textSecondary)),
+                                        const Text('🇸🇦', style: TextStyle(fontSize: 20)),
+                                        const SizedBox(width: 8),
+                                        Text(lic, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textOnSurface)),
                                       ],
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFE8F5E9),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.check, size: 12, color: Color(0xFF1B5E20)),
+                                          SizedBox(width: 3),
+                                          Text('Valid', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20))),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE8F5E9),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Row(
-                                    children: [
-                                      Icon(Icons.check, size: 12, color: Color(0xFF1B5E20)),
-                                      SizedBox(width: 3),
-                                      Text('Valid', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20))),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
+                              )),
+
+                          const SizedBox(height: 4),
                           InkWell(
-                            onTap: () {},
+                            onTap: _showAddLicenseDialog,
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
                               width: double.infinity,
@@ -514,7 +772,7 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                                   Icon(Icons.add_circle, size: 16, color: textOnSurface),
                                   SizedBox(width: 6),
                                   Text(
-                                    'Add UAE / Qatar / Kuwait License',
+                                    '+ Add License (UAE / Qatar / Kuwait)',
                                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textOnSurface),
                                   ),
                                 ],
@@ -701,7 +959,7 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => _showReplaceDialog(title),
                   child: const Text('Replace', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6E0000))),
                 ),
               ],

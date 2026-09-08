@@ -14,6 +14,8 @@ import 'package:mena_recruitment/features/vault/presentation/screens/certificati
 import 'package:mena_recruitment/features/profile/presentation/screens/settings_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_upload_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_review_screen.dart';
+import 'package:mena_recruitment/features/jobs/presentation/screens/job_application_screen.dart';
+import 'package:mena_recruitment/features/jobs/presentation/screens/all_gcc_sectors_screen.dart';
 
 // Auth State Provider
 final isAuthenticatedProvider = StateProvider<bool>((ref) => true);
@@ -109,6 +111,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id'] ?? '1';
           return JobDetailsScreen(jobId: id);
         },
+      ),
+      GoRoute(
+        path: RouteNames.jobApply,
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '1';
+          return JobApplicationScreen(jobId: id);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.sectors,
+        builder: (context, state) => const AllGccSectorsScreen(),
       ),
       GoRoute(
         path: RouteNames.cvUpload,

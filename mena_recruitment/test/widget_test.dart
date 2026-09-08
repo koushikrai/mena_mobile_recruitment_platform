@@ -8,7 +8,9 @@ void main() {
   testWidgets('App starts smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const ProviderScope(child: MenaRecruitmentApp()));
-    // We just verify the app can build without crashing.
+    await tester.pump();
     expect(find.byType(MaterialApp), findsWidgets);
+    // Let async mock fetch delay (500ms) resolve
+    await tester.pump(const Duration(milliseconds: 600));
   });
 }

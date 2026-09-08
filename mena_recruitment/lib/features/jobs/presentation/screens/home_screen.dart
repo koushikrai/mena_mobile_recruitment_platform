@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/core/theme/app_colors.dart';
+import 'package:mena_recruitment/features/jobs/presentation/widgets/job_filter_bottom_sheet.dart';
 import 'package:mena_recruitment/features/jobs/presentation/widgets/mega_walkin_banner.dart';
+import 'package:mena_recruitment/features/jobs/presentation/widgets/walkin_drive_details_sheet.dart';
 import 'package:mena_recruitment/features/jobs/presentation/widgets/profile_readiness_banner.dart';
 import 'package:mena_recruitment/features/jobs/presentation/widgets/stitch_job_card.dart';
 import 'package:mena_recruitment/features/jobs/presentation/widgets/top_gcc_sectors_grid.dart';
@@ -260,7 +262,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     const SizedBox(width: 8),
                     InkWell(
-                      onTap: () {},
+                      onTap: () => JobFilterBottomSheet.show(context),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         width: 50,
@@ -316,10 +318,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         setState(() {
                           selectedCountryKey = tab['key']!;
                         });
-                        if (tab['key'] == 'all') {
-                          ref.read(jobFilterProvider.notifier).clearFilters();
-                        } else {
-                          ref.read(jobFilterProvider.notifier).toggleCountry(tab['key']!);
+                        final notifier = ref.read(jobFilterProvider.notifier);
+                        notifier.clearFilters();
+                        if (tab['key'] != 'all') {
+                          notifier.toggleCountry(tab['key']!);
                         }
                       },
                       borderRadius: BorderRadius.circular(9999),
@@ -374,9 +376,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: MegaWalkinBanner(
-                  onViewDetails: () {
-                    context.go('${RouteNames.jobs}/job-1');
-                  },
+                  onViewDetails: () => WalkinDriveDetailsSheet.show(context),
                 ),
               ),
               const SizedBox(height: 20),

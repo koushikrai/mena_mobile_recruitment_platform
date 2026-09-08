@@ -2,12 +2,113 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
+import 'package:mena_recruitment/core/theme/app_colors.dart';
+import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
 
-class CVUploadScreen extends ConsumerWidget {
+class CVUploadScreen extends ConsumerStatefulWidget {
   const CVUploadScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CVUploadScreen> createState() => _CVUploadScreenState();
+}
+
+class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
+  String _fileName = 'Ahmed_Mansoor_HSE_CV_2026.pdf';
+  String _fileMeta = '1.8 MB • GCC HSE Specialist';
+  double _parseProgress = 0.94;
+  bool _isUploading = false;
+
+  void _handleManualUpload() async {
+    setState(() {
+      _isUploading = true;
+      _parseProgress = 0.15;
+    });
+
+    for (int i = 2; i <= 10; i++) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+      setState(() {
+        _parseProgress = i / 10.0;
+      });
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _isUploading = false;
+      _fileName = 'Selected_Resume_HSE_Verified.pdf';
+      _fileMeta = '2.1 MB • Oil & Gas Specialist';
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('✓ Document uploaded & parsed successfully!'),
+        backgroundColor: Color(0xFF059669),
+      ),
+    );
+  }
+
+  void _showLinkedInModal() {
+    final controller = TextEditingController(text: 'https://linkedin.com/in/ahmed-mansoor-hse');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.link, color: Color(0xFF0A66C2)),
+            SizedBox(width: 8),
+            Text('Import from LinkedIn', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Enter your LinkedIn public profile link or username to import work experience, licenses, and verified skills.',
+              style: TextStyle(fontSize: 12, color: Color(0xFF5B403C)),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                labelText: 'LinkedIn URL',
+                prefixIcon: const Icon(Icons.person, size: 20),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                isDense: true,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _fileName = 'LinkedIn_Extracted_Ahmed_Mansoor.pdf';
+                _fileMeta = '1.5 MB • LinkedIn Profile Sync';
+                _parseProgress = 1.0;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✓ LinkedIn profile imported and parsed!'),
+                  backgroundColor: Color(0xFF0A66C2),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0A66C2),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Import'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFCF9F9),
       body: SafeArea(
@@ -27,18 +128,18 @@ class CVUploadScreen extends ConsumerWidget {
                       Text('Step 1 of 4: AI Resume Parsing', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6E0000))),
                     ],
                   ),
-                  const Text('25%', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF64748B))),
+                  Text('%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF64748B))),
                 ],
               ),
               const SizedBox(height: 6),
               // Progress Bar
               ClipRRect(
                 borderRadius: BorderRadius.circular(9999),
-                child: const LinearProgressIndicator(
-                  value: 0.25,
+                child: LinearProgressIndicator(
+                  value: _parseProgress,
                   minHeight: 4,
-                  backgroundColor: Color(0xFFE4DADB),
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6E0000)),
+                  backgroundColor: const Color(0xFFE4DADB),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6E0000)),
                 ),
               ),
               const SizedBox(height: 14),
@@ -63,69 +164,72 @@ class CVUploadScreen extends ConsumerWidget {
               const SizedBox(height: 16),
 
               // Upload Drop Zone (matching Screenshot 5)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE4BEB8), style: BorderStyle.solid),
-                ),
-                child: Column(
-                  children: [
-                    Stack(
-                      children: [
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(14)),
-                          child: const Icon(Icons.cloud_upload_outlined, color: Color(0xFF6E0000), size: 30),
-                        ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(color: Color(0xFF6E0000), shape: BoxShape.circle),
+              GestureDetector(
+                onTap: _handleManualUpload,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE4BEB8), style: BorderStyle.solid),
+                  ),
+                  child: Column(
+                    children: [
+                      Stack(
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(14)),
+                            child: const Icon(Icons.cloud_upload_outlined, color: Color(0xFF6E0000), size: 30),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildFormatBadge(Icons.picture_as_pdf, 'PDF'),
-                        const SizedBox(width: 6),
-                        _buildFormatBadge(Icons.description, 'DOCX'),
-                        const SizedBox(width: 6),
-                        const Text('Up to 10MB', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    const Text('Tap to browse files', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1E1B1B))),
-                    const SizedBox(height: 2),
-                    const Text('or drop your file directly from WhatsApp / Files', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
-                    const SizedBox(height: 14),
-                    ElevatedButton.icon(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF1F5F9),
-                        foregroundColor: const Color(0xFF1E1B1B),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(color: Color(0xFF6E0000), shape: BoxShape.circle),
+                            ),
+                          ),
+                        ],
                       ),
-                      icon: const Icon(Icons.folder_open, size: 16),
-                      label: const Text('Select Document', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildFormatBadge(Icons.picture_as_pdf, 'PDF'),
+                          const SizedBox(width: 6),
+                          _buildFormatBadge(Icons.description, 'DOCX'),
+                          const SizedBox(width: 6),
+                          const Text('Up to 10MB', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      const Text('Tap to browse files', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1E1B1B))),
+                      const SizedBox(height: 2),
+                      const Text('or drop your file directly from WhatsApp / Files', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                      const SizedBox(height: 14),
+                      ElevatedButton.icon(
+                        onPressed: _handleManualUpload,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFF1F5F9),
+                          foregroundColor: const Color(0xFF1E1B1B),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        ),
+                        icon: const Icon(Icons.folder_open, size: 16),
+                        label: Text(_isUploading ? 'Uploading...' : 'Select Document', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 14),
 
-              // Active Upload Card (Ahmed_Mansoor_HSE_CV...)
+              // Active Upload Card
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -143,17 +247,20 @@ class CVUploadScreen extends ConsumerWidget {
                           child: const Icon(Icons.description_outlined, color: Color(0xFF6E0000), size: 20),
                         ),
                         const SizedBox(width: 10),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Ahmed_Mansoor_HSE_CV_20...', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                              SizedBox(height: 1),
-                              Text('1.8 MB • GCC HSE Specialist', style: TextStyle(fontSize: 10, color: Color(0xFF5B403C))),
+                              Text(_fileName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                              const SizedBox(height: 1),
+                              Text(_fileMeta, style: const TextStyle(fontSize: 10, color: Color(0xFF5B403C))),
                             ],
                           ),
                         ),
-                        const Icon(Icons.close, size: 16, color: Color(0xFF64748B)),
+                        IconButton(
+                          icon: const Icon(Icons.refresh, size: 18, color: Color(0xFF64748B)),
+                          onPressed: _handleManualUpload,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -174,30 +281,33 @@ class CVUploadScreen extends ConsumerWidget {
                                     decoration: const BoxDecoration(color: Color(0xFF6E0000), shape: BoxShape.circle),
                                   ),
                                   const SizedBox(width: 4),
-                                  const Text('AI Extraction 94% Complete', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF6E0000))),
+                                  Text(
+                                    _parseProgress >= 1.0 ? 'AI Extraction 100% Complete' : 'AI Extraction % Complete',
+                                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF6E0000)),
+                                  ),
                                 ],
                               ),
-                              const Text('94%', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
+                              Text('%', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
                             ],
                           ),
                           const SizedBox(height: 6),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(9999),
-                            child: const LinearProgressIndicator(
-                              value: 0.94,
+                            child: LinearProgressIndicator(
+                              value: _parseProgress,
                               minHeight: 4,
-                              backgroundColor: Color(0xFFE2E8F0),
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6E0000)),
+                              backgroundColor: const Color(0xFFE2E8F0),
+                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6E0000)),
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 10),
-                    _buildStatusItem('Contact & Personal Information Extracted', isDone: true),
-                    _buildStatusItem('6.8 Yrs GCC Oil & Gas Experience Detected', isDone: true),
-                    _buildStatusItem('NEBOSH IGC & BOSIET Certifications Identified', isDone: true),
-                    _buildStatusItem('Parsing Trade Licenses & Relocation Availability...', isDone: false),
+                    _buildStatusItem('Contact & Personal Information Extracted', isDone: _parseProgress >= 0.3),
+                    _buildStatusItem('6.8 Yrs GCC Oil & Gas Experience Detected', isDone: _parseProgress >= 0.6),
+                    _buildStatusItem('NEBOSH IGC & BOSIET Certifications Identified', isDone: _parseProgress >= 0.8),
+                    _buildStatusItem('Parsing Trade Licenses & Relocation Availability...', isDone: _parseProgress >= 1.0),
                   ],
                 ),
               ),
@@ -217,19 +327,33 @@ class CVUploadScreen extends ConsumerWidget {
               const SizedBox(height: 12),
 
               // LinkedIn & WhatsApp Alternatives
-              _buildAlternativeCard(
-                icon: Icons.link,
-                title: 'Import from LinkedIn',
-                subtitle: 'Pre-fill skills, tenure, and recommendations',
-                trailing: const Icon(Icons.chevron_right, size: 18, color: Color(0xFF64748B)),
+              InkWell(
+                onTap: _showLinkedInModal,
+                borderRadius: BorderRadius.circular(10),
+                child: _buildAlternativeCard(
+                  icon: Icons.link,
+                  title: 'Import from LinkedIn',
+                  subtitle: 'Pre-fill skills, tenure, and recommendations',
+                  trailing: const Icon(Icons.chevron_right, size: 18, color: Color(0xFF64748B)),
+                ),
               ),
               const SizedBox(height: 8),
-              _buildAlternativeCard(
-                icon: Icons.chat_bubble_outline,
-                title: 'Upload via WhatsApp',
-                subtitle: 'Send CV to +966 Suhana Bot',
-                tag: 'Bot',
-                trailing: const Icon(Icons.arrow_outward, size: 16, color: Color(0xFF64748B)),
+              InkWell(
+                onTap: () {
+                  WhatsAppService.showWhatsAppAssistantSheet(
+                    context: context,
+                    title: 'Offshore HSE Supervisor',
+                    referenceCode: 'CV-DIRECT-908',
+                  );
+                },
+                borderRadius: BorderRadius.circular(10),
+                child: _buildAlternativeCard(
+                  icon: Icons.chat_bubble_outline,
+                  title: 'Upload via WhatsApp',
+                  subtitle: 'Send CV to +966 Suhana Bot',
+                  tag: 'Bot',
+                  trailing: const Icon(Icons.arrow_outward, size: 16, color: Color(0xFF64748B)),
+                ),
               ),
               const SizedBox(height: 14),
 
@@ -280,8 +404,11 @@ class CVUploadScreen extends ConsumerWidget {
                 label: const Icon(Icons.arrow_forward, size: 16),
               ),
               const SizedBox(height: 8),
-              const Center(
-                child: Text('Skip and enter manually', style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+              Center(
+                child: TextButton(
+                  onPressed: () => context.go(RouteNames.cvReview),
+                  child: const Text('Skip and enter manually', style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                ),
               ),
               const SizedBox(height: 20),
             ],

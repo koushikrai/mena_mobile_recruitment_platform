@@ -11,18 +11,16 @@ final jobsRepositoryProvider = Provider<JobsRepository>((ref) {
 class JobsNotifier extends AsyncNotifier<List<Job>> {
   @override
   Future<List<Job>> build() async {
-    return _fetchJobs();
-  }
-
-  Future<List<Job>> _fetchJobs() async {
-    final filter = ref.read(jobFilterProvider);
+    final filter = ref.watch(jobFilterProvider);
     final repo = ref.read(jobsRepositoryProvider);
     return await repo.getJobs(filter: filter);
   }
 
   Future<void> refresh() async {
+    final filter = ref.read(jobFilterProvider);
+    final repo = ref.read(jobsRepositoryProvider);
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _fetchJobs());
+    state = await AsyncValue.guard(() => repo.getJobs(filter: filter));
   }
 }
 
