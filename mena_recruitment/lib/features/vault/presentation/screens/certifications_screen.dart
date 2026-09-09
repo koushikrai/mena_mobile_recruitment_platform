@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mena_recruitment/features/vault/domain/vault_document_entity.dart';
+import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 
 class CertificationsScreen extends ConsumerStatefulWidget {
   const CertificationsScreen({super.key});
@@ -50,21 +52,39 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
+              Navigator.pop(ctx);
               if (titleCtrl.text.trim().isNotEmpty) {
+                final title = titleCtrl.text.trim();
+                final issuer = issuerCtrl.text.trim().isEmpty ? 'Accredited Board' : issuerCtrl.text.trim();
+                final code = codeCtrl.text.trim();
                 setState(() {
                   _extraCredentials.add({
-                    'title': titleCtrl.text.trim(),
-                    'issuer': issuerCtrl.text.trim().isEmpty ? 'Accredited Board' : issuerCtrl.text.trim(),
-                    'code': codeCtrl.text.trim(),
-                    'file': '${titleCtrl.text.trim().toLowerCase().replaceAll(" ", "_")}_cert.pdf',
+                    'title': title,
+                    'issuer': issuer,
+                    'code': code,
+                    'file': '${title.toLowerCase().replaceAll(" ", "_")}_cert.pdf',
                   });
                 });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('✓ Credential added to Suhana Verified Vault!'), backgroundColor: Color(0xFF059669)),
-                );
+                try {
+                  final newDoc = VaultDocument(
+                    id: 'doc-${DateTime.now().millisecondsSinceEpoch}',
+                    category: DocumentCategory.tradeLicense,
+                    title: title,
+                    documentNumber: code.isNotEmpty ? code : 'TL-${DateTime.now().millisecondsSinceEpoch % 10000}',
+                    issuingCountry: issuer,
+                    isVerified: true,
+                    isValidForGccVisa: true,
+                  );
+                  await ref.read(vaultRepositoryProvider).addDocument(newDoc);
+                  ref.invalidate(vaultDocumentsProvider);
+                } catch (_) {}
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('✓ Credential added to Suhana Verified Vault!'), backgroundColor: Color(0xFF059669)),
+                  );
+                }
               }
-              Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6E0000), foregroundColor: Colors.white),
             child: const Text('Add to Vault'),

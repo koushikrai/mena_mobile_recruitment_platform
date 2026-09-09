@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mena_recruitment/core/widgets/notifications_sheet.dart';
+import 'package:mena_recruitment/features/auth/presentation/auth_sheet.dart';
+import 'package:mena_recruitment/features/auth/providers/auth_provider.dart';
+import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -33,6 +38,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     const cardHigh = Color(0xFFE5E8F2);
     const textOnSurface = Color(0xFF181C23);
     const textSecondary = Color(0xFF5A5F67);
+
+    final profileAsync = ref.watch(profileProvider);
+    final authState = ref.watch(authStateProvider);
+    final profile = profileAsync.value;
+    final currentUser = authState.value;
+    final candidateName = profile?.fullName ?? currentUser?.fullName ?? 'Ahmed Mansoor Al-Farooq';
+    final candidateTitle = profile?.targetTitle ?? 'Senior HSE Supervisor';
+    final candidateExp = '${profile?.gccExperience ?? 4} yrs GCC Exp';
+    final candidateUid = profile?.uid ?? currentUser?.id ?? 'SUH-GCC-88219';
+    final readiness = (profile?.readinessScore ?? 85) / 100.0;
+    final readinessPct = '${profile?.readinessScore ?? 85}%';
 
     return Scaffold(
       backgroundColor: lightSurface,
@@ -89,12 +105,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.notifications, color: textSecondary, size: 22),
-                          onPressed: () {},
+                          onPressed: () => NotificationsSheet.show(context),
                         ),
-                        const CircleAvatar(
-                          radius: 15,
-                          backgroundColor: cardHigh,
-                          child: Icon(Icons.person, size: 18, color: primaryCrimson),
+                        InkWell(
+                          onTap: () => AuthSheet.show(context),
+                          borderRadius: BorderRadius.circular(15),
+                          child: const CircleAvatar(
+                            radius: 15,
+                            backgroundColor: cardHigh,
+                            child: Icon(Icons.person, size: 18, color: primaryCrimson),
+                          ),
                         ),
                       ],
                     ),
@@ -196,9 +216,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      'Ahmed Mansoor Al-Farooq',
-                                      style: TextStyle(
+                                    Text(
+                                      candidateName,
+                                      style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                         color: textOnSurface,
@@ -207,9 +227,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 2),
-                                    const Text(
-                                      'Senior HSE Supervisor • 7.5 yrs GCC Exp',
-                                      style: TextStyle(fontSize: 11, color: textSecondary),
+                                    Text(
+                                      '$candidateTitle • $candidateExp',
+                                      style: const TextStyle(fontSize: 11, color: textSecondary),
                                     ),
                                     const SizedBox(height: 6),
                                     Row(
@@ -220,9 +240,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                             color: cardHigh,
                                             borderRadius: BorderRadius.circular(4),
                                           ),
-                                          child: const Text(
-                                            '#SUH-GCC-88219',
-                                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF42474F)),
+                                          child: Text(
+                                            '#$candidateUid',
+                                            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF42474F)),
                                           ),
                                         ),
                                         const SizedBox(width: 6),
@@ -254,27 +274,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                             child: Column(
                               children: [
-                                const Row(
+                                Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
+                                    const Row(
                                       children: [
                                         Icon(Icons.verified_user, size: 14, color: primaryCrimson),
                                         SizedBox(width: 4),
                                         Text('Gulf Dossier Integrity', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textOnSurface)),
                                       ],
                                     ),
-                                    Text('95% Verified', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryCrimson)),
+                                    Text('$readinessPct Verified', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryCrimson)),
                                   ],
                                 ),
                                 const SizedBox(height: 6),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(4),
-                                  child: const LinearProgressIndicator(
-                                    value: 0.95,
+                                  child: LinearProgressIndicator(
+                                    value: readiness,
                                     minHeight: 5,
-                                    backgroundColor: Color(0xFFDEE2ED),
-                                    valueColor: AlwaysStoppedAnimation<Color>(primaryCrimson),
+                                    backgroundColor: const Color(0xFFDEE2ED),
+                                    valueColor: const AlwaysStoppedAnimation<Color>(primaryCrimson),
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -753,10 +773,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             width: double.infinity,
                             height: 44,
                             child: ElevatedButton.icon(
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Opening WhatsApp with Advisor Eng. Tariq Al-Ghamdi...')),
-                                );
+                              onPressed: () async {
+                                final uri = Uri.parse('https://wa.me/966550123456?text=Hello%20Eng.%20Tariq,%20I%20need%20assistance%20with%20my%20GCC%20mobility%20process');
+                                try {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                } catch (_) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Advisor WhatsApp: +966 55 012 3456')),
+                                    );
+                                  }
+                                }
                               },
                               icon: const Icon(Icons.send, size: 16, color: Colors.white),
                               label: const Text('Message Advisor via WhatsApp', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -777,7 +804,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       width: double.infinity,
                       height: 44,
                       child: OutlinedButton.icon(
-                        onPressed: () {},
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.bold)),
+                              content: const Text('Are you sure you want to sign out of the GCC Recruitment Portal?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFBA1A1A), foregroundColor: Colors.white),
+                                  onPressed: () async {
+                                    Navigator.pop(ctx);
+                                    await ref.read(authStateProvider.notifier).logout();
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('✓ Signed out successfully. You can sign in anytime.'),
+                                          backgroundColor: Color(0xFF059669),
+                                        ),
+                                      );
+                                      AuthSheet.show(context);
+                                    }
+                                  },
+                                  child: const Text('Sign Out'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                         icon: const Icon(Icons.logout, size: 18, color: Color(0xFFBA1A1A)),
                         label: const Text('Sign Out of GCC Portal', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFBA1A1A))),
                         style: OutlinedButton.styleFrom(

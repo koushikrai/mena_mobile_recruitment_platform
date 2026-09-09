@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
+import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
+import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 
 class VaultScreen extends ConsumerWidget {
   const VaultScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final profileAsync = ref.watch(profileProvider);
+    final vaultDocsAsync = ref.watch(vaultDocumentsProvider);
+    final candidate = profileAsync.valueOrNull;
+    final readinessScore = candidate?.readinessScore ?? 85;
+    final candidateName = candidate != null && candidate.fullName.isNotEmpty
+        ? candidate.fullName
+        : 'Ahmed Mansoor Al-Sayed';
+    final candidateHeadline = candidate != null && candidate.targetTitle.isNotEmpty
+        ? candidate.targetTitle
+        : 'Senior HSE Supervisor';
+    final candidateExp = candidate?.gccExperience ?? 4;
+
     const primaryCrimson = Color(0xFF6E0000);
     const containerCrimson = Color(0xFF990000);
     const lightSurface = Color(0xFFF9F9FF);
@@ -80,16 +95,16 @@ class VaultScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    const Text.rich(
+                    Text.rich(
                       TextSpan(
                         text: 'Your profile meets ',
-                        style: TextStyle(fontSize: 13, color: textSecondary),
+                        style: const TextStyle(fontSize: 13, color: textSecondary),
                         children: [
                           TextSpan(
-                            text: '95%',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: primaryCrimson),
+                            text: '$readinessScore%',
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: primaryCrimson),
                           ),
-                          TextSpan(text: ' of Gulf employer screening requirements.'),
+                          const TextSpan(text: ' of Gulf employer screening requirements.'),
                         ],
                       ),
                     ),
@@ -115,32 +130,32 @@ class VaultScreen extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              // 95% Verified Radial Dial
-                              const Stack(
+                              // Verified Radial Dial
+                              Stack(
                                 alignment: Alignment.center,
                                 children: [
                                   SizedBox(
                                     width: 72,
                                     height: 72,
                                     child: CircularProgressIndicator(
-                                      value: 0.95,
+                                      value: readinessScore / 100.0,
                                       strokeWidth: 6,
                                       backgroundColor: cardHigh,
-                                      valueColor: AlwaysStoppedAnimation<Color>(primaryCrimson),
+                                      valueColor: const AlwaysStoppedAnimation<Color>(primaryCrimson),
                                     ),
                                   ),
                                   Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        '95%',
-                                        style: TextStyle(
+                                        '$readinessScore%',
+                                        style: const TextStyle(
                                           fontSize: 17,
                                           fontWeight: FontWeight.bold,
                                           color: primaryCrimson,
                                         ),
                                       ),
-                                      Text(
+                                      const Text(
                                         'VERIFIED',
                                         style: TextStyle(
                                           fontSize: 7,
@@ -175,9 +190,9 @@ class VaultScreen extends ConsumerWidget {
                                       ),
                                     ),
                                     const SizedBox(height: 4),
-                                    const Text(
-                                      'Ahmed Mansoor Al-Farooq',
-                                      style: TextStyle(
+                                    Text(
+                                      candidateName,
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
                                         color: textOnSurface,
@@ -186,19 +201,19 @@ class VaultScreen extends ConsumerWidget {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 3),
-                                    const Row(
+                                    Row(
                                       children: [
-                                        Icon(Icons.engineering, size: 14, color: primaryCrimson),
-                                        SizedBox(width: 4),
-                                        Text('Senior HSE Supervisor', style: TextStyle(fontSize: 11, color: textSecondary)),
+                                        const Icon(Icons.engineering, size: 14, color: primaryCrimson),
+                                        const SizedBox(width: 4),
+                                        Text(candidateHeadline, style: const TextStyle(fontSize: 11, color: textSecondary)),
                                       ],
                                     ),
                                     const SizedBox(height: 2),
-                                    const Row(
+                                    Row(
                                       children: [
-                                        Icon(Icons.history_toggle_off, size: 14, color: primaryCrimson),
-                                        SizedBox(width: 4),
-                                        Text('7.5 yrs GCC Experience', style: TextStyle(fontSize: 11, color: textSecondary)),
+                                        const Icon(Icons.history_toggle_off, size: 14, color: primaryCrimson),
+                                        const SizedBox(width: 4),
+                                        Text('${candidateExp.toStringAsFixed(1)} yrs GCC Experience', style: const TextStyle(fontSize: 11, color: textSecondary)),
                                       ],
                                     ),
                                   ],
@@ -363,9 +378,9 @@ class VaultScreen extends ConsumerWidget {
                                   color: cardHigh,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: const Text(
-                                  '4 Assets',
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textSecondary),
+                                child: Text(
+                                  '${vaultDocsAsync.value?.length ?? 4} Assets',
+                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textSecondary),
                                 ),
                               ),
                             ],
@@ -506,8 +521,10 @@ class VaultScreen extends ConsumerWidget {
                           const SizedBox(height: 10),
                           InkWell(
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Opening WhatsApp chat with Eng. Tariq Al-Ghamdi...')),
+                              WhatsAppService.showWhatsAppAssistantSheet(
+                                context: context,
+                                title: 'Direct Mobility Consultation',
+                                referenceCode: 'ADVISOR-TARIQ-GCC',
                               );
                             },
                             borderRadius: BorderRadius.circular(8),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mena_recruitment/core/routing/route_names.dart';
+import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
 
 class WorkExperienceItem {
   String title;
@@ -578,8 +580,27 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        context.go('/certifications');
+                      onPressed: () async {
+                        try {
+                          final currentProfile = ref.read(profileProvider).value;
+                          if (currentProfile != null && _workHistory.isNotEmpty) {
+                            final firstExp = _workHistory.first;
+                            final updated = currentProfile.copyWith(
+                              targetTitle: firstExp.title,
+                            );
+                            await ref.read(profileRepositoryProvider).updateProfile(updated);
+                          }
+                        } catch (_) {}
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('✓ Profile updated with parsed CV details!'),
+                              backgroundColor: Color(0xFF059669),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                          context.push(RouteNames.certifications);
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6E0000),

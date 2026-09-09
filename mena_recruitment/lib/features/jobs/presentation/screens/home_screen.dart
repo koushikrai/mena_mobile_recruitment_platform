@@ -9,6 +9,8 @@ import 'package:mena_recruitment/features/jobs/presentation/widgets/walkin_drive
 import 'package:mena_recruitment/features/jobs/presentation/widgets/profile_readiness_banner.dart';
 import 'package:mena_recruitment/features/jobs/presentation/widgets/stitch_job_card.dart';
 import 'package:mena_recruitment/features/jobs/presentation/widgets/top_gcc_sectors_grid.dart';
+import 'package:mena_recruitment/core/widgets/notifications_sheet.dart';
+import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
 import 'package:mena_recruitment/features/jobs/providers/bookmark_provider.dart';
 import 'package:mena_recruitment/features/jobs/providers/job_filter_provider.dart';
 import 'package:mena_recruitment/features/jobs/providers/jobs_provider.dart';
@@ -37,6 +39,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final jobsAsync = ref.watch(jobsProvider);
     final bookmarkedJobs = ref.watch(bookmarkProvider);
+    final profileAsync = ref.watch(profileProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -158,7 +161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           IconButton(
                             icon: const Icon(Icons.notifications_outlined, size: 22),
                             color: const Color(0xFF5B403C),
-                            onPressed: () {},
+                            onPressed: () => NotificationsSheet.show(context),
                             padding: const EdgeInsets.all(6),
                             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                           ),
@@ -365,8 +368,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: ProfileReadinessBanner(
-                  percentage: 85,
-                  statusTag: 'MRZ PASSPORT OK',
+                  percentage: profileAsync.valueOrNull?.readinessScore ?? 85,
+                  statusTag: (profileAsync.valueOrNull?.readinessScore ?? 85) >= 80 ? 'MRZ PASSPORT OK' : 'SETUP NEEDED',
                   recommendation: 'Add NEBOSH / IOSH cert to unlock 35 high-priority GCC roles',
                   onAddCredential: () => context.go('${RouteNames.vault}/certifications'),
                 ),

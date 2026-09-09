@@ -28,6 +28,41 @@ async def list_compliance_reminders(
         .order_by(ComplianceReminder.due_date.asc())
     )
     reminders = (await db.execute(stmt)).scalars().all()
+    if not reminders:
+        # Check if passport documents exist to generate
+        reminders = await check_and_generate_reminders(current_user, db)
+    
+    # If still empty, add default GCC readiness compliance reminders
+    if not reminders:
+        seed_reminders = [
+            ComplianceReminder(
+                user_id=current_user.id,
+                reminder_type="gcc_180_day_rule",
+                due_date=date.today() + timedelta(days=180),
+                message="GCC 180-Day Rule: Ensure your primary passport has >= 6 months validity for Saudi/UAE visa stamping.",
+                is_resolved=False
+            ),
+            ComplianceReminder(
+                user_id=current_user.id,
+                reminder_type="gamca_medical_booking",
+                due_date=date.today() + timedelta(days=30),
+                message="GAMCA Medical Fitness: Book your authorized biometric health screening slot prior to embassy submission.",
+                is_resolved=False
+            ),
+            ComplianceReminder(
+                user_id=current_user.id,
+                reminder_type="degree_attestation",
+                due_date=date.today() + timedelta(days=45),
+                message="Educational Attestation: Submit technical certificates for Saudi Cultural Attache & MOFA apostille stamp.",
+                is_resolved=False
+            ),
+        ]
+        db.add_all(seed_reminders)
+        await db.commit()
+        for r in seed_reminders:
+            await db.refresh(r)
+        return seed_reminders
+
     return reminders
 
 @router.post("/check-expiry", response_model=List[ComplianceReminderResponse])

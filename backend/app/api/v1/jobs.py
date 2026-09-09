@@ -121,6 +121,68 @@ async def list_jobs(
 
     return response
 
+# Walk-in Drives
+@router.get("/walkin-drives", response_model=List[WalkinDriveResponse])
+@router.get("/walkin-drives/all", response_model=List[WalkinDriveResponse])
+async def list_walkin_drives(db: AsyncSession = Depends(get_db)):
+    stmt = select(WalkinDrive).options(selectinload(WalkinDrive.company)).where(WalkinDrive.is_active == True)
+    drives = (await db.execute(stmt)).scalars().all()
+    
+    return [
+        WalkinDriveResponse(
+            id=d.id,
+            company_id=d.company_id,
+            company_name=d.company.name if d.company else None,
+            title=d.title,
+            country_code=d.country_code,
+            city=d.city,
+            venue_name=d.venue_name,
+            venue_address=d.venue_address,
+            start_date=d.start_date,
+            end_date=d.end_date,
+            time_slots=d.time_slots or [],
+            available_quotas=d.available_quotas,
+            registered_count=d.registered_count,
+            qr_code_prefix=d.qr_code_prefix,
+            is_active=d.is_active
+        ) for d in drives
+    ]
+
+@router.post("/walkin-drives/{drive_id}/register", response_model=WalkinRegistrationResponse)
+async def register_for_walkin(
+    drive_id: UUID,
+    req: WalkinRegisterRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    drive_stmt = select(WalkinDrive).where(WalkinDrive.id == drive_id)
+    drive = (await db.execute(drive_stmt)).scalar_one_or_none()
+    if not drive:
+        raise HTTPException(status_code=404, detail="Walk-in recruitment drive not found")
+
+    # Check if already registered
+    reg_stmt = select(WalkinRegistration).where(
+        and_(WalkinRegistration.drive_id == drive_id, WalkinRegistration.user_id == current_user.id)
+    )
+    existing = (await db.execute(reg_stmt)).scalar_one_or_none()
+    if existing:
+        return existing
+
+    # Generate fast-track QR pass code
+    pass_code = f"{drive.qr_code_prefix}{uuid.uuid4().hex[:8].upper()}"
+    reg = WalkinRegistration(
+        drive_id=drive.id,
+        user_id=current_user.id,
+        time_slot=req.time_slot,
+        qr_pass_code=pass_code,
+        status="registered"
+    )
+    drive.registered_count += 1
+    db.add(reg)
+    await db.commit()
+    await db.refresh(reg)
+    return reg
+
 @router.get("/{job_id}", response_model=JobResponse)
 async def get_job(
     job_id: UUID,
@@ -184,64 +246,3 @@ async def toggle_bookmark(
         db.add(new_bookmark)
         await db.commit()
         return {"bookmarked": True, "message": "Job bookmarked"}
-
-# Walk-in Drives
-@router.get("/walkin-drives/all", response_model=List[WalkinDriveResponse])
-async def list_walkin_drives(db: AsyncSession = Depends(get_db)):
-    stmt = select(WalkinDrive).options(selectinload(WalkinDrive.company)).where(WalkinDrive.is_active == True)
-    drives = (await db.execute(stmt)).scalars().all()
-    
-    return [
-        WalkinDriveResponse(
-            id=d.id,
-            company_id=d.company_id,
-            company_name=d.company.name if d.company else None,
-            title=d.title,
-            country_code=d.country_code,
-            city=d.city,
-            venue_name=d.venue_name,
-            venue_address=d.venue_address,
-            start_date=d.start_date,
-            end_date=d.end_date,
-            time_slots=d.time_slots or [],
-            available_quotas=d.available_quotas,
-            registered_count=d.registered_count,
-            qr_code_prefix=d.qr_code_prefix,
-            is_active=d.is_active
-        ) for d in drives
-    ]
-
-@router.post("/walkin-drives/{drive_id}/register", response_model=WalkinRegistrationResponse)
-async def register_for_walkin(
-    drive_id: UUID,
-    req: WalkinRegisterRequest,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    drive_stmt = select(WalkinDrive).where(WalkinDrive.id == drive_id)
-    drive = (await db.execute(drive_stmt)).scalar_one_or_none()
-    if not drive:
-        raise HTTPException(status_code=404, detail="Walk-in recruitment drive not found")
-
-    # Check if already registered
-    reg_stmt = select(WalkinRegistration).where(
-        and_(WalkinRegistration.drive_id == drive_id, WalkinRegistration.user_id == current_user.id)
-    )
-    existing = (await db.execute(reg_stmt)).scalar_one_or_none()
-    if existing:
-        return existing
-
-    # Generate fast-track QR pass code
-    pass_code = f"{drive.qr_code_prefix}{uuid.uuid4().hex[:8].upper()}"
-    reg = WalkinRegistration(
-        drive_id=drive.id,
-        user_id=current_user.id,
-        time_slot=req.time_slot,
-        qr_pass_code=pass_code,
-        status="registered"
-    )
-    drive.registered_count += 1
-    db.add(reg)
-    await db.commit()
-    await db.refresh(reg)
-    return reg

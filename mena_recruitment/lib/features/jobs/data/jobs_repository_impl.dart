@@ -4,6 +4,7 @@ import 'package:mena_recruitment/core/network/api_endpoints.dart';
 import 'package:mena_recruitment/features/jobs/domain/job_entity.dart';
 import 'package:mena_recruitment/features/jobs/domain/job_filter.dart';
 import 'package:mena_recruitment/features/jobs/domain/jobs_repository.dart';
+import 'package:mena_recruitment/features/jobs/domain/walkin_drive_entity.dart';
 import 'package:mena_recruitment/features/jobs/data/mock_jobs_data.dart';
 
 class JobsRepositoryImpl implements JobsRepository {
@@ -151,5 +152,67 @@ class JobsRepositoryImpl implements JobsRepository {
   Future<List<Job>> getBookmarkedJobs() async {
     final all = await getJobs();
     return all.where((job) => _bookmarkedIds.contains(job.id) || job.isBookmarked).toList();
+  }
+
+  @override
+  Future<List<WalkinDrive>> getWalkinDrives() async {
+    try {
+      final response = await _apiClient.get(ApiEndpoints.walkinDrives);
+      if (response.statusCode == 200 && response.data is List) {
+        final list = response.data as List;
+        return list.map((json) => WalkinDrive.fromJson(json as Map<String, dynamic>)).toList();
+      }
+    } catch (e) {
+      debugPrint('[JobsRepo] Failed to fetch live walk-in drives: $e');
+    }
+
+    return [
+      const WalkinDrive(
+        id: 'drive-yanbu-2025',
+        companyName: 'PetroGulf Energy Ltd.',
+        title: 'Oil & Gas Turnaround 2025',
+        countryCode: 'KSA',
+        city: 'Yanbu Industrial City',
+        venueName: 'Yanbu Industrial City Convention Hub',
+        venueAddress: 'Gate 3, Royal Commission Industrial Area, Yanbu Al-Sinaiyah, KSA',
+        startDate: '2025-11-12',
+        endDate: '2025-11-14',
+        timeSlots: [
+          '12 Nov - Morning (08:30 AM)',
+          '12 Nov - Afternoon (01:30 PM)',
+          '13 Nov - Morning (08:30 AM)',
+          '13 Nov - Afternoon (01:30 PM)',
+          '14 Nov - Jubail Final Session (09:00 AM)',
+        ],
+        availableQuotas: 1200,
+        registeredCount: 420,
+        qrCodePrefix: 'KSA-WALKIN-2025-',
+        isActive: true,
+      ),
+    ];
+  }
+
+  @override
+  Future<WalkinRegistration> registerForWalkinDrive(String driveId, String timeSlot) async {
+    try {
+      final response = await _apiClient.post(
+        ApiEndpoints.walkinRegister(driveId),
+        data: {'time_slot': timeSlot},
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return WalkinRegistration.fromJson(response.data as Map<String, dynamic>);
+      }
+    } catch (e) {
+      debugPrint('[JobsRepo] Walk-in registration offline, generating local pass: $e');
+    }
+
+    return WalkinRegistration(
+      id: 'reg-local-${DateTime.now().millisecondsSinceEpoch}',
+      driveId: driveId,
+      timeSlot: timeSlot,
+      qrPassCode: 'KSA-WALKIN-2025-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+      status: 'confirmed',
+      registeredAt: DateTime.now(),
+    );
   }
 }

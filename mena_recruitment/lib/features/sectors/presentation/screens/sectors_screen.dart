@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/theme/app_colors.dart';
 import 'package:mena_recruitment/features/sectors/domain/sector_entity.dart';
 import 'package:mena_recruitment/features/sectors/providers/sectors_provider.dart';
+import 'package:mena_recruitment/features/jobs/providers/job_filter_provider.dart';
 
 class SectorsScreen extends ConsumerStatefulWidget {
   const SectorsScreen({super.key});
@@ -651,16 +652,16 @@ class _GridPatternPainter extends CustomPainter {
 // SECTOR DETAIL SCREEN
 // ════════════════════════════════════════════════════════════════════════════════
 
-class SectorDetailScreen extends StatefulWidget {
+class SectorDetailScreen extends ConsumerStatefulWidget {
   final SectorEntity sector;
 
   const SectorDetailScreen({super.key, required this.sector});
 
   @override
-  State<SectorDetailScreen> createState() => _SectorDetailScreenState();
+  ConsumerState<SectorDetailScreen> createState() => _SectorDetailScreenState();
 }
 
-class _SectorDetailScreenState extends State<SectorDetailScreen>
+class _SectorDetailScreenState extends ConsumerState<SectorDetailScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -1184,6 +1185,7 @@ class _SectorDetailScreenState extends State<SectorDetailScreen>
           ),
           child: ElevatedButton.icon(
             onPressed: () {
+              ref.read(jobFilterProvider.notifier).setSearchQuery(s.name);
               Navigator.of(context).pop();
               context.go('/jobs');
             },

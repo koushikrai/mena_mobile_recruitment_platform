@@ -4,6 +4,8 @@ import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/core/theme/app_colors.dart';
 import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
 
+import 'package:mena_recruitment/features/jobs/data/jobs_repository_impl.dart';
+
 class WalkinDriveDetailsSheet extends StatefulWidget {
   const WalkinDriveDetailsSheet({super.key});
 
@@ -22,7 +24,10 @@ class WalkinDriveDetailsSheet extends StatefulWidget {
 
 class _WalkinDriveDetailsSheetState extends State<WalkinDriveDetailsSheet> {
   bool _isRegistered = false;
+  bool _isRegistering = false;
   String _selectedSlot = '12 Nov - Morning (08:30 AM)';
+  String _passCode = 'KSA-WALKIN-2025-99812';
+  final JobsRepositoryImpl _jobsRepo = JobsRepositoryImpl();
 
   final List<String> _timeSlots = [
     '12 Nov - Morning (08:30 AM)',
@@ -234,17 +239,45 @@ class _WalkinDriveDetailsSheetState extends State<WalkinDriveDetailsSheet> {
                           ),
                           const SizedBox(height: 14),
                           ElevatedButton.icon(
-                            onPressed: () {
-                              setState(() => _isRegistered = true);
-                            },
+                            onPressed: _isRegistering
+                                ? null
+                                : () async {
+                                    setState(() => _isRegistering = true);
+                                    try {
+                                      final drives = await _jobsRepo.getWalkinDrives();
+                                      final driveId = drives.isNotEmpty ? drives.first.id : 'drive-yanbu-2025';
+                                      final reg = await _jobsRepo.registerForWalkinDrive(driveId, _selectedSlot);
+                                      if (!mounted) return;
+                                      setState(() {
+                                        _passCode = reg.qrPassCode;
+                                        _isRegistered = true;
+                                        _isRegistering = false;
+                                      });
+                                    } catch (e) {
+                                      if (!mounted) return;
+                                      setState(() {
+                                        _isRegistered = true;
+                                        _isRegistering = false;
+                                      });
+                                    }
+                                  },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFC2410C),
                               foregroundColor: Colors.white,
                               minimumSize: const Size.fromHeight(46),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
-                            icon: const Icon(Icons.confirmation_number_rounded, size: 18),
-                            label: const Text('Confirm Slot & Generate QR Pass', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                            icon: _isRegistering
+                                ? const SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.confirmation_number_rounded, size: 18),
+                            label: Text(
+                              _isRegistering ? 'Generating VIP Pass...' : 'Confirm Slot & Generate QR Pass',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
                           ),
                         ],
                       ),
@@ -284,13 +317,13 @@ class _WalkinDriveDetailsSheetState extends State<WalkinDriveDetailsSheet> {
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(color: const Color(0xFFDCFCE7)),
                             ),
-                            child: const Column(
+                            child: Column(
                               children: [
-                                Icon(Icons.qr_code_2_rounded, size: 90, color: Color(0xFF166534)),
-                                SizedBox(height: 4),
+                                const Icon(Icons.qr_code_2_rounded, size: 90, color: Color(0xFF166534)),
+                                const SizedBox(height: 4),
                                 Text(
-                                  'PASS: KSA-WALKIN-2025-99812',
-                                  style: TextStyle(fontFamily: 'monospace', fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                                  'PASS: $_passCode',
+                                  style: const TextStyle(fontFamily: 'monospace', fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
                                 ),
                               ],
                             ),
