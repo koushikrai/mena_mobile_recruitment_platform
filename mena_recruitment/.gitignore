@@ -46,5 +46,22 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+<<<<<<< HEAD
 .neon
 .env.local
+=======
+
+# Neon & Node related
+.neon/
+.neon
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.*
+.env.local
+!.env.example
+>>>>>>> 318d5fc0987181cb05f27dce3de89ab02109cd14
