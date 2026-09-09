@@ -80,4 +80,47 @@ class CandidateProfile {
       isGccVerified: isGccVerified ?? this.isGccVerified,
     );
   }
+
+  factory CandidateProfile.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id']?.toString() ?? '';
+    final uidSuffix = rawId.length >= 5 ? rawId.substring(0, 5) : '001';
+
+    return CandidateProfile(
+      id: rawId,
+      uid: json['uid'] as String? ?? 'UID-$uidSuffix',
+      fullName: json['full_name'] as String? ?? json['fullName'] as String? ?? 'Ahmed Mansoor',
+      email: json['email'] as String? ?? 'candidate@suhana-global.com',
+      phone: json['phone'] as String? ?? json['phone_number'] as String? ?? '+966 550123456',
+      nationality: json['nationality'] as String? ?? 'Egyptian',
+      residentCountry: json['current_resident_country'] as String? ?? json['residentCountry'] as String? ?? 'Egypt',
+      targetTitle: json['target_job_title'] as String? ?? json['targetTitle'] as String? ?? 'Senior Offshore HSE Supervisor',
+      totalExperience: (json['total_experience_years'] as num? ?? json['totalExperience'] as num?)?.round() ?? 7,
+      gccExperience: (json['gcc_experience_years'] as num? ?? json['gccExperience'] as num?)?.round() ?? 4,
+      readinessScore: json['relocation_readiness_score'] as int? ?? json['readinessScore'] as int? ?? 85,
+      isActivelyLooking: json['is_actively_looking'] as bool? ?? json['isActivelyLooking'] as bool? ?? true,
+      preferredCountries: (json['preferredCountries'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+          const ['Saudi Arabia', 'UAE', 'Qatar'],
+      expectedSalary: (json['expected_salary_min'] as num? ?? json['expectedSalary'] as num?)?.toDouble() ?? 14000.0,
+      expectedCurrency: json['expected_salary_currency'] as String? ?? json['expectedCurrency'] as String? ?? 'SAR',
+      noticePeriod: json['notice_period_days'] != null
+          ? '${json['notice_period_days']} Days'
+          : json['noticePeriod'] as String? ?? '30 Days',
+      relocationStatus: json['relocation_status'] as String? ?? json['relocationStatus'] as String? ?? 'Ready for Relocation',
+      isGccVerified: json['is_gcc_verified'] as bool? ?? json['isGccVerified'] as bool? ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'target_job_title': targetTitle,
+      'current_resident_country': residentCountry,
+      'nationality': nationality,
+      'total_experience_years': totalExperience.toDouble(),
+      'gcc_experience_years': gccExperience.toDouble(),
+      'is_actively_looking': isActivelyLooking,
+      'relocation_status': relocationStatus,
+      'expected_salary_min': expectedSalary,
+      'expected_salary_currency': expectedCurrency,
+    };
+  }
 }

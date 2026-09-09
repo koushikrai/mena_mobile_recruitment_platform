@@ -128,4 +128,73 @@ class Job {
       postedDate: postedDate ?? this.postedDate,
     );
   }
+
+  factory Job.fromJson(Map<String, dynamic> json) {
+    return Job(
+      id: json['id']?.toString() ?? '',
+      title: json['title'] as String? ?? '',
+      department: json['sector'] as String? ?? json['department'] as String? ?? 'General',
+      companyName: json['company_name'] as String? ?? json['companyName'] as String? ?? 'Verified Employer',
+      companyLogoUrl: json['company_logo'] as String? ?? json['companyLogoUrl'] as String? ?? 'https://images.unsplash.com/photo-1541888946425-d0fbb1861593?w=128',
+      countryCode: (json['country_code'] as String? ?? json['countryCode'] as String? ?? 'sau').toLowerCase(),
+      city: json['city'] as String? ?? '',
+      salaryMin: (json['salary_min'] as num? ?? json['salaryMin'] as num?)?.toDouble() ?? 0.0,
+      salaryMax: (json['salary_max'] as num? ?? json['salaryMax'] as num?)?.toDouble() ?? 0.0,
+      currency: json['salary_currency'] as String? ?? json['currency'] as String? ?? 'SAR',
+      isTaxFree: json['is_tax_free'] as bool? ?? json['isTaxFree'] as bool? ?? true,
+      visaStatus: json['visa_status'] as String? ?? json['visaStatus'] as String? ?? 'Free Visa Provided',
+      accommodation: json['accommodation'] as String? ?? 'Provided',
+      relocationBenefits: (json['relocation_benefits'] as List<dynamic>? ?? json['relocationBenefits'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const ['100% Company Covered Visa', 'Flight Tickets Provided'],
+      mofaAttestationRequired: json['mofa_attestation_required'] as bool? ?? true,
+      gamcaMedicalRequired: json['gamca_medical_required'] as bool? ?? true,
+      iqamaTransferable: json['iqama_transferable'] as bool? ?? true,
+      policeClearanceRequired: json['police_clearance_required'] as bool? ?? true,
+      applicationDeadline: json['application_deadline'] != null
+          ? DateTime.tryParse(json['application_deadline'].toString()) ?? DateTime.now().add(const Duration(days: 30))
+          : DateTime.now().add(const Duration(days: 30)),
+      isVerifiedEmployer: json['is_verified_employer'] as bool? ?? json['isVerifiedEmployer'] as bool? ?? true,
+      isBookmarked: json['is_bookmarked'] as bool? ?? json['isBookmarked'] as bool? ?? false,
+      requiredSkills: (json['required_skills'] as List<dynamic>? ?? json['requiredSkills'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      jobDescription: json['description'] as String? ?? json['jobDescription'] as String? ?? '',
+      responsibilities: (json['responsibilities'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+          const ['Maintain zero-incident safety operations and follow standard procedures.'],
+      qualifications: (json['qualifications'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+          const ['Minimum 3+ years experience', 'Passport with at least 6 months validity'],
+      requiredLanguages: json['required_languages'] as String? ?? 'English',
+      aboutEmployer: json['about_employer'] as String? ?? 'Verified GCC Enterprise Employer',
+      employerSize: json['employer_size'] as String? ?? '1,000+ Employees',
+      recruiterContact: json['recruiter_contact'] as String? ?? 'recruitment@suhana-global.com',
+      postedDate: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'sector': department,
+      'company_name': companyName,
+      'company_logo': companyLogoUrl,
+      'country_code': countryCode,
+      'city': city,
+      'salary_min': salaryMin,
+      'salary_max': salaryMax,
+      'salary_currency': currency,
+      'is_tax_free': isTaxFree,
+      'visa_status': visaStatus,
+      'relocation_benefits': relocationBenefits,
+      'required_skills': requiredSkills,
+      'description': jobDescription,
+      'is_verified_employer': isVerifiedEmployer,
+      'is_bookmarked': isBookmarked,
+    };
+  }
 }

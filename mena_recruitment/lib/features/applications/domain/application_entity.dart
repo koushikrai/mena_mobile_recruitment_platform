@@ -101,20 +101,36 @@ class JobApplication {
   }
 
   factory JobApplication.fromJson(Map<String, dynamic> json) {
+    final stageStr = (json['status'] as String? ?? json['currentStage'] as String? ?? 'applied').toLowerCase();
+    final RelocationStage stage;
+    if (stageStr.contains('flight') || stageStr.contains('onboard')) {
+      stage = RelocationStage.flightOnboarding;
+    } else if (stageStr.contains('visa')) {
+      stage = RelocationStage.visaProcessing;
+    } else if (stageStr.contains('offer')) {
+      stage = RelocationStage.offerIssued;
+    } else if (stageStr.contains('interview')) {
+      stage = RelocationStage.interview;
+    } else if (stageStr.contains('screen')) {
+      stage = RelocationStage.screening;
+    } else {
+      stage = RelocationStage.applied;
+    }
+
+    final dateStr = json['applied_at'] ?? json['appliedDate'];
+    final applied = dateStr != null ? DateTime.tryParse(dateStr.toString()) ?? DateTime.now() : DateTime.now();
+
     return JobApplication(
-      id: json['id'] as String,
-      jobId: json['jobId'] as String,
-      jobTitle: json['jobTitle'] as String,
-      companyName: json['companyName'] as String,
-      companyLogoUrl: json['companyLogoUrl'] as String,
-      countryCode: json['countryCode'] as String,
-      city: json['city'] as String,
-      appliedDate: DateTime.parse(json['appliedDate'] as String),
-      currentStage: RelocationStage.values.firstWhere(
-        (e) => e.name == json['currentStage'],
-        orElse: () => RelocationStage.applied,
-      ),
-      statusLabel: json['statusLabel'] as String,
+      id: json['id']?.toString() ?? '',
+      jobId: json['job_id']?.toString() ?? json['jobId']?.toString() ?? '',
+      jobTitle: json['job_title'] as String? ?? json['jobTitle'] as String? ?? 'Verified Vacancy',
+      companyName: json['company_name'] as String? ?? json['companyName'] as String? ?? 'Verified Employer',
+      companyLogoUrl: json['company_logo'] as String? ?? json['companyLogoUrl'] as String? ?? 'https://images.unsplash.com/photo-1541888946425-d0fbb1861593?w=128',
+      countryCode: (json['country_code'] as String? ?? json['countryCode'] as String? ?? 'sau').toLowerCase(),
+      city: json['city'] as String? ?? '',
+      appliedDate: applied,
+      currentStage: stage,
+      statusLabel: json['statusLabel'] as String? ?? 'Stage ${stage.index + 1}/6: ${stage.name}',
       severity: StatusSeverity.values.firstWhere(
         (e) => e.name == json['severity'],
         orElse: () => StatusSeverity.info,
@@ -124,9 +140,9 @@ class JobApplication {
               .toList() ??
           const [],
       nextDeadline: json['nextDeadline'] != null
-          ? DateTime.parse(json['nextDeadline'] as String)
+          ? DateTime.tryParse(json['nextDeadline'].toString())
           : null,
-      recruiterContact: json['recruiterContact'] as String?,
+      recruiterContact: json['recruiter_contact'] as String? ?? json['recruiterContact'] as String?,
     );
   }
 }
