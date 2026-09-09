@@ -3,14 +3,14 @@ import 'package:mena_recruitment/features/sectors/domain/sector_entity.dart';
 
 class MockSectorsData {
   static final List<SectorEntity> sectors = [
-    SectorEntity(
+    const SectorEntity(
       id: 'oil-gas',
       name: 'Oil & Gas',
       subtitle: 'Offshore, Refinery & Petrochemical',
       icon: Icons.local_fire_department_rounded,
-      iconColor: const Color(0xFFFF6B35),
-      gradientStart: const Color(0xFF7B1C00),
-      gradientEnd: const Color(0xFF3B0A00),
+      iconColor: Color(0xFFFF6B35),
+      gradientStart: Color(0xFF7B1C00),
+      gradientEnd: Color(0xFF3B0A00),
       jobCount: 1248,
       avgSalaryRange: '14,000 – 32,000',
       currency: 'SAR',
@@ -43,14 +43,14 @@ class MockSectorsData {
       description:
           'The GCC is the world\'s energy epicenter. Saudi Arabia, Qatar, and Kuwait host the largest hydrocarbon reserves globally. Roles range from offshore rigs and gas processing plants to refinery turnarounds and pipeline projects. Aramco, QatarEnergy, and ADNOC collectively employ hundreds of thousands of expatriate workers with highly competitive, tax-free packages.',
     ),
-    SectorEntity(
+    const SectorEntity(
       id: 'construction',
       name: 'Construction & Civil',
       subtitle: 'Mega-projects, Infrastructure & NEOM',
       icon: Icons.construction_rounded,
-      iconColor: const Color(0xFFF5A623),
-      gradientStart: const Color(0xFF5A3500),
-      gradientEnd: const Color(0xFF2C1A00),
+      iconColor: Color(0xFFF5A623),
+      gradientStart: Color(0xFF5A3500),
+      gradientEnd: Color(0xFF2C1A00),
       jobCount: 987,
       avgSalaryRange: '18,000 – 28,000',
       currency: 'SAR',
@@ -82,14 +82,14 @@ class MockSectorsData {
       description:
           'Saudi Vision 2030 giga-projects — NEOM, Red Sea Project, Diriyah Gate — have triggered an unprecedented construction boom. UAE\'s urban expansion and Qatar\'s post-World Cup infrastructure investments continue to generate thousands of roles for civil engineers, project managers, surveyors, and skilled tradespeople.',
     ),
-    SectorEntity(
+    const SectorEntity(
       id: 'mep',
       name: 'Facilities & MEP',
       subtitle: 'HVAC, Electrical & Plumbing',
       icon: Icons.engineering_rounded,
-      iconColor: const Color(0xFF4FC3F7),
-      gradientStart: const Color(0xFF003D5C),
-      gradientEnd: const Color(0xFF001B2E),
+      iconColor: Color(0xFF4FC3F7),
+      gradientStart: Color(0xFF003D5C),
+      gradientEnd: Color(0xFF001B2E),
       jobCount: 734,
       avgSalaryRange: '5,500 – 9,500',
       currency: 'AED',
@@ -122,14 +122,14 @@ class MockSectorsData {
       description:
           'Dubai\'s iconic skyline of luxury hotels, commercial towers, and retail mega-malls requires constant maintenance and skilled MEP technicians. Facilities Management contracts across the UAE, Bahrain, and Saudi Arabia are growing as hospitality and real estate sectors expand.',
     ),
-    SectorEntity(
+    const SectorEntity(
       id: 'healthcare',
       name: 'Healthcare & Nursing',
       subtitle: 'Hospitals, Clinics & Diagnostics',
       icon: Icons.local_hospital_rounded,
-      iconColor: const Color(0xFF66BB6A),
-      gradientStart: const Color(0xFF00381A),
-      gradientEnd: const Color(0xFF001A0D),
+      iconColor: Color(0xFF66BB6A),
+      gradientStart: Color(0xFF00381A),
+      gradientEnd: Color(0xFF001A0D),
       jobCount: 623,
       avgSalaryRange: '8,500 – 14,000',
       currency: 'QAR',
@@ -162,14 +162,14 @@ class MockSectorsData {
       description:
           'GCC governments are heavily investing in healthcare infrastructure. Qatar, Saudi Arabia, and UAE actively recruit internationally trained nurses, doctors, and allied health professionals. Licensing processes (Prometric, DataFlow) are fully sponsored by top hospital networks.',
     ),
-    SectorEntity(
+    const SectorEntity(
       id: 'hospitality',
       name: 'Hospitality & Tourism',
       subtitle: 'Hotels, F&B & Event Management',
       icon: Icons.hotel_rounded,
-      iconColor: const Color(0xFFAB47BC),
-      gradientStart: const Color(0xFF3D0045),
-      gradientEnd: const Color(0xFF1A001E),
+      iconColor: Color(0xFFAB47BC),
+      gradientStart: Color(0xFF3D0045),
+      gradientEnd: Color(0xFF1A001E),
       jobCount: 412,
       avgSalaryRange: '3,500 – 7,000',
       currency: 'AED',
@@ -201,14 +201,14 @@ class MockSectorsData {
       description:
           'Saudi Arabia\'s ambitious tourism targets of 150M visitors by 2030 and UAE\'s year-round tourism influx are driving exponential demand for hospitality professionals. Luxury hotels, mega-resorts, and entertainment destinations are aggressively expanding their teams.',
     ),
-    SectorEntity(
+    const SectorEntity(
       id: 'it-tech',
       name: 'IT & Technology',
       subtitle: 'Software, Cloud & Cybersecurity',
       icon: Icons.computer_rounded,
-      iconColor: const Color(0xFF42A5F5),
-      gradientStart: const Color(0xFF002659),
-      gradientEnd: const Color(0xFF000E2E),
+      iconColor: Color(0xFF42A5F5),
+      gradientStart: Color(0xFF002659),
+      gradientEnd: Color(0xFF000E2E),
       jobCount: 356,
       avgSalaryRange: '12,000 – 25,000',
       currency: 'SAR',
@@ -241,14 +241,14 @@ class MockSectorsData {
       description:
           'Saudi Vision 2030\'s digital transformation pillar and UAE\'s ambition to be an AI hub are creating thousands of technology roles. Demand is especially high for cloud architects, cybersecurity specialists, and mobile developers as government entities and corporates modernize.',
     ),
-    SectorEntity(
+    const SectorEntity(
       id: 'logistics',
       name: 'Logistics & Supply Chain',
       subtitle: 'Ports, Freight & Warehousing',
       icon: Icons.local_shipping_rounded,
-      iconColor: const Color(0xFFFF7043),
-      gradientStart: const Color(0xFF4A1500),
-      gradientEnd: const Color(0xFF210900),
+      iconColor: Color(0xFFFF7043),
+      gradientStart: Color(0xFF4A1500),
+      gradientEnd: Color(0xFF210900),
       jobCount: 289,
       avgSalaryRange: '4,500 – 8,000',
       currency: 'AED',
@@ -280,14 +280,14 @@ class MockSectorsData {
       description:
           'Jebel Ali Port in Dubai is the world\'s 9th busiest container port. Saudi Arabia\'s NEOM and Vision 2030 logistics corridor projects are creating massive demand for supply chain professionals, freight forwarders, and warehouse operations managers.',
     ),
-    SectorEntity(
+    const SectorEntity(
       id: 'finance',
       name: 'Finance & Banking',
       subtitle: 'Islamic Finance, Audit & FinTech',
       icon: Icons.account_balance_rounded,
-      iconColor: const Color(0xFFFFCA28),
-      gradientStart: const Color(0xFF3B2800),
-      gradientEnd: const Color(0xFF1A1000),
+      iconColor: Color(0xFFFFCA28),
+      gradientStart: Color(0xFF3B2800),
+      gradientEnd: Color(0xFF1A1000),
       jobCount: 241,
       avgSalaryRange: '15,000 – 35,000',
       currency: 'AED',
@@ -320,14 +320,14 @@ class MockSectorsData {
       description:
           'DIFC in Dubai and ADGM in Abu Dhabi are major global financial hubs. Bahrain is a leading Islamic finance center. GCC banks and investment firms actively seek CFA charterholders, Islamic finance specialists, and FinTech professionals as digital banking accelerates.',
     ),
-    SectorEntity(
+    const SectorEntity(
       id: 'hse',
       name: 'Safety & HSE',
       subtitle: 'Environment, Health & Safety',
       icon: Icons.health_and_safety_rounded,
-      iconColor: const Color(0xFF26C6DA),
-      gradientStart: const Color(0xFF003038),
-      gradientEnd: const Color(0xFF001218),
+      iconColor: Color(0xFF26C6DA),
+      gradientStart: Color(0xFF003038),
+      gradientEnd: Color(0xFF001218),
       jobCount: 318,
       avgSalaryRange: '10,000 – 22,000',
       currency: 'SAR',
@@ -360,14 +360,14 @@ class MockSectorsData {
       description:
           'HSE professionals are mandatory across all major GCC industries — oil & gas, construction, healthcare, and manufacturing. Stricter regulatory compliance with Saudi GAMEP, UAE EHS Authority, and Qatar regulations drives constant demand for certified safety officers and managers.',
     ),
-    SectorEntity(
+    const SectorEntity(
       id: 'education',
       name: 'Education',
       subtitle: 'International Schools & Universities',
       icon: Icons.school_rounded,
-      iconColor: const Color(0xFF9CCC65),
-      gradientStart: const Color(0xFF1A3300),
-      gradientEnd: const Color(0xFF0A1500),
+      iconColor: Color(0xFF9CCC65),
+      gradientStart: Color(0xFF1A3300),
+      gradientEnd: Color(0xFF0A1500),
       jobCount: 198,
       avgSalaryRange: '6,000 – 11,000',
       currency: 'AED',
@@ -399,14 +399,14 @@ class MockSectorsData {
       description:
           'GCC\'s large expatriate population fuels huge demand for international school teachers. UAE alone has over 750 private schools. British, American, and IB curriculum schools regularly recruit qualified teachers from the UK, India, USA, and Philippines on full relocation packages.',
     ),
-    SectorEntity(
+    const SectorEntity(
       id: 'retail',
       name: 'Retail & FMCG',
       subtitle: 'Supermarkets, Malls & Consumer Goods',
       icon: Icons.shopping_bag_rounded,
-      iconColor: const Color(0xFFEC407A),
-      gradientStart: const Color(0xFF4A0020),
-      gradientEnd: const Color(0xFF1E000D),
+      iconColor: Color(0xFFEC407A),
+      gradientStart: Color(0xFF4A0020),
+      gradientEnd: Color(0xFF1E000D),
       jobCount: 276,
       avgSalaryRange: '3,000 – 6,500',
       currency: 'AED',
@@ -438,14 +438,14 @@ class MockSectorsData {
       description:
           'GCC retail is a powerhouse — Mall of the Emirates, Yas Mall, and dozens of mega-malls drive demand for retail managers, visual merchandisers, and FMCG sales executives. Saudi Vision 2030\'s entertainment sector expansion is adding new retail and F&B outlet categories.',
     ),
-    SectorEntity(
+    const SectorEntity(
       id: 'engineering',
       name: 'Engineering',
       subtitle: 'Mechanical, Electrical & Instrumentation',
       icon: Icons.settings_rounded,
-      iconColor: const Color(0xFF78909C),
-      gradientStart: const Color(0xFF1A2530),
-      gradientEnd: const Color(0xFF080D12),
+      iconColor: Color(0xFF78909C),
+      gradientStart: Color(0xFF1A2530),
+      gradientEnd: Color(0xFF080D12),
       jobCount: 445,
       avgSalaryRange: '10,000 – 20,000',
       currency: 'SAR',

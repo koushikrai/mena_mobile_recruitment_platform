@@ -5,10 +5,10 @@ class ProfileStrengthDial extends StatelessWidget {
   final String label;
 
   const ProfileStrengthDial({
-    Key? key,
+    super.key,
     required this.percentage,
     required this.label,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class ProfileStrengthDial extends StatelessWidget {
                 value: percentage,
                 strokeWidth: 8,
                 backgroundColor: const Color(0xFFF8F9FF),
-                valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF059669)), // Emerald
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF059669)), // Emerald
               ),
             ),
             Text(

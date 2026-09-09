@@ -8,12 +8,12 @@ class EducationFormCard extends StatelessWidget {
   final String status;
 
   const EducationFormCard({
-    Key? key,
+    super.key,
     required this.degree,
     required this.institution,
     required this.year,
     required this.status,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

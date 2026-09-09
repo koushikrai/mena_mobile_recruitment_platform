@@ -57,7 +57,7 @@ class StitchJobCard extends StatelessWidget {
                     child: Image.network(
                       job.companyLogoUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, stack) => Icon(
+                      errorBuilder: (ctx, err, stack) => const Icon(
                         Icons.business_rounded,
                         color: AppColors.textSecondary,
                         size: 24,
@@ -88,7 +88,7 @@ class StitchJobCard extends StatelessWidget {
                               job.companyName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textSecondary,
                               ),
@@ -170,7 +170,7 @@ class StitchJobCard extends StatelessWidget {
                     ),
                     Text(
                       '${job.isTaxFree ? "Tax Free • " : ""}Posted recently',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,

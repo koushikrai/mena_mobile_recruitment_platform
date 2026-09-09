@@ -116,7 +116,7 @@ class VaultScreen extends ConsumerWidget {
                           Row(
                             children: [
                               // 95% Verified Radial Dial
-                              Stack(
+                              const Stack(
                                 alignment: Alignment.center,
                                 children: [
                                   SizedBox(
@@ -126,10 +126,10 @@ class VaultScreen extends ConsumerWidget {
                                       value: 0.95,
                                       strokeWidth: 6,
                                       backgroundColor: cardHigh,
-                                      valueColor: const AlwaysStoppedAnimation<Color>(primaryCrimson),
+                                      valueColor: AlwaysStoppedAnimation<Color>(primaryCrimson),
                                     ),
                                   ),
-                                  const Column(
+                                  Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(

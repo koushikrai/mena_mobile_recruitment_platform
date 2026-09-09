@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mena_recruitment/features/vault/providers/passport_reminders_provider.dart';
 
 class ExpiryReminderConfig extends ConsumerWidget {
-  const ExpiryReminderConfig({Key? key}) : super(key: key);
+  const ExpiryReminderConfig({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

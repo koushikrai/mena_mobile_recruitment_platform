@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CountryExplorerGrid extends StatelessWidget {
-  const CountryExplorerGrid({Key? key}) : super(key: key);
+  const CountryExplorerGrid({super.key});
 
   @override
   Widget build(BuildContext context) {

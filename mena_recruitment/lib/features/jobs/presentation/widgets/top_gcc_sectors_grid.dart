@@ -42,10 +42,10 @@ class TopGccSectorsGrid extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
+            const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Top GCC Sectors',
                   style: TextStyle(
                     fontSize: 18,
@@ -163,7 +163,7 @@ class TopGccSectorsGrid extends StatelessWidget {
                           sector.roles,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textSecondary,
                           ),

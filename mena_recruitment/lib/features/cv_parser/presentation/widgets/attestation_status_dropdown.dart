@@ -5,15 +5,15 @@ class AttestationStatusDropdown extends StatelessWidget {
   final ValueChanged<String?> onChanged;
 
   const AttestationStatusDropdown({
-    Key? key,
+    super.key,
     required this.value,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       items: const [
         DropdownMenuItem(value: 'Attested by MOFA', child: Text('Attested by MOFA')),
         DropdownMenuItem(value: 'In Progress', child: Text('In Progress')),

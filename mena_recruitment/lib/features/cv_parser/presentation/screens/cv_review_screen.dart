@@ -1,7 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mena_recruitment/core/routing/route_names.dart';
 
 class WorkExperienceItem {
   String title;
@@ -331,11 +330,11 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                           child: const Icon(Icons.shield_outlined, color: Color(0xFF6E0000), size: 18),
                         ),
                         const SizedBox(width: 8),
-                        Column(
+                        const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('98% Match Confidence', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                            Text(' Work Roles & 2 Degrees Extracted', style: const TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                            Text('98% Match Confidence', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                            Text(' Work Roles & 2 Degrees Extracted', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
                           ],
                         ),
                       ],
@@ -374,7 +373,7 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(4)),
-                    child: Text(' Positions', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+                    child: const Text(' Positions', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
                   ),
                 ],
               ),
@@ -485,17 +484,17 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
               const SizedBox(height: 16),
 
               // Extracted Core Skills & Trades
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(Icons.military_tech_outlined, size: 18, color: Color(0xFF6E0000)),
                       SizedBox(width: 6),
                       Text('Extracted Core Skills & Trades', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
                     ],
                   ),
-                  Text(' Parsed', style: const TextStyle(fontSize: 10, color: Color(0xFF8F706B), fontWeight: FontWeight.bold)),
+                  Text(' Parsed', style: TextStyle(fontSize: 10, color: Color(0xFF8F706B), fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(height: 6),

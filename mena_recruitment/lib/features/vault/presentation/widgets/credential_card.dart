@@ -4,7 +4,7 @@ import 'package:mena_recruitment/features/vault/domain/certification_entity.dart
 class CredentialCard extends StatelessWidget {
   final Certification certification;
 
-  const CredentialCard({Key? key, required this.certification}) : super(key: key);
+  const CredentialCard({super.key, required this.certification});
 
   @override
   Widget build(BuildContext context) {

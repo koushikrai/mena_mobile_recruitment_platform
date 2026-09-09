@@ -13,11 +13,11 @@ class StatusBadge extends StatelessWidget {
   final IconData? icon;
 
   const StatusBadge({
-    Key? key,
+    super.key,
     required this.label,
     required this.statusType,
     this.icon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -13,12 +13,12 @@ class CountryFlag extends StatelessWidget {
   final double height;
 
   const CountryFlag({
-    Key? key,
+    super.key,
     required this.countryCode,
     this.showLabel = false,
     this.width = 24.0,
     this.height = 16.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

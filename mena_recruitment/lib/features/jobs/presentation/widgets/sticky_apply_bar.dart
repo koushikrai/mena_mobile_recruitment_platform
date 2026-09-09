@@ -16,7 +16,7 @@ class StickyApplyBar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           decoration: BoxDecoration(
-            color: AppColors.background.withOpacity(0.85),
+            color: AppColors.background.withValues(alpha: 0.85),
             border: const Border(
               top: BorderSide(color: AppColors.border),
             ),

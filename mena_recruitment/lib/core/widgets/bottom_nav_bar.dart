@@ -8,11 +8,11 @@ class BottomNavBar extends StatelessWidget {
   final int applicationsBadgeCount;
 
   const BottomNavBar({
-    Key? key,
+    super.key,
     required this.currentIndex,
     required this.onTap,
     this.applicationsBadgeCount = 1,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

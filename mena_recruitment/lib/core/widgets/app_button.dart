@@ -33,7 +33,7 @@ class AppButton extends StatefulWidget {
   final Color? customTextColor;
 
   const AppButton._({
-    Key? key,
+    super.key,
     required this.child,
     this.onPressed,
     this.isLoading = false,
@@ -42,7 +42,7 @@ class AppButton extends StatefulWidget {
     required this.variant,
     this.customBgColor,
     this.customTextColor,
-  }) : super(key: key);
+  });
 
   /// Convenient default constructor supporting text, child, type, backgroundColor, and textColor
   factory AppButton({
@@ -61,7 +61,6 @@ class AppButton extends StatefulWidget {
     final Widget effectiveChild = child ?? Text(text ?? '');
     return AppButton._(
       key: key,
-      child: effectiveChild,
       onPressed: onPressed,
       isLoading: isLoading,
       isFullWidth: isFullWidth,
@@ -69,6 +68,7 @@ class AppButton extends StatefulWidget {
       variant: type ?? variant,
       customBgColor: backgroundColor,
       customTextColor: textColor,
+      child: effectiveChild,
     );
   }
 
@@ -118,76 +118,52 @@ class AppButton extends StatefulWidget {
 
 class _AppButtonPrimary extends AppButton {
   const _AppButtonPrimary({
-    Key? key,
-    required Widget child,
-    VoidCallback? onPressed,
-    bool isLoading = false,
-    bool isFullWidth = false,
-    Widget? leadingIcon,
+    super.key,
+    required super.child,
+    super.onPressed,
+    super.isLoading,
+    super.isFullWidth,
+    super.leadingIcon,
   }) : super._(
-          key: key,
-          child: child,
-          onPressed: onPressed,
-          isLoading: isLoading,
-          isFullWidth: isFullWidth,
-          leadingIcon: leadingIcon,
           variant: AppButtonVariant.primary,
         );
 }
 
 class _AppButtonSecondary extends AppButton {
   const _AppButtonSecondary({
-    Key? key,
-    required Widget child,
-    VoidCallback? onPressed,
-    bool isLoading = false,
-    bool isFullWidth = false,
-    Widget? leadingIcon,
+    super.key,
+    required super.child,
+    super.onPressed,
+    super.isLoading,
+    super.isFullWidth,
+    super.leadingIcon,
   }) : super._(
-          key: key,
-          child: child,
-          onPressed: onPressed,
-          isLoading: isLoading,
-          isFullWidth: isFullWidth,
-          leadingIcon: leadingIcon,
           variant: AppButtonVariant.secondary,
         );
 }
 
 class _AppButtonOutline extends AppButton {
   const _AppButtonOutline({
-    Key? key,
-    required Widget child,
-    VoidCallback? onPressed,
-    bool isLoading = false,
-    bool isFullWidth = false,
-    Widget? leadingIcon,
+    super.key,
+    required super.child,
+    super.onPressed,
+    super.isLoading,
+    super.isFullWidth,
+    super.leadingIcon,
   }) : super._(
-          key: key,
-          child: child,
-          onPressed: onPressed,
-          isLoading: isLoading,
-          isFullWidth: isFullWidth,
-          leadingIcon: leadingIcon,
           variant: AppButtonVariant.outline,
         );
 }
 
 class _AppButtonDestructive extends AppButton {
   const _AppButtonDestructive({
-    Key? key,
-    required Widget child,
-    VoidCallback? onPressed,
-    bool isLoading = false,
-    bool isFullWidth = false,
-    Widget? leadingIcon,
+    super.key,
+    required super.child,
+    super.onPressed,
+    super.isLoading,
+    super.isFullWidth,
+    super.leadingIcon,
   }) : super._(
-          key: key,
-          child: child,
-          onPressed: onPressed,
-          isLoading: isLoading,
-          isFullWidth: isFullWidth,
-          leadingIcon: leadingIcon,
           variant: AppButtonVariant.destructive,
         );
 }
@@ -273,7 +249,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
       }
     }
 
-    Widget content = Row(
+    final Widget content = Row(
       mainAxisSize: widget.isFullWidth ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

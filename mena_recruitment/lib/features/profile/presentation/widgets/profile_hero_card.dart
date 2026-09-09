@@ -4,7 +4,7 @@ import 'package:mena_recruitment/features/profile/domain/candidate_profile_entit
 class ProfileHeroCard extends StatelessWidget {
   final CandidateProfile profile;
 
-  const ProfileHeroCard({Key? key, required this.profile}) : super(key: key);
+  const ProfileHeroCard({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +60,7 @@ class ProfileHeroCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF059669).withOpacity(0.2),
+                  color: const Color(0xFF059669).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(9999),
                   border: Border.all(color: const Color(0xFF059669)),
                 ),

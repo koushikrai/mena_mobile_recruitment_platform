@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class UploadDropZone extends StatelessWidget {
   final VoidCallback onTap;
 
-  const UploadDropZone({Key? key, required this.onTap}) : super(key: key);
+  const UploadDropZone({super.key, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +21,9 @@ class UploadDropZone extends StatelessWidget {
             style: BorderStyle.solid, 
           ),
         ),
-        child: Column(
+        child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Icon(Icons.cloud_upload_outlined, size: 48, color: Color(0xFF990000)),
             SizedBox(height: 16),
             Text(

@@ -63,7 +63,7 @@ class AppTheme {
         color: AppColors.surface,
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.colorScheme.surface.withOpacity(0.9), // For frosted glass effect wrapper
+        backgroundColor: AppColors.colorScheme.surface.withValues(alpha: 0.9), // For frosted glass effect wrapper
         elevation: 8,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.colorScheme.primary,

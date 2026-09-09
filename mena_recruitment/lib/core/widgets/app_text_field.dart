@@ -30,7 +30,7 @@ class AppTextField extends StatefulWidget {
   final String? errorText;
 
   const AppTextField({
-    Key? key,
+    super.key,
     this.label,
     this.hint,
     this.controller,
@@ -40,7 +40,7 @@ class AppTextField extends StatefulWidget {
     this.suffixIcon,
     this.prefixWidget,
     this.errorText,
-  }) : super(key: key);
+  });
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();

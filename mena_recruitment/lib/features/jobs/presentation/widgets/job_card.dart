@@ -95,7 +95,7 @@ class JobCard extends ConsumerWidget {
                 ),
                 AppChip(
                   label: job.visaStatus,
-                  backgroundColor: AppColors.emerald.withOpacity(0.1),
+                  backgroundColor: AppColors.emerald.withValues(alpha: 0.1),
                   labelColor: AppColors.emerald,
                 ),
                 if (job.accommodation != 'Not Included')

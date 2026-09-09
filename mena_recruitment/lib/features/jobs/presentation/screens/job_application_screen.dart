@@ -6,7 +6,6 @@ import 'package:mena_recruitment/core/theme/app_colors.dart';
 import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
 import 'package:mena_recruitment/features/jobs/domain/job_entity.dart';
 import 'package:mena_recruitment/features/jobs/providers/job_details_provider.dart';
-import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 
 class JobApplicationScreen extends ConsumerStatefulWidget {
   final String jobId;
@@ -20,6 +19,7 @@ class JobApplicationScreen extends ConsumerStatefulWidget {
 class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
   // Attached files state
   String _selectedCvName = 'Ahmed_Mansoor_HSE_CV_2026.pdf';
+  // ignore: unused_field
   String _selectedCvSize = '1.8 MB';
   bool _useVaultPassport = true;
   bool _useVaultCertificates = true;
@@ -159,9 +159,9 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               'Your application for  at  has been transmitted directly to the MHRSD licensed employer portal.',
-              style: const TextStyle(fontSize: 12, color: Color(0xFF5B403C)),
+              style: TextStyle(fontSize: 12, color: Color(0xFF5B403C)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -260,7 +260,7 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
       ),
       body: jobAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (err, stack) => Center(child: Text('Error: ')),
+        error: (err, stack) => const Center(child: Text('Error: ')),
         data: (job) => SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -299,7 +299,7 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
                         children: [
                           Text(job.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF1E1B1B))),
                           const SizedBox(height: 2),
-                          Text(' • , Saudi Arabia', style: const TextStyle(fontSize: 11, color: Color(0xFF5B403C))),
+                          const Text(' • , Saudi Arabia', style: TextStyle(fontSize: 11, color: Color(0xFF5B403C))),
                         ],
                       ),
                     ),
@@ -372,7 +372,7 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
                                 ],
                               ),
                               const SizedBox(height: 2),
-                              Text(' • GCC HSE Specialist • Suhana Parsed', style: const TextStyle(fontSize: 10, color: Color(0xFF5B403C))),
+                              const Text(' • GCC HSE Specialist • Suhana Parsed', style: TextStyle(fontSize: 10, color: Color(0xFF5B403C))),
                             ],
                           ),
                         ),

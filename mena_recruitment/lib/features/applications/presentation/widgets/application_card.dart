@@ -5,7 +5,7 @@ import 'missing_document_alert.dart';
 class ApplicationCard extends StatelessWidget {
   final JobApplication application;
 
-  const ApplicationCard({Key? key, required this.application}) : super(key: key);
+  const ApplicationCard({super.key, required this.application});
 
   Color _getSeverityColor(StatusSeverity severity) {
     switch (severity) {
@@ -30,9 +30,9 @@ class ApplicationCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: const Color(0xFFF8F9FF),
-                  child: const Icon(Icons.business, color: Color(0xFF990000)),
+                const CircleAvatar(
+                  backgroundColor: Color(0xFFF8F9FF),
+                  child: Icon(Icons.business, color: Color(0xFF990000)),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -64,7 +64,7 @@ class ApplicationCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: _getSeverityColor(application.severity).withOpacity(0.1),
+                color: _getSeverityColor(application.severity).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(9999),
               ),
               child: Text(

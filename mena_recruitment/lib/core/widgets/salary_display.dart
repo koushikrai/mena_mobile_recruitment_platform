@@ -19,13 +19,13 @@ class SalaryDisplay extends StatelessWidget {
   final bool isTaxFree;
 
   const SalaryDisplay({
-    Key? key,
+    super.key,
     required this.min,
     required this.max,
     required this.currencyCode,
     this.period = 'mo',
     this.isTaxFree = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

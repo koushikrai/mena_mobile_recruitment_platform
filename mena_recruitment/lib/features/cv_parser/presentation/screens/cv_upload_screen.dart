@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
-import 'package:mena_recruitment/core/theme/app_colors.dart';
 import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
 
 class CVUploadScreen extends ConsumerStatefulWidget {
@@ -118,17 +117,17 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Top Step Indicator
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(Icons.auto_awesome, size: 14, color: Color(0xFF6E0000)),
                       SizedBox(width: 4),
                       Text('Step 1 of 4: AI Resume Parsing', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6E0000))),
                     ],
                   ),
-                  Text('%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF64748B))),
+                  Text('%', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF64748B))),
                 ],
               ),
               const SizedBox(height: 6),
@@ -287,7 +286,7 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
                                   ),
                                 ],
                               ),
-                              Text('%', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
+                              const Text('%', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
                             ],
                           ),
                           const SizedBox(height: 6),

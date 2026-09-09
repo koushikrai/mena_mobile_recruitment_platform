@@ -5,10 +5,10 @@ class AvailabilityToggle extends StatelessWidget {
   final ValueChanged<bool> onChanged;
 
   const AvailabilityToggle({
-    Key? key,
+    super.key,
     required this.isActivelyLooking,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class AvailabilityToggle extends StatelessWidget {
         subtitle: const Text('Recruiters can find your profile'),
         value: isActivelyLooking,
         onChanged: onChanged,
-        activeColor: const Color(0xFF059669),
+        activeThumbColor: const Color(0xFF059669),
       ),
     );
   }

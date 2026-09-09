@@ -6,7 +6,7 @@ import 'package:mena_recruitment/features/onboarding/presentation/widgets/countr
 import 'package:mena_recruitment/features/onboarding/presentation/widgets/pillar_card.dart';
 
 class OnboardingScreen extends ConsumerWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

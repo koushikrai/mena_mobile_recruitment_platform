@@ -11,7 +11,7 @@ class AllGccSectorsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final List<_GccSectorDetail> sectors = [
-      _GccSectorDetail(
+      const _GccSectorDetail(
         title: 'Oil, Gas & Offshore Petrochemicals',
         tag: 'Oil & Gas',
         icon: Icons.oil_barrel_rounded,
@@ -21,7 +21,7 @@ class AllGccSectorsScreen extends ConsumerWidget {
         roles: ['Senior Offshore HSE Supervisors', '6G High-Pressure Welders', 'Rigging Superintendents', 'Turnaround Planners'],
         certifications: ['NEBOSH IGC', 'OPITO BOSIET', 'Saudi Aramco SAP ID'],
       ),
-      _GccSectorDetail(
+      const _GccSectorDetail(
         title: 'Total Facilities Management & MEP',
         tag: 'Facility Mgmt',
         icon: Icons.build_circle_rounded,
@@ -31,7 +31,7 @@ class AllGccSectorsScreen extends ConsumerWidget {
         roles: ['Lead MEP Project Technicians', 'HVAC Central Chiller Operators', 'BMS Automation Foremen', 'Fire Alarm Engineers'],
         certifications: ['Diploma in Mech/Elec', 'GCC Driving License', 'Civil Defense Card'],
       ),
-      _GccSectorDetail(
+      const _GccSectorDetail(
         title: 'Healthcare & Critical Care Nursing',
         tag: 'Healthcare',
         icon: Icons.local_hospital_rounded,
@@ -41,7 +41,7 @@ class AllGccSectorsScreen extends ConsumerWidget {
         roles: ['ICU & ER Staff Nurses', 'Biomedical Equipment Specialists', 'Lab Technologists', 'Anesthesia Technicians'],
         certifications: ['Qatar Prometric / QCHP', 'DataFlow PSV', 'BLS / ACLS'],
       ),
-      _GccSectorDetail(
+      const _GccSectorDetail(
         title: 'Luxury Hospitality & Culinary Arts',
         tag: 'Hospitality',
         icon: Icons.room_service_rounded,
@@ -51,7 +51,7 @@ class AllGccSectorsScreen extends ConsumerWidget {
         roles: ['Executive Head Chefs', 'Pastry & Bakery Specialists', 'F&B Outlet Managers', 'Guest Experience Concierge'],
         certifications: ['HACCP Certified', 'Culinary Arts Diploma', 'WSET Level 2'],
       ),
-      _GccSectorDetail(
+      const _GccSectorDetail(
         title: 'Civil Infrastructure & Giga-Projects',
         tag: 'Construction',
         icon: Icons.architecture_rounded,
@@ -61,7 +61,7 @@ class AllGccSectorsScreen extends ConsumerWidget {
         roles: ['Senior Civil Infrastructure Engineers', 'Tunneling & Geotech Specialists', 'QA/QC Managers', 'Survey Superintendents'],
         certifications: ['SCE Consultant Registration', 'FIDIC Contracts', 'AutoCAD / Civil 3D'],
       ),
-      _GccSectorDetail(
+      const _GccSectorDetail(
         title: 'Maritime Ports & Transshipment Logistics',
         tag: 'Maritime & Port',
         icon: Icons.directions_boat_rounded,
@@ -71,7 +71,7 @@ class AllGccSectorsScreen extends ConsumerWidget {
         roles: ['Container Berth Superintendents', 'Stevedoring Supervisors', 'Harbor Tug Masters', 'Customs Clearance Agents'],
         certifications: ['TOS Systems', 'ISPS Code', 'Dangerous Goods IMDG'],
       ),
-      _GccSectorDetail(
+      const _GccSectorDetail(
         title: 'Renewable Solar & Desalination Utilities',
         tag: 'Energy',
         icon: Icons.solar_power_rounded,
@@ -81,7 +81,7 @@ class AllGccSectorsScreen extends ConsumerWidget {
         roles: ['Solar PV Grid Inverter Technicians', 'Reverse Osmosis Plant Supervisors', 'High Voltage Substation Techs'],
         certifications: ['PV Technical Certification', 'SCADA Controls', 'SEC Qualified'],
       ),
-      _GccSectorDetail(
+      const _GccSectorDetail(
         title: 'Heavy Transport & Mobile Equipment',
         tag: 'Heavy Equipment',
         icon: Icons.local_shipping_rounded,

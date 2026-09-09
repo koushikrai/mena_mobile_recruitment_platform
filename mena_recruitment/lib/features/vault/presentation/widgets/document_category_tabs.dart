@@ -6,11 +6,11 @@ class DocumentCategoryTabs extends StatelessWidget {
   final ValueChanged<String> onSelected;
 
   const DocumentCategoryTabs({
-    Key? key,
+    super.key,
     required this.categories,
     required this.selectedCategory,
     required this.onSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

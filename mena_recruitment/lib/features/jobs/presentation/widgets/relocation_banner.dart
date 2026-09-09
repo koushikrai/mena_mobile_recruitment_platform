@@ -39,7 +39,7 @@ class RelocationBanner extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Get end-to-end assistance with MOFA attestation, medicals, and flights.',
-            style: AppTypography.bodyMedium.copyWith(color: Colors.white.withOpacity(0.8)),
+            style: AppTypography.bodyMedium.copyWith(color: Colors.white.withValues(alpha: 0.8)),
           ),
           const SizedBox(height: 16),
           AppButton(

@@ -187,11 +187,11 @@ class _SectorsScreenState extends ConsumerState<SectorsScreen>
             ),
           ],
         ),
-        child: Row(
+        child: const Row(
           children: [
-            const SizedBox(width: 14),
-            const Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
-            const SizedBox(width: 10),
+            SizedBox(width: 14),
+            Icon(Icons.search_rounded, color: AppColors.textMuted, size: 20),
+            SizedBox(width: 10),
             Text(
               'Search sectors, skills, certifications...',
               style: TextStyle(
@@ -246,7 +246,7 @@ class _SectorsScreenState extends ConsumerState<SectorsScreen>
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: trending.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final sector = trending[index];
           return _TrendingCard(

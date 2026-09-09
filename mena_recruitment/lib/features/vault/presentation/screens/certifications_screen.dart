@@ -609,7 +609,7 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                               ),
                               Switch(
                                 value: _isMedicalActive,
-                                activeColor: primaryCrimson,
+                                activeThumbColor: primaryCrimson,
                                 onChanged: (val) => setState(() => _isMedicalActive = val),
                               ),
                             ],

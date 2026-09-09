@@ -29,7 +29,7 @@ class MockVaultData {
 
   static List<VaultDocument> mockDocuments = [
     mockPassport,
-    VaultDocument(
+    const VaultDocument(
       id: 'doc-001',
       category: DocumentCategory.educationAttestation,
       title: 'B.Tech Degree Certificate',
@@ -37,7 +37,7 @@ class MockVaultData {
       issuingCountry: 'India',
       isVerified: true,
     ),
-    VaultDocument(
+    const VaultDocument(
       id: 'doc-002',
       category: DocumentCategory.educationAttestation,
       title: 'Master Degree Certificate',

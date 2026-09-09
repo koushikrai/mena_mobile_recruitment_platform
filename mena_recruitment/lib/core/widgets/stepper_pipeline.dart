@@ -19,10 +19,10 @@ class StepperPipeline extends StatefulWidget {
   final bool compactMode;
 
   const StepperPipeline({
-    Key? key,
+    super.key,
     required this.currentStage,
     this.compactMode = true,
-  }) : super(key: key);
+  });
 
   @override
   State<StepperPipeline> createState() => _StepperPipelineState();

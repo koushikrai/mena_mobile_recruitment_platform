@@ -5,7 +5,7 @@ import 'package:mena_recruitment/features/profile/presentation/widgets/country_m
 class RelocationPrefsCard extends StatelessWidget {
   final CandidateProfile profile;
 
-  const RelocationPrefsCard({Key? key, required this.profile}) : super(key: key);
+  const RelocationPrefsCard({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class RelocationPrefsCard extends StatelessWidget {
                 Expanded(
                   flex: 2,
                   child: DropdownButtonFormField<String>(
-                    value: profile.expectedCurrency,
+                    initialValue: profile.expectedCurrency,
                     items: const [
                       DropdownMenuItem(value: 'SAR', child: Text('SAR')),
                       DropdownMenuItem(value: 'AED', child: Text('AED')),
@@ -69,7 +69,7 @@ class RelocationPrefsCard extends StatelessWidget {
             const Text('Notice Period', style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: profile.noticePeriod,
+              initialValue: profile.noticePeriod,
               items: const [
                 DropdownMenuItem(value: 'Immediate', child: Text('Immediate')),
                 DropdownMenuItem(value: '15 Days', child: Text('15 Days')),
@@ -86,7 +86,7 @@ class RelocationPrefsCard extends StatelessWidget {
             const Text('Family Status', style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: 'Single',
+              initialValue: 'Single',
               items: const [
                 DropdownMenuItem(value: 'Single', child: Text('Single')),
                 DropdownMenuItem(value: 'Married (Family Relocation)', child: Text('Married (Family Relocation)')),

@@ -219,7 +219,7 @@ class _WalkinDriveDetailsSheetState extends State<WalkinDriveDetailsSheet> {
                           ),
                           const SizedBox(height: 12),
                           DropdownButtonFormField<String>(
-                            value: _selectedSlot,
+                            initialValue: _selectedSlot,
                             decoration: InputDecoration(
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                               filled: true,

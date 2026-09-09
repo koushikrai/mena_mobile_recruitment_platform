@@ -5,10 +5,10 @@ class ApplicationFilterTabs extends StatelessWidget {
   final Function(String) onFilterChanged;
 
   const ApplicationFilterTabs({
-    Key? key,
+    super.key,
     required this.selectedFilter,
     required this.onFilterChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

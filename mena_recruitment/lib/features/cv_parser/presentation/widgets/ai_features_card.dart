@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AIFeaturesCard extends StatelessWidget {
-  const AIFeaturesCard({Key? key}) : super(key: key);
+  const AIFeaturesCard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -9,11 +9,11 @@ class AIFeaturesCard extends StatelessWidget {
       elevation: 0,
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      child: const Padding(
+        padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'AI Extraction Features',
               style: TextStyle(

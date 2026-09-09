@@ -7,12 +7,12 @@ class ExperienceFormCard extends StatelessWidget {
   final VoidCallback onDelete;
 
   const ExperienceFormCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.company,
     required this.duration,
     required this.onDelete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

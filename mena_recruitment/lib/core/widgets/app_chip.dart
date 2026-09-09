@@ -24,7 +24,7 @@ class AppChip extends StatelessWidget {
   final Widget? leadingIcon;
 
   const AppChip({
-    Key? key,
+    super.key,
     required this.label,
     this.statusType,
     this.backgroundColor,
@@ -34,8 +34,7 @@ class AppChip extends StatelessWidget {
     Widget? leadingIcon,
     Widget? icon,
   })  : textColor = textColor ?? labelColor,
-        leadingIcon = leadingIcon ?? icon,
-        super(key: key);
+        leadingIcon = leadingIcon ?? icon;
 
   @override
   Widget build(BuildContext context) {

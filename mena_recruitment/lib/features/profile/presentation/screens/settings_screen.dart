@@ -829,7 +829,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           Switch(
             value: value,
-            activeColor: const Color(0xFF6E0000),
+            activeThumbColor: const Color(0xFF6E0000),
             onChanged: onChanged,
           ),
         ],
@@ -877,7 +877,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           Switch(
             value: value,
-            activeColor: const Color(0xFF6E0000),
+            activeThumbColor: const Color(0xFF6E0000),
             onChanged: onChanged,
           ),
         ],

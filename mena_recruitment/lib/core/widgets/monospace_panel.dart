@@ -6,9 +6,9 @@ class MonospacePanel extends StatelessWidget {
   final Map<String, String> data;
 
   const MonospacePanel({
-    Key? key,
+    super.key,
     required this.data,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

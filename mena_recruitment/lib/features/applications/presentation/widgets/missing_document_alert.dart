@@ -5,19 +5,19 @@ class MissingDocumentAlert extends StatelessWidget {
   final DateTime? deadline;
 
   const MissingDocumentAlert({
-    Key? key,
+    super.key,
     required this.documentName,
     this.deadline,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF6E0000).withOpacity(0.1),
+        color: const Color(0xFF6E0000).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF6E0000).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFF6E0000).withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -41,7 +41,7 @@ class MissingDocumentAlert extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Plus Jakarta Sans',
                       fontSize: 12,
-                      color: const Color(0xFF6E0000).withOpacity(0.8),
+                      color: const Color(0xFF6E0000).withValues(alpha: 0.8),
                     ),
                   ),
               ],

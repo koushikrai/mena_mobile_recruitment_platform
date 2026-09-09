@@ -4,7 +4,7 @@ import 'package:mena_recruitment/features/vault/domain/passport_mrz_entity.dart'
 class MrzVerificationPanel extends StatelessWidget {
   final PassportMRZ? mrzData;
 
-  const MrzVerificationPanel({Key? key, this.mrzData}) : super(key: key);
+  const MrzVerificationPanel({super.key, this.mrzData});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class MrzVerificationPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF8F9FF),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF990000).withOpacity(0.1)),
+        border: Border.all(color: const Color(0xFF990000).withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

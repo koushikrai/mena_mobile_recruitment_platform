@@ -6,7 +6,7 @@ class CountryMultiSelect extends StatelessWidget {
     'Saudi Arabia', 'UAE', 'Qatar', 'Oman', 'Kuwait', 'Bahrain'
   ];
 
-  const CountryMultiSelect({Key? key, required this.selectedCountries}) : super(key: key);
+  const CountryMultiSelect({super.key, required this.selectedCountries});
 
   @override
   Widget build(BuildContext context) {

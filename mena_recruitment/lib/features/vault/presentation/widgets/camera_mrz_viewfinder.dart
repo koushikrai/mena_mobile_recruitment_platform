@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CameraMrzViewfinder extends StatelessWidget {
-  const CameraMrzViewfinder({Key? key}) : super(key: key);
+  const CameraMrzViewfinder({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class CameraMrzViewfinder extends StatelessWidget {
                 child: Container(
                   height: 40,
                   width: double.infinity,
-                  color: const Color(0xFF059669).withOpacity(0.3),
+                  color: const Color(0xFF059669).withValues(alpha: 0.3),
                   child: const Center(
                     child: Text(
                       'Align MRZ here',

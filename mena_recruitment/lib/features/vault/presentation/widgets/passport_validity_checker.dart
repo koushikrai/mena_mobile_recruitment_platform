@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class PassportValidityChecker extends StatelessWidget {
   final bool isValid;
 
-  const PassportValidityChecker({Key? key, required this.isValid}) : super(key: key);
+  const PassportValidityChecker({super.key, required this.isValid});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class PassportValidityChecker extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(9999),
         border: Border.all(color: color),
       ),

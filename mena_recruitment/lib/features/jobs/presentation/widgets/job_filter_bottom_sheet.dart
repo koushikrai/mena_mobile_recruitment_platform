@@ -74,11 +74,11 @@ class _JobFilterBottomSheetState extends ConsumerState<JobFilterBottomSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
+                const Row(
                   children: [
-                    const Icon(Icons.tune_rounded, color: AppColors.primary, size: 22),
-                    const SizedBox(width: 8),
-                    const Text(
+                    Icon(Icons.tune_rounded, color: AppColors.primary, size: 22),
+                    SizedBox(width: 8),
+                    Text(
                       'Filter Opportunities',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onSurface),
                     ),

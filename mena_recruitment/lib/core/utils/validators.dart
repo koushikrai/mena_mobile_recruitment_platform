@@ -11,7 +11,7 @@ class Validators {
   static String? validatePhone(String? value) {
     if (value == null || value.trim().isEmpty) return 'Phone number is required';
     // Simplified regex checking for allowed GCC prefixes and digits
-    final phoneRegExp = RegExp(r"^\+?(971|966|974|965|968|973)\s?[0-9]{7,9}$");
+    final phoneRegExp = RegExp(r'^\+?(971|966|974|965|968|973)\s?[0-9]{7,9}$');
     if (!phoneRegExp.hasMatch(value.replaceAll(' ', ''))) return 'Enter a valid GCC phone number';
     return null;
   }

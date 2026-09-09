@@ -5,10 +5,10 @@ class SkillsTagInput extends StatelessWidget {
   final Function(String) onRemove;
 
   const SkillsTagInput({
-    Key? key,
+    super.key,
     required this.skills,
     required this.onRemove,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
