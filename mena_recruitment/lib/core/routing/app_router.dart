@@ -14,6 +14,7 @@ import 'package:mena_recruitment/features/vault/presentation/screens/certificati
 import 'package:mena_recruitment/features/profile/presentation/screens/settings_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_upload_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_review_screen.dart';
+import 'package:mena_recruitment/features/sectors/presentation/screens/sectors_screen.dart';
 
 // Auth State Provider
 final isAuthenticatedProvider = StateProvider<bool>((ref) => true);
@@ -32,6 +33,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final location = state.matchedLocation;
           if (location.startsWith(RouteNames.jobs) || location == RouteNames.home) {
             currentIndex = 0;
+          } else if (location.startsWith(RouteNames.sectors)) {
+            currentIndex = 1;
           } else if (location.startsWith(RouteNames.applications)) {
             currentIndex = 2;
           } else if (location.startsWith(RouteNames.vault)) {
@@ -50,7 +53,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     context.go(RouteNames.jobs);
                     break;
                   case 1:
-                    context.go(RouteNames.jobs); // Or filters by sector
+                    context.go(RouteNames.sectors);
                     break;
                   case 2:
                     context.go(RouteNames.applications);
@@ -74,6 +77,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: RouteNames.jobs,
             builder: (context, state) => const HomeScreen(),
+          ),
+          GoRoute(
+            path: RouteNames.sectors,
+            builder: (context, state) => const SectorsScreen(),
           ),
           GoRoute(
             path: RouteNames.applications,

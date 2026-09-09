@@ -7,6 +7,7 @@ class RouteNames {
   static const String otp = '/auth/otp';
   static const String home = '/home';
   static const String jobs = '/jobs';
+  static const String sectors = '/sectors';
   static const String jobDetails = '/jobs/:id';
   static const String applications = '/applications';
   static const String vault = '/vault';
