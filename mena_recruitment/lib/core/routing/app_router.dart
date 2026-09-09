@@ -15,6 +15,8 @@ import 'package:mena_recruitment/features/profile/presentation/screens/settings_
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_upload_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_review_screen.dart';
 import 'package:mena_recruitment/features/sectors/presentation/screens/sectors_screen.dart';
+import 'package:mena_recruitment/features/jobs/presentation/screens/job_application_screen.dart';
+import 'package:mena_recruitment/features/jobs/presentation/screens/all_gcc_sectors_screen.dart';
 
 // Auth State Provider
 final isAuthenticatedProvider = StateProvider<bool>((ref) => true);
@@ -31,7 +33,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) {
           int currentIndex = 0;
           final location = state.matchedLocation;
-          if (location.startsWith(RouteNames.jobs) || location == RouteNames.home) {
+          if (location.startsWith(RouteNames.jobs) ||
+              location == RouteNames.home) {
             currentIndex = 0;
           } else if (location.startsWith(RouteNames.sectors)) {
             currentIndex = 1;
@@ -116,6 +119,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id'] ?? '1';
           return JobDetailsScreen(jobId: id);
         },
+      ),
+      GoRoute(
+        path: RouteNames.jobApply,
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '1';
+          return JobApplicationScreen(jobId: id);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.sectors,
+        builder: (context, state) => const AllGccSectorsScreen(),
       ),
       GoRoute(
         path: RouteNames.cvUpload,

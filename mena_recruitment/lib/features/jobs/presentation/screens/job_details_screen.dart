@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/core/theme/app_colors.dart';
+import 'package:mena_recruitment/core/widgets/whatsapp_chat_button.dart';
 import 'package:mena_recruitment/features/jobs/domain/job_entity.dart';
 import 'package:mena_recruitment/features/jobs/providers/bookmark_provider.dart';
 import 'package:mena_recruitment/features/jobs/providers/job_details_provider.dart';
@@ -143,10 +144,16 @@ class JobDetailsScreen extends ConsumerWidget {
                   onPressed: () {},
                 ),
               ),
+              const SizedBox(width: 8),
+              WhatsAppChatButton(
+                jobTitle: jobAsync.valueOrNull?.title ?? 'Offshore HSE Supervisor',
+                referenceCode: 'PG-HSE-908',
+                isCompact: true,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => context.go(RouteNames.cvUpload),
+                  onPressed: () => context.push('/jobs/$jobId/apply'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryDark,
                     foregroundColor: Colors.white,

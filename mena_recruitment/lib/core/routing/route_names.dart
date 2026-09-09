@@ -9,6 +9,8 @@ class RouteNames {
   static const String jobs = '/jobs';
   static const String sectors = '/sectors';
   static const String jobDetails = '/jobs/:id';
+  static const String jobApply = '/jobs/:id/apply';
+  static const String sectors = '/sectors';
   static const String applications = '/applications';
   static const String vault = '/vault';
   static const String passportScan = '/vault/passport-scan';

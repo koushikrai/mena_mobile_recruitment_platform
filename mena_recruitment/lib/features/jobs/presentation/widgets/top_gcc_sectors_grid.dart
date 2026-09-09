@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mena_recruitment/core/theme/app_colors.dart';
+import 'package:mena_recruitment/features/jobs/presentation/screens/all_gcc_sectors_screen.dart';
 
 class TopGccSectorsGrid extends StatelessWidget {
   final Function(String sector)? onSelectSector;
@@ -62,7 +63,13 @@ class TopGccSectorsGrid extends StatelessWidget {
               ],
             ),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AllGccSectorsScreen(),
+                  ),
+                );
+              },
               icon: const Text(
                 'EXPLORE ALL',
                 style: TextStyle(

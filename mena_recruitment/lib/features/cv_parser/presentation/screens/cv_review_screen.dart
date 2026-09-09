@@ -1,7 +1,25 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
+
+class WorkExperienceItem {
+  String title;
+  String company;
+  String location;
+  String dates;
+  bool isCurrent;
+  List<String> responsibilities;
+
+  WorkExperienceItem({
+    required this.title,
+    required this.company,
+    required this.location,
+    required this.dates,
+    required this.isCurrent,
+    required this.responsibilities,
+  });
+}
 
 class CVReviewScreen extends ConsumerStatefulWidget {
   const CVReviewScreen({super.key});
@@ -18,6 +36,234 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
     'H2S Awareness',
     'Scaffolding Inspection',
   ];
+
+  final List<WorkExperienceItem> _workHistory = [
+    WorkExperienceItem(
+      isCurrent: true,
+      title: 'Senior Offshore HSE Supervisor',
+      company: 'PetroGulf Energy Ltd.',
+      location: 'Yanbu, Saudi Arabia',
+      dates: 'Mar 2021 – Present (3 yrs 8 mos)',
+      responsibilities: [
+        'Mandatory Saudi Aramco PTW compliance and Rig Turnaround HSE protocol.',
+        'Incident root-cause investigations, audits, and safety drill logistics.',
+        'Zero LTI target sustained across 450+ multinational personnel on platform.',
+      ],
+    ),
+    WorkExperienceItem(
+      isCurrent: false,
+      title: 'Offshore Safety Officer',
+      company: 'Consolidated Contractors Co (CCC)',
+      location: 'Ras Laffan, Qatar',
+      dates: 'Jun 2017 – Feb 2021 (3 yrs 9 mos)',
+      responsibilities: [
+        'Conducted daily multi-gas testing in confined offshore chambers.',
+        'Ensured adherence to OSHA, NEBOSH, and QatarEnergy safety codes.',
+      ],
+    ),
+  ];
+
+  void _showAddExperienceModal({WorkExperienceItem? existing, int? editIndex}) {
+    final titleCtrl = TextEditingController(text: existing?.title ?? '');
+    final companyCtrl = TextEditingController(text: existing?.company ?? '');
+    final locationCtrl = TextEditingController(text: existing?.location ?? 'Dammam, Saudi Arabia');
+    final datesCtrl = TextEditingController(text: existing?.dates ?? '2015 – 2017 (2 yrs)');
+    final respCtrl = TextEditingController(text: existing?.responsibilities.join('\n') ?? 'Led safety toolbox talks and verified site gas monitors.\nMaintained HSE permit logs.');
+    bool isCurrent = existing?.isCurrent ?? false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (modalCtx, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            top: 20,
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(modalCtx).viewInsets.bottom + 20,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      existing == null ? 'Add Work Experience' : 'Edit Work Experience',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                    ),
+                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(modalCtx)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: titleCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Job Title / Trade Designation',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: companyCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Company / Contractor Name',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: locationCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Location / GCC Country',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: datesCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Dates / Duration',
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: isCurrent,
+                      activeColor: const Color(0xFF6E0000),
+                      onChanged: (v) => setModalState(() => isCurrent = v ?? false),
+                    ),
+                    const Text('This is my current role', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: respCtrl,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Key Responsibilities (One per line)',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    if (existing != null) ...[
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: () {
+                          Navigator.pop(modalCtx);
+                          setState(() {
+                            _workHistory.removeAt(editIndex!);
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (titleCtrl.text.trim().isEmpty) return;
+                          final lines = respCtrl.text
+                              .split('\n')
+                              .map((e) => e.trim())
+                              .where((e) => e.isNotEmpty)
+                              .toList();
+
+                          final item = WorkExperienceItem(
+                            title: titleCtrl.text.trim(),
+                            company: companyCtrl.text.trim(),
+                            location: locationCtrl.text.trim(),
+                            dates: datesCtrl.text.trim(),
+                            isCurrent: isCurrent,
+                            responsibilities: lines.isEmpty ? ['Executed job duties compliant with GCC standards.'] : lines,
+                          );
+
+                          setState(() {
+                            if (existing == null) {
+                              _workHistory.add(item);
+                            } else {
+                              _workHistory[editIndex!] = item;
+                            }
+                          });
+
+                          Navigator.pop(modalCtx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(existing == null ? '✓ Work experience added!' : '✓ Work experience updated!'),
+                              backgroundColor: const Color(0xFF059669),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6E0000),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: Text(existing == null ? 'Save Experience' : 'Update Experience', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAddSkillDialog() {
+    final skillCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Skill or Trade', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: skillCtrl,
+          decoration: const InputDecoration(
+            hintText: 'e.g. Rigging Level 3, First Aid, OPITO',
+            border: OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (skillCtrl.text.trim().isNotEmpty) {
+                setState(() => skills.add(skillCtrl.text.trim()));
+              }
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6E0000), foregroundColor: Colors.white),
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,17 +331,21 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                           child: const Icon(Icons.shield_outlined, color: Color(0xFF6E0000), size: 18),
                         ),
                         const SizedBox(width: 8),
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('98% Match Confidence', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                            Text('3 Work Roles & 2 Degrees Extracted', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                            const Text('98% Match Confidence', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                            Text(' Work Roles & 2 Degrees Extracted', style: const TextStyle(fontSize: 10, color: Color(0xFF64748B))),
                           ],
                         ),
                       ],
                     ),
                     OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Re-parsing resume with Suhana Deep Vision...')),
+                        );
+                      },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFFCBD5E1)),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -124,44 +374,28 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(4)),
-                    child: const Text('2 Positions', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+                    child: Text(' Positions', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
                   ),
                 ],
               ),
               const SizedBox(height: 10),
 
-              // Experience Card 1: Senior Offshore HSE Supervisor
-              _buildExperienceCard(
-                isCurrent: true,
-                title: 'Senior Offshore HSE Supervisor',
-                company: 'PetroGulf Energy Ltd.',
-                location: 'Yanbu, Saudi Arabia',
-                dates: 'Mar 2021 – Present (3 yrs 8 mos)',
-                responsibilities: [
-                  'Mandatory Saudi Aramco PTW compliance and Rig Turnaround HSE protocol.',
-                  'Incident root-cause investigations, audits, and safety drill logistics.',
-                  'Zero LTI target sustained across 450+ multinational personnel on platform.',
-                ],
-              ),
-              const SizedBox(height: 10),
+              // Dynamic Work Experience Cards
+              ..._workHistory.asMap().entries.map((entry) {
+                final idx = entry.key;
+                final exp = entry.value;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: _buildExperienceCard(
+                    item: exp,
+                    onEdit: () => _showAddExperienceModal(existing: exp, editIndex: idx),
+                  ),
+                );
+              }),
 
-              // Experience Card 2: Offshore Safety Officer
-              _buildExperienceCard(
-                isCurrent: false,
-                title: 'Offshore Safety Officer',
-                company: 'Consolidated Contractors Co (CCC)',
-                location: 'Ras Laffan, Qatar',
-                dates: 'Jun 2017 – Feb 2021 (3 yrs 9 mos)',
-                responsibilities: [
-                  'Conducted daily multi-gas testing in confined offshore chambers.',
-                  'Ensured adherence to OSHA, NEBOSH, and QatarEnergy safety codes.',
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // Add Another Work Experience Button
+              // Add Another Work Experience Button (Now Fully Functional!)
               OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: () => _showAddExperienceModal(),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF6E0000),
                   side: const BorderSide(color: Color(0xFFE4BEB8)),
@@ -223,7 +457,14 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                             ],
                           ),
                         ),
-                        IconButton(icon: const Icon(Icons.edit_outlined, size: 16), onPressed: () {}),
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined, size: 16),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Education attestation status: Verified')),
+                            );
+                          },
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -254,7 +495,7 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                       Text('Extracted Core Skills & Trades', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
                     ],
                   ),
-                  Text('${skills.length} Parsed', style: const TextStyle(fontSize: 10, color: Color(0xFF8F706B), fontWeight: FontWeight.bold)),
+                  Text(' Parsed', style: const TextStyle(fontSize: 10, color: Color(0xFF8F706B), fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(height: 6),
@@ -282,7 +523,7 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                         ),
                       )),
                   InkWell(
-                    onTap: () {},
+                    onTap: _showAddSkillDialog,
                     borderRadius: BorderRadius.circular(6),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -339,7 +580,7 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        context.go('${RouteNames.vault}/certifications');
+                        context.go('/certifications');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6E0000),
@@ -362,12 +603,8 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
   }
 
   Widget _buildExperienceCard({
-    required bool isCurrent,
-    required String title,
-    required String company,
-    required String location,
-    required String dates,
-    required List<String> responsibilities,
+    required WorkExperienceItem item,
+    required VoidCallback onEdit,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -377,7 +614,7 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
       ),
       child: Stack(
         children: [
-          if (isCurrent)
+          if (item.isCurrent)
             Positioned(
               left: 0,
               top: 0,
@@ -395,7 +632,7 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (isCurrent) ...[
+                if (item.isCurrent) ...[
                   Row(
                     children: [
                       Container(
@@ -426,12 +663,12 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                          Text(company, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF6E0000))),
+                          Text(item.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                          Text(item.company, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF6E0000))),
                         ],
                       ),
                     ),
-                    IconButton(icon: const Icon(Icons.edit_outlined, size: 16), onPressed: () {}),
+                    IconButton(icon: const Icon(Icons.edit_outlined, size: 16), onPressed: onEdit),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -439,11 +676,11 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                   children: [
                     const Icon(Icons.location_on_outlined, size: 12, color: Color(0xFF64748B)),
                     const SizedBox(width: 2),
-                    Text(location, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                    Text(item.location, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B))),
                     const SizedBox(width: 10),
                     const Icon(Icons.calendar_today_outlined, size: 12, color: Color(0xFF64748B)),
                     const SizedBox(width: 2),
-                    Text(dates, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                    Text(item.dates, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B))),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -455,7 +692,7 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                     children: [
                       const Text('KEY RESPONSIBILITIES EXTRACTED', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Color(0xFF5B403C))),
                       const SizedBox(height: 6),
-                      ...responsibilities.map((r) => Padding(
+                      ...item.responsibilities.map((r) => Padding(
                             padding: const EdgeInsets.only(bottom: 4.0),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
