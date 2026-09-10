@@ -29,6 +29,83 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   String _selectedLanguage = 'en';
 
+  // Relocation & Salary Preferences
+  String _relocationTimeline = 'Within 15 days';
+  String _minSalary = 'SAR 15,000 / mo';
+
+  // CV document state
+  bool _hasCv = true;
+  final String _cvFileName = 'Ahmed_Mansoor_HSE_CV_2026.pdf';
+
+  void _confirmDeleteCv() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFBA1A1A)),
+            SizedBox(width: 8),
+            Text('Delete CV?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to delete your active CV?\n\nThis will remove your attached resume document. You can upload an updated CV anytime.',
+          style: TextStyle(fontSize: 12, color: _ink, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: _inkLight)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _hasCv = false;
+              });
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✓ CV deleted from profile. You can upload a new one anytime.'),
+                  backgroundColor: Color(0xFFBA1A1A),
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFBA1A1A),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete CV'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Colours ──────────────────────────────────────────────────────────────
+  static const _crimson = Color(0xFF6E0000);
+  static const _surface = Color(0xFFF9F9FF);
+  static const _white = Colors.white;
+  static const _cardLow = Color(0xFFF1F3FD);
+  static const _cardMid = Color(0xFFE5E8F2);
+  static const _ink = Color(0xFF181C23);
+  static const _inkLight = Color(0xFF5A5F67);
+
+  void _editRelocationTimeline() {
+    final options = [
+      'Immediate (Ready now)',
+      'Within 15 days',
+      'Within 30 days',
+      'Within 60 days',
+      '2+ months notice',
+    ];
+    final customCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Relocation Availability', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
   @override
   Widget build(BuildContext context) {
     const lightSurface = Color(0xFFFBF8F8);
