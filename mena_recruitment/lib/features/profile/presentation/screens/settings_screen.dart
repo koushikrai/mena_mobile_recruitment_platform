@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
 import 'package:mena_recruitment/core/widgets/notifications_sheet.dart';
 import 'package:mena_recruitment/features/auth/presentation/auth_sheet.dart';
 import 'package:mena_recruitment/features/auth/providers/auth_provider.dart';
 import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -15,863 +16,1216 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _ksaQuota = true;
-  bool _uaeQuota = true;
-  bool _qatarQuota = true;
-  bool _kuwaitQuota = false;
-  bool _omanQuota = false;
-  bool _bahrainQuota = false;
+  // ── Privacy state ──────────────────────────────────────────────────────────
+  String _visibilityMode = 'sponsors_only'; // 'sponsors_only' | 'all_recruiters' | 'private'
+  String _hiddenFromCompany = 'PetroGulf Energy Ltd.';
 
+  // ── Region filter ──────────────────────────────────────────────────────────
+  String _selectedRegion = 'GCC';
+
+  static const _regions = [
+    'GCC',
+    'Levant & N. Africa',
+    'Europe',
+    'North America',
+    'Australia & Pacific',
+    'South & SE Asia',
+  ];
+
+  static const _regionCountries = {
+    'GCC': [
+      {'flag': '🇸🇦', 'name': 'Saudi Arabia', 'subtitle': 'Eligible for Qiwa · Muqeem'},
+      {'flag': '🇦🇪', 'name': 'UAE', 'subtitle': 'MOHRE Green Visa open'},
+      {'flag': '🇶🇦', 'name': 'Qatar', 'subtitle': 'QatarEnergy visa pool'},
+      {'flag': '🇰🇼', 'name': 'Kuwait', 'subtitle': 'MOI work permit available'},
+      {'flag': '🇴🇲', 'name': 'Oman', 'subtitle': 'Manpower Ministry portal'},
+      {'flag': '🇧🇭', 'name': 'Bahrain', 'subtitle': 'LMRA flexi-permit'},
+    ],
+    'Levant & N. Africa': [
+      {'flag': '🇪🇬', 'name': 'Egypt', 'subtitle': 'Oil sector contracts (Cairo)'},
+      {'flag': '🇯🇴', 'name': 'Jordan', 'subtitle': 'ASEZA free zone hiring'},
+      {'flag': '🇱🇧', 'name': 'Lebanon', 'subtitle': 'Offshore E&P roles'},
+      {'flag': '🇲🇦', 'name': 'Morocco', 'subtitle': 'Tangier Med industrial zone'},
+      {'flag': '🇹🇳', 'name': 'Tunisia', 'subtitle': 'Energy & mining sector'},
+      {'flag': '🇩🇿', 'name': 'Algeria', 'subtitle': 'Sonatrach project sites'},
+    ],
+    'Europe': [
+      {'flag': '🇬🇧', 'name': 'United Kingdom', 'subtitle': 'North Sea · Skilled Worker visa'},
+      {'flag': '🇩🇪', 'name': 'Germany', 'subtitle': 'Skilled immigration act'},
+      {'flag': '🇫🇷', 'name': 'France', 'subtitle': 'Total Energies · Talent permit'},
+      {'flag': '🇳🇱', 'name': 'Netherlands', 'subtitle': 'Rotterdam energy hub'},
+      {'flag': '🇳🇴', 'name': 'Norway', 'subtitle': 'North Sea O&G sector'},
+      {'flag': '🇮🇪', 'name': 'Ireland', 'subtitle': 'Critical Skills permit'},
+    ],
+    'North America': [
+      {'flag': '🇺🇸', 'name': 'United States', 'subtitle': 'H-1B / TN visa eligible'},
+      {'flag': '🇨🇦', 'name': 'Canada', 'subtitle': 'Express Entry · Alberta O&G'},
+    ],
+    'Australia & Pacific': [
+      {'flag': '🇦🇺', 'name': 'Australia', 'subtitle': 'TSS 482 · FIFO mining & LNG'},
+      {'flag': '🇳🇿', 'name': 'New Zealand', 'subtitle': 'Accredited employer visa'},
+      {'flag': '🇵🇬', 'name': 'Papua New Guinea', 'subtitle': 'LNG project sites'},
+    ],
+    'South & SE Asia': [
+      {'flag': '🇮🇳', 'name': 'India', 'subtitle': 'ONGC & Reliance upstream'},
+      {'flag': '🇵🇰', 'name': 'Pakistan', 'subtitle': 'Offshore Makran projects'},
+      {'flag': '🇸🇬', 'name': 'Singapore', 'subtitle': 'EP · Marine & offshore'},
+      {'flag': '🇲🇾', 'name': 'Malaysia', 'subtitle': 'Petronas · EP holder'},
+      {'flag': '🇮🇩', 'name': 'Indonesia', 'subtitle': 'IMTA work permit'},
+    ],
+  };
+
+  // country toggle state — keyed by country name
+  final Map<String, bool> _countryToggles = {
+    'Saudi Arabia': true,
+    'UAE': true,
+    'Qatar': true,
+    'Kuwait': false,
+    'Oman': false,
+    'Bahrain': false,
+  };
+
+  // Notification preferences
   bool _whatsappAlerts = true;
   bool _pushAlerts = true;
   bool _emailDigest = false;
 
   String _selectedLanguage = 'en';
 
-  @override
-  Widget build(BuildContext context) {
-    const primaryCrimson = Color(0xFF6E0000);
-    const containerCrimson = Color(0xFF990000);
-    const lightSurface = Color(0xFFF9F9FF);
-    const cardLowest = Colors.white;
-    const cardLow = Color(0xFFF1F3FD);
-    const cardHigh = Color(0xFFE5E8F2);
-    const textOnSurface = Color(0xFF181C23);
-    const textSecondary = Color(0xFF5A5F67);
+  // Relocation & Salary Preferences
+  String _relocationTimeline = 'Within 15 days';
+  String _minSalary = 'SAR 15,000 / mo';
 
-    final profileAsync = ref.watch(profileProvider);
-    final authState = ref.watch(authStateProvider);
-    final profile = profileAsync.value;
-    final currentUser = authState.value;
-    final candidateName = profile?.fullName ?? currentUser?.fullName ?? 'Ahmed Mansoor Al-Farooq';
-    final candidateTitle = profile?.targetTitle ?? 'Senior HSE Supervisor';
-    final candidateExp = '${profile?.gccExperience ?? 4} yrs GCC Exp';
-    final candidateUid = profile?.uid ?? currentUser?.id ?? 'SUH-GCC-88219';
-    final readiness = (profile?.readinessScore ?? 85) / 100.0;
-    final readinessPct = '${profile?.readinessScore ?? 85}%';
+  // ── Colours ──────────────────────────────────────────────────────────────
+  static const _crimson = Color(0xFF6E0000);
+  static const _surface = Color(0xFFF9F9FF);
+  static const _white = Colors.white;
+  static const _cardLow = Color(0xFFF1F3FD);
+  static const _cardMid = Color(0xFFE5E8F2);
+  static const _ink = Color(0xFF181C23);
+  static const _inkLight = Color(0xFF5A5F67);
 
-    return Scaffold(
-      backgroundColor: lightSurface,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 32),
+  void _editRelocationTimeline() {
+    final options = [
+      'Immediate (Ready now)',
+      'Within 15 days',
+      'Within 30 days',
+      'Within 60 days',
+      '2+ months notice',
+    ];
+    final customCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Relocation Availability', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
-              Container(
-                color: cardLowest,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+              ...options.map((opt) {
+                final isSelected = _relocationTimeline == opt;
+                return InkWell(
+                  onTap: () {
+                    setState(() => _relocationTimeline = opt);
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('✓ Relocation timeline updated to: $opt'),
+                        backgroundColor: const Color(0xFF059669),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFFFFF1F1) : const Color(0xFFF1F3FD),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected ? _crimson : Colors.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF1F1),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFFFFD4D4)),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.shield, color: containerCrimson, size: 14),
-                              SizedBox(width: 4),
-                              Text(
-                                'GLOBAL JOBS',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.0,
-                                  color: primaryCrimson,
-                                ),
-                              ),
-                            ],
-                          ),
+                        Icon(
+                          isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                          size: 16,
+                          color: isSelected ? _crimson : _inkLight,
                         ),
-                        const SizedBox(width: 10),
-                        const Text(
-                          'Account Settings',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: textOnSurface,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            opt,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? _crimson : _ink,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.notifications, color: textSecondary, size: 22),
-                          onPressed: () => NotificationsSheet.show(context),
-                        ),
-                        InkWell(
-                          onTap: () => AuthSheet.show(context),
-                          borderRadius: BorderRadius.circular(15),
-                          child: const CircleAvatar(
-                            radius: 15,
-                            backgroundColor: cardHigh,
-                            child: Icon(Icons.person, size: 18, color: primaryCrimson),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Top Intro Context
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'EXECUTIVE CANDIDATE HUB',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                            color: primaryCrimson,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFDAD6).withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Row(
-                            children: [
-                              CircleAvatar(radius: 3, backgroundColor: primaryCrimson),
-                              SizedBox(width: 4),
-                              Text(
-                                'Qiwa Synchronized',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: primaryCrimson),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Account & Settings',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: textOnSurface,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    const Text(
-                      'Manage target GCC mobility quotas, instant recruiter channels, and confidential privacy shields.',
-                      style: TextStyle(fontSize: 12, color: textSecondary),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Candidate Profile Snapshot Card
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: cardLowest,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Stack(
-                                children: [
-                                  const CircleAvatar(
-                                    radius: 26,
-                                    backgroundColor: cardHigh,
-                                    child: Icon(Icons.person, size: 30, color: primaryCrimson),
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(2),
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: primaryCrimson,
-                                      ),
-                                      child: const Icon(Icons.verified, size: 12, color: Colors.white),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      candidateName,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: textOnSurface,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      '$candidateTitle • $candidateExp',
-                                      style: const TextStyle(fontSize: 11, color: textSecondary),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: cardHigh,
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            '#$candidateUid',
-                                            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF42474F)),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFFFF1F1),
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: const Text(
-                                            'Tier 1 Verified',
-                                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: primaryCrimson),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          // Integrity meter
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: cardLow,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Row(
-                                      children: [
-                                        Icon(Icons.verified_user, size: 14, color: primaryCrimson),
-                                        SizedBox(width: 4),
-                                        Text('Gulf Dossier Integrity', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textOnSurface)),
-                                      ],
-                                    ),
-                                    Text('$readinessPct Verified', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryCrimson)),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: LinearProgressIndicator(
-                                    value: readiness,
-                                    minHeight: 5,
-                                    backgroundColor: const Color(0xFFDEE2ED),
-                                    valueColor: const AlwaysStoppedAnimation<Color>(primaryCrimson),
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text('MOHRE & Qiwa credential validation active', style: TextStyle(fontSize: 10, color: textSecondary)),
-                                    InkWell(
-                                      onTap: () => context.push('/cv/review'),
-                                      child: const Row(
-                                        children: [
-                                          Text('Edit Bio', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: primaryCrimson)),
-                                          Icon(Icons.arrow_forward, size: 11, color: primaryCrimson),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Target GCC Work Quotas
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: cardLowest,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.public, size: 18, color: primaryCrimson),
-                              SizedBox(width: 8),
-                              Text('Target GCC Work Quotas', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textOnSurface)),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'Choose destination states where verified recruiters can query your visa pool availability.',
-                            style: TextStyle(fontSize: 11, color: textSecondary),
-                          ),
-                          const SizedBox(height: 12),
-
-                          _buildCountryToggle('🇸🇦', 'Saudi Arabia (KSA)', 'Eligible for Qiwa • Muqeem Quota', _ksaQuota, (v) => setState(() => _ksaQuota = v)),
-                          const SizedBox(height: 8),
-                          _buildCountryToggle('🇦🇪', 'United Arab Emirates (UAE)', 'MOHRE Green Visa Quota Open', _uaeQuota, (v) => setState(() => _uaeQuota = v)),
-                          const SizedBox(height: 8),
-                          _buildCountryToggle('🇶🇦', 'Qatar', 'QatarEnergy Work Visa Pool', _qatarQuota, (v) => setState(() => _qatarQuota = v)),
-                          const SizedBox(height: 8),
-                          _buildCountryToggle('🇰🇼', 'Kuwait', 'Quota Inactive • Click to enable', _kuwaitQuota, (v) => setState(() => _kuwaitQuota = v)),
-                          const SizedBox(height: 8),
-                          _buildCountryToggle('🇴🇲', 'Oman', 'Quota Inactive • Click to enable', _omanQuota, (v) => setState(() => _omanQuota = v)),
-                          const SizedBox(height: 8),
-                          _buildCountryToggle('🇧🇭', 'Bahrain', 'Quota Inactive • Click to enable', _bahrainQuota, (v) => setState(() => _bahrainQuota = v)),
-                          const SizedBox(height: 14),
-
-                          // Relocation & Salary Sub-Cards
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(color: cardLow, borderRadius: BorderRadius.circular(8)),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('RELOCATION WINDOW', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: textSecondary)),
-                                    Text('Within 15 Days after visa stamp', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textOnSurface)),
-                                  ],
-                                ),
-                                Icon(Icons.edit_calendar, size: 16, color: primaryCrimson),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(color: cardLow, borderRadius: BorderRadius.circular(8)),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('EXPECTED TAX-FREE MIN. SALARY', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: textSecondary)),
-                                    Text('SAR 15,000 / AED 15,000 / mo', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textOnSurface)),
-                                  ],
-                                ),
-                                Icon(Icons.payments, size: 16, color: primaryCrimson),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Alerts & Dispatch Channels
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: cardLowest,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.notifications_active, size: 18, color: primaryCrimson),
-                              SizedBox(width: 8),
-                              Text('Alerts & Dispatch Channels', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textOnSurface)),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'Direct encrypted notifications for offers, interview requests, and visa issuance.',
-                            style: TextStyle(fontSize: 11, color: textSecondary),
-                          ),
-                          const SizedBox(height: 12),
-
-                          _buildChannelTile(
-                            icon: Icons.chat,
-                            iconColor: const Color(0xFF128C7E),
-                            iconBg: const Color(0xFF25D366).withValues(alpha: 0.15),
-                            title: 'WhatsApp Direct Priority',
-                            subtitle: '+966 50 ••• ••34 (Saudi Certified)',
-                            note: 'Real-time interview invites & embassy drops',
-                            value: _whatsappAlerts,
-                            onChanged: (v) => setState(() => _whatsappAlerts = v),
-                          ),
-                          const SizedBox(height: 8),
-                          _buildChannelTile(
-                            icon: Icons.mark_chat_unread,
-                            iconColor: primaryCrimson,
-                            iconBg: const Color(0xFFFFDAD4),
-                            title: 'Mobile Push Notifications',
-                            subtitle: 'Daily recommended vacancies & pipeline updates',
-                            note: null,
-                            value: _pushAlerts,
-                            onChanged: (v) => setState(() => _pushAlerts = v),
-                          ),
-                          const SizedBox(height: 8),
-                          _buildChannelTile(
-                            icon: Icons.forward_to_inbox,
-                            iconColor: const Color(0xFF42474F),
-                            iconBg: const Color(0xFFDEE2ED),
-                            title: 'Recruiter Search Digest',
-                            subtitle: 'Weekly email summary of corporate profile views',
-                            note: null,
-                            value: _emailDigest,
-                            onChanged: (v) => setState(() => _emailDigest = v),
-                          ),
-                          const SizedBox(height: 10),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(color: cardHigh, borderRadius: BorderRadius.circular(6)),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.schedule, size: 14, color: primaryCrimson),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Batch window: Daily at 8:00 PM AST • Instant SMS for shortlists.',
-                                  style: TextStyle(fontSize: 9, color: textSecondary),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Regional Localization
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: cardLowest,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.language, size: 18, color: primaryCrimson),
-                              SizedBox(width: 8),
-                              Text('Regional Localization', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textOnSurface)),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          const Text('PLATFORM LANGUAGE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: textSecondary)),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(color: cardLow, borderRadius: BorderRadius.circular(8)),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: InkWell(
-                                    onTap: () => setState(() => _selectedLanguage = 'en'),
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: _selectedLanguage == 'en' ? primaryCrimson : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        'English (GCC Standard)',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                          color: _selectedLanguage == 'en' ? Colors.white : textOnSurface,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: InkWell(
-                                    onTap: () => setState(() => _selectedLanguage = 'ar'),
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: _selectedLanguage == 'ar' ? primaryCrimson : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        'العربية (KSA & الخليج)',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                          color: _selectedLanguage == 'ar' ? Colors.white : textOnSurface,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('COMPENSATION UNIT', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: textSecondary)),
-                                    const SizedBox(height: 4),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                      decoration: BoxDecoration(color: cardLow, borderRadius: BorderRadius.circular(8)),
-                                      child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text('SAR (Saudi Riyal)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textOnSurface)),
-                                          Icon(Icons.expand_more, size: 16, color: textSecondary),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text('TIME REFERENCE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: textSecondary)),
-                                    const SizedBox(height: 4),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                      decoration: BoxDecoration(color: cardLow, borderRadius: BorderRadius.circular(8)),
-                                      child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text('AST (UTC+3)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textOnSurface)),
-                                          Icon(Icons.schedule, size: 16, color: textSecondary),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Privacy & GCC Compliance
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: cardLowest,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.security, size: 18, color: primaryCrimson),
-                              SizedBox(width: 8),
-                              Text('Privacy & GCC Compliance', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textOnSurface)),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'Strict protection under Saudi NDMO & UAE Federal Data Protection standards.',
-                            style: TextStyle(fontSize: 11, color: textSecondary),
-                          ),
-                          const SizedBox(height: 12),
-
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(color: cardLow, borderRadius: BorderRadius.circular(8)),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text('Visibility Guard', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textOnSurface)),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(color: const Color(0xFFFFF1F1), borderRadius: BorderRadius.circular(4)),
-                                      child: const Text('Verified Sponsors Only', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: primaryCrimson)),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  'Unverified recruiters and generic search engine crawlers cannot view contact details or full CV attachments.',
-                                  style: TextStyle(fontSize: 10, color: textSecondary),
-                                ),
-                                const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                  decoration: BoxDecoration(color: cardHigh, borderRadius: BorderRadius.circular(6)),
-                                  child: const Row(
-                                    children: [
-                                      Icon(Icons.block, size: 16, color: Color(0xFFBA1A1A)),
-                                      SizedBox(width: 8),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text('HIDDEN FROM CURRENT EMPLOYER', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: textSecondary)),
-                                            Text('PetroGulf Energy Ltd.', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textOnSurface)),
-                                          ],
-                                        ),
-                                      ),
-                                      Text('Edit', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryCrimson)),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(color: cardLow, borderRadius: BorderRadius.circular(8)),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.lock_clock, size: 18, color: primaryCrimson),
-                                SizedBox(width: 8),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('256-bit AES Vault Encryption', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textOnSurface)),
-                                      Text(
-                                        'All attested educational degrees, medical certificates, and police clearances are safeguarded with sovereign tier isolation.',
-                                        style: TextStyle(fontSize: 9, color: textSecondary),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.download, size: 16, color: primaryCrimson),
-                              label: const Text('Download Complete Dossier (PDF • JSON)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textOnSurface)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: cardHigh,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Center(
-                            child: TextButton(
-                              onPressed: () {},
-                              child: const Text('Request Permanent Profile Erasure', style: TextStyle(fontSize: 11, color: Color(0xFFBA1A1A))),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Dedicated Mobility Advisor Card
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: cardLowest,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              const CircleAvatar(
-                                radius: 20,
-                                backgroundColor: Color(0xFFFFF1F1),
-                                child: Icon(Icons.support_agent, size: 22, color: primaryCrimson),
-                              ),
-                              const SizedBox(width: 12),
-                              const Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('DEDICATED MOBILITY ADVISOR', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: textSecondary)),
-                                    Text('Eng. Tariq Al-Ghamdi', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textOnSurface)),
-                                  ],
-                                ),
-                              ),
-                              Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF25D366))),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Assigned to guide your embassy trade tests, medical staging, and final Saudi visa endorsements.',
-                            style: TextStyle(fontSize: 11, color: textSecondary),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 44,
-                            child: ElevatedButton.icon(
-                              onPressed: () async {
-                                final uri = Uri.parse('https://wa.me/966550123456?text=Hello%20Eng.%20Tariq,%20I%20need%20assistance%20with%20my%20GCC%20mobility%20process');
-                                try {
-                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                } catch (_) {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Advisor WhatsApp: +966 55 012 3456')),
-                                    );
-                                  }
-                                }
-                              },
-                              icon: const Icon(Icons.send, size: 16, color: Colors.white),
-                              label: const Text('Message Advisor via WhatsApp', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: primaryCrimson,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                elevation: 0,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Sign Out & Version Info
-                    SizedBox(
-                      width: double.infinity,
-                      height: 44,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.bold)),
-                              content: const Text('Are you sure you want to sign out of the GCC Recruitment Portal?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('Cancel'),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFBA1A1A), foregroundColor: Colors.white),
-                                  onPressed: () async {
-                                    Navigator.pop(ctx);
-                                    await ref.read(authStateProvider.notifier).logout();
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('✓ Signed out successfully. You can sign in anytime.'),
-                                          backgroundColor: Color(0xFF059669),
-                                        ),
-                                      );
-                                      AuthSheet.show(context);
-                                    }
-                                  },
-                                  child: const Text('Sign Out'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.logout, size: 18, color: Color(0xFFBA1A1A)),
-                        label: const Text('Sign Out of GCC Portal', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFBA1A1A))),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFFFDAD6)),
-                          backgroundColor: cardLow,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Center(
-                      child: Column(
-                        children: [
-                          Text('Global Jobs by Suhana • v2.4.1 (Build 890)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF42474F))),
-                          SizedBox(height: 2),
-                          Text('Certified Overseas Manpower License #OM-9823/GCC', style: TextStyle(fontSize: 9, color: textSecondary)),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
+                );
+              }),
+              const SizedBox(height: 12),
+              const Text('Or enter custom timeline:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: _inkLight)),
+              const SizedBox(height: 4),
+              TextField(
+                controller: customCtrl,
+                decoration: const InputDecoration(
+                  hintText: 'e.g. 45 days, Negotiable',
+                  border: OutlineInputBorder(),
+                  isDense: true,
                 ),
               ),
             ],
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (customCtrl.text.trim().isNotEmpty) {
+                setState(() => _relocationTimeline = customCtrl.text.trim());
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('✓ Relocation timeline updated to: ${customCtrl.text.trim()}'),
+                    backgroundColor: const Color(0xFF059669),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: _crimson, foregroundColor: Colors.white),
+            child: const Text('Save Custom'),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildCountryToggle(String flag, String country, String subtitle, bool value, ValueChanged<bool> onChanged) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F3FD),
-        borderRadius: BorderRadius.circular(8),
+  void _editMinSalary() {
+    final presets = [
+      'SAR 10,000 / mo',
+      'SAR 12,500 / mo',
+      'SAR 15,000 / mo',
+      'SAR 18,000 / mo',
+      'SAR 20,000 / mo',
+      'SAR 25,000+ / mo',
+    ];
+    final salaryCtrl = TextEditingController(text: _minSalary);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Minimum Expected Salary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Enter target minimum monthly pay:', style: TextStyle(fontSize: 11, color: _inkLight)),
+              const SizedBox(height: 6),
+              TextField(
+                controller: salaryCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Minimum Salary',
+                  hintText: 'e.g. SAR 15,000 / mo',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text('Or select standard tier:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _inkLight)),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: presets.map((p) {
+                  return ActionChip(
+                    label: Text(p, style: const TextStyle(fontSize: 11)),
+                    backgroundColor: _minSalary == p ? const Color(0xFFFFF1F1) : const Color(0xFFF1F3FD),
+                    side: BorderSide(color: _minSalary == p ? _crimson : Colors.transparent),
+                    onPressed: () {
+                      salaryCtrl.text = p;
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (salaryCtrl.text.trim().isNotEmpty) {
+                setState(() => _minSalary = salaryCtrl.text.trim());
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('✓ Min. salary updated to: ${salaryCtrl.text.trim()}'),
+                    backgroundColor: const Color(0xFF059669),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: _crimson, foregroundColor: Colors.white),
+            child: const Text('Save'),
+          ),
+        ],
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profileAsync = ref.watch(profileProvider);
+    final authState = ref.watch(authStateProvider);
+    final vaultDocsAsync = ref.watch(vaultDocumentsProvider);
+
+    final profile = profileAsync.value;
+    final currentUser = authState.value;
+    final name = profile?.fullName ?? currentUser?.fullName ?? 'Ahmed Mansoor Al-Sayed';
+    final title = profile?.targetTitle ?? 'Senior Offshore HSE Supervisor';
+    final gccExp = profile?.gccExperience ?? 4;
+    final uid = profile?.uid ?? currentUser?.id ?? 'SUH-GCC-88219';
+    final score = (profile?.readinessScore ?? 85);
+    final scoreFraction = score / 100.0;
+    final docCount = vaultDocsAsync.value?.length ?? 4;
+
+    return Scaffold(
+      backgroundColor: _surface,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // ── App Bar ──────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Container(
+                color: _white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'My Profile',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _ink),
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.notifications_outlined, color: _inkLight, size: 22),
+                          onPressed: () => NotificationsSheet.show(context),
+                        ),
+                        InkWell(
+                          onTap: () => AuthSheet.show(context),
+                          borderRadius: BorderRadius.circular(16),
+                          child: const CircleAvatar(
+                            radius: 16,
+                            backgroundColor: _cardMid,
+                            child: Icon(Icons.person, size: 18, color: _crimson),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            SliverPadding(
+              padding: const EdgeInsets.all(16),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+
+                  // ── 1. Profile Hero Card ─────────────────────────────
+                  _Card(
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            // Verification Ring
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 72,
+                                  height: 72,
+                                  child: CircularProgressIndicator(
+                                    value: scoreFraction,
+                                    strokeWidth: 5,
+                                    backgroundColor: _cardMid,
+                                    valueColor: const AlwaysStoppedAnimation<Color>(_crimson),
+                                  ),
+                                ),
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '$score%',
+                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _crimson),
+                                    ),
+                                    const Text(
+                                      'VERIFIED',
+                                      style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: _inkLight, letterSpacing: 0.5),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Tier badge
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFF1F1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'TIER 1 CANDIDATE',
+                                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _crimson, letterSpacing: 0.8),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    name,
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _ink),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(title, style: const TextStyle(fontSize: 12, color: _inkLight)),
+                                  const SizedBox(height: 2),
+                                  Text('${gccExp.toStringAsFixed(1)} yrs GCC Experience',
+                                      style: const TextStyle(fontSize: 12, color: _inkLight)),
+                                  const SizedBox(height: 6),
+                                  // UID + edit
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(color: _cardMid, borderRadius: BorderRadius.circular(4)),
+                                        child: Text('#$uid',
+                                            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF42474F))),
+                                      ),
+                                      const Spacer(),
+                                      GestureDetector(
+                                        onTap: () => context.push('/cv/review'),
+                                        child: const Row(
+                                          children: [
+                                            Text('Edit', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _crimson)),
+                                            Icon(Icons.chevron_right, size: 14, color: _crimson),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        // Verification badges
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                          decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _Badge(icon: Icons.verified, label: 'PASSPORT OK'),
+                              _Divider(),
+                              _Badge(icon: Icons.document_scanner, label: 'CV PARSED'),
+                              _Divider(),
+                              _Badge(icon: Icons.workspace_premium, label: 'NEBOSH'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // ── 2. My Documents (Vault merged in) ────────────────
+                  _SectionHeader(
+                    icon: Icons.folder_open_rounded,
+                    title: 'My Documents',
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(color: _cardMid, borderRadius: BorderRadius.circular(6)),
+                      child: Text('$docCount files',
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _inkLight)),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _Card(
+                    child: Column(
+                      children: [
+                        _DocTile(
+                          icon: Icons.description_rounded,
+                          title: 'CV / Resume',
+                          subtitle: 'Parsed & Active',
+                          status: 'Verified',
+                          statusColor: _crimson,
+                          onTap: () => context.push('/cv/review'),
+                        ),
+                        const _CardDivider(),
+                        _DocTile(
+                          icon: Icons.badge_rounded,
+                          title: 'Passport',
+                          subtitle: 'Exp: Jan 2028',
+                          status: 'MRZ OK',
+                          statusColor: _crimson,
+                          onTap: () => context.push('/vault/passport-update'),
+                        ),
+                        const _CardDivider(),
+                        _DocTile(
+                          icon: Icons.military_tech_rounded,
+                          title: 'Certifications',
+                          subtitle: 'NEBOSH IGC, OPITO BOSIET',
+                          status: '2 docs',
+                          statusColor: _crimson,
+                          onTap: () => context.push('/vault/certifications'),
+                        ),
+                        const _CardDivider(),
+                        _DocTile(
+                          icon: Icons.health_and_safety_rounded,
+                          title: 'GAMCA Medical Clearance',
+                          subtitle: 'Required for KSA visa',
+                          status: 'Pending',
+                          statusColor: const Color(0xFFB45309),
+                          onTap: () {},
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => context.push('/vault/passport-scan'),
+                            icon: const Icon(Icons.add, size: 16, color: _crimson),
+                            label: const Text('Add Document', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _crimson)),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: _crimson, width: 1),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // ── 3. GCC Job Match ─────────────────────────────────
+                  _SectionHeader(icon: Icons.corporate_fare_rounded, title: 'GCC Job Match'),
+                  const SizedBox(height: 8),
+                  _Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text.rich(
+                          TextSpan(
+                            text: 'You qualify for ',
+                            style: TextStyle(fontSize: 13, color: _inkLight),
+                            children: [
+                              TextSpan(
+                                text: '48 verified vacancies',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: _ink),
+                              ),
+                              TextSpan(text: ' across Saudi Arabia, UAE & Qatar.'),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('EST. TAX-FREE SALARY', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
+                                  SizedBox(height: 2),
+                                  Text.rich(
+                                    TextSpan(
+                                      text: 'SAR 14,000 – 18,500',
+                                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _crimson),
+                                      children: [
+                                        TextSpan(text: ' / mo', style: TextStyle(fontSize: 12, color: _inkLight, fontWeight: FontWeight.normal)),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text('+ Family status & furnished accommodation', style: TextStyle(fontSize: 10, color: _inkLight)),
+                                ],
+                              ),
+                              Icon(Icons.trending_up_rounded, color: _crimson, size: 28),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // ── 4. Target Countries ──────────────────────────────
+                  _SectionHeader(icon: Icons.public_rounded, title: 'Target Countries'),
+                  const SizedBox(height: 8),
+                  _Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Region filter chips
+                        const Text('REGION', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
+                        const SizedBox(height: 6),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: _regions.map((region) {
+                              final isSelected = _selectedRegion == region;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _selectedRegion = region),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? _crimson : _cardLow,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      region,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: isSelected ? Colors.white : _inkLight,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        const Divider(height: 1, thickness: 0.5, color: _cardMid),
+                        const SizedBox(height: 10),
+                        // Dynamic countries for selected region
+                        ...(_regionCountries[_selectedRegion] ?? []).map((country) {
+                          final name = country['name']!;
+                          final enabled = _countryToggles[name] ?? false;
+                          return _CountryToggle(
+                            country['flag']!,
+                            name,
+                            country['subtitle']!,
+                            enabled,
+                            (v) => setState(() => _countryToggles[name] = v),
+                          );
+                        }),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: _editRelocationTimeline,
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: _cardLow,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('RELOCATION', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
+                                            const SizedBox(height: 2),
+                                            Text(_relocationTimeline, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _ink)),
+                                          ],
+                                        ),
+                                      ),
+                                      const Icon(Icons.edit_outlined, size: 14, color: _crimson),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: InkWell(
+                                onTap: _editMinSalary,
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: _cardLow,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('MIN. SALARY', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
+                                            const SizedBox(height: 2),
+                                            Text(_minSalary, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _ink)),
+                                          ],
+                                        ),
+                                      ),
+                                      const Icon(Icons.edit_outlined, size: 14, color: _crimson),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // ── 5. Notifications ─────────────────────────────────
+                  _SectionHeader(icon: Icons.notifications_outlined, title: 'Notifications'),
+                  const SizedBox(height: 8),
+                  _Card(
+                    child: Column(
+                      children: [
+                        _NotifToggle(
+                          icon: Icons.chat_bubble_rounded,
+                          iconColor: const Color(0xFF128C7E),
+                          label: 'WhatsApp',
+                          subtitle: 'Interview invites & embassy updates',
+                          value: _whatsappAlerts,
+                          onChanged: (v) => setState(() => _whatsappAlerts = v),
+                        ),
+                        const _CardDivider(),
+                        _NotifToggle(
+                          icon: Icons.phone_android_rounded,
+                          iconColor: _crimson,
+                          label: 'Push Notifications',
+                          subtitle: 'New jobs & pipeline updates',
+                          value: _pushAlerts,
+                          onChanged: (v) => setState(() => _pushAlerts = v),
+                        ),
+                        const _CardDivider(),
+                        _NotifToggle(
+                          icon: Icons.forward_to_inbox_rounded,
+                          iconColor: _inkLight,
+                          label: 'Email Digest',
+                          subtitle: 'Weekly profile view summary',
+                          value: _emailDigest,
+                          onChanged: (v) => setState(() => _emailDigest = v),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // ── 6. Privacy ───────────────────────────────────────
+                  _SectionHeader(icon: Icons.shield_outlined, title: 'Privacy & Security'),
+                  const SizedBox(height: 8),
+                  _Card(
+                    child: Column(
+                      children: [
+                        // Profile Visibility row — tappable
+                        InkWell(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Profile Visibility', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _VisibilityOption(
+                                      icon: Icons.verified_user_outlined,
+                                      label: 'Verified Sponsors Only',
+                                      subtitle: 'Only MOHRE/GAMCA-verified employers see you',
+                                      value: 'sponsors_only',
+                                      selected: _visibilityMode,
+                                      onTap: () { setState(() => _visibilityMode = 'sponsors_only'); Navigator.pop(ctx); },
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _VisibilityOption(
+                                      icon: Icons.public,
+                                      label: 'All Recruiters',
+                                      subtitle: 'Any registered recruiter can view your profile',
+                                      value: 'all_recruiters',
+                                      selected: _visibilityMode,
+                                      onTap: () { setState(() => _visibilityMode = 'all_recruiters'); Navigator.pop(ctx); },
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _VisibilityOption(
+                                      icon: Icons.lock_outline,
+                                      label: 'Private',
+                                      subtitle: 'Profile hidden — apply directly to jobs only',
+                                      value: 'private',
+                                      selected: _visibilityMode,
+                                      onTap: () { setState(() => _visibilityMode = 'private'); Navigator.pop(ctx); },
+                                    ),
+                                  ],
+                                ),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                                ],
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Profile Visibility', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: _ink)),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _visibilityMode == 'sponsors_only'
+                                          ? 'Verified sponsors only'
+                                          : _visibilityMode == 'all_recruiters'
+                                              ? 'All recruiters'
+                                              : 'Private (hidden)',
+                                      style: const TextStyle(fontSize: 11, color: _inkLight),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: _visibilityMode == 'private'
+                                            ? const Color(0xFFF1F3FD)
+                                            : const Color(0xFFFFF1F1),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        _visibilityMode == 'private' ? 'Private' : 'Active',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: _visibilityMode == 'private' ? _inkLight : _crimson,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.chevron_right, size: 16, color: _inkLight),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // Hidden from company — tappable Edit
+                        GestureDetector(
+                          onTap: () {
+                            final ctrl = TextEditingController(text: _hiddenFromCompany);
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Hide Profile From', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                content: TextField(
+                                  controller: ctrl,
+                                  autofocus: true,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Company name',
+                                    hintText: 'e.g. Aramco, Shell, TotalEnergies',
+                                    border: OutlineInputBorder(),
+                                    isDense: true,
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      if (ctrl.text.trim().isNotEmpty) {
+                                        setState(() => _hiddenFromCompany = ctrl.text.trim());
+                                      }
+                                      Navigator.pop(ctx);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: _crimson,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    child: const Text('Save'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.block, size: 16, color: Color(0xFFBA1A1A)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('HIDDEN FROM', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
+                                      Text(_hiddenFromCompany, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _ink)),
+                                    ],
+                                  ),
+                                ),
+                                const Text('Edit', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _crimson)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('⬇ Generating your GCC Candidate Dossier…'),
+                                  backgroundColor: Color(0xFF334155),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.download_rounded, size: 16, color: _crimson),
+                            label: const Text('Download My Dossier (PDF)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _cardMid,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+
+                  // ── 7. Language & Region ─────────────────────────────
+                  _SectionHeader(icon: Icons.language_rounded, title: 'Language & Region'),
+                  const SizedBox(height: 8),
+                  _Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('PLATFORM LANGUAGE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
+                          child: Row(
+                            children: [
+                              _LangTab('English', 'en', _selectedLanguage, () => setState(() => _selectedLanguage = 'en')),
+                              _LangTab('العربية', 'ar', _selectedLanguage, () => setState(() => _selectedLanguage = 'ar')),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('CURRENCY', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
+                                    child: const Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('SAR', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _ink)),
+                                        Icon(Icons.expand_more, size: 16, color: _inkLight),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('TIMEZONE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
+                                    child: const Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('AST +3', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _ink)),
+                                        Icon(Icons.schedule, size: 16, color: _inkLight),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // ── 8. Mobility Advisor ──────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: _cardMid,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const CircleAvatar(
+                              radius: 20,
+                              backgroundColor: _white,
+                              child: Icon(Icons.support_agent_rounded, size: 22, color: _crimson),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('YOUR CAREER ADVISOR', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
+                                  Text('Eng. Tariq Al-Ghamdi', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _ink)),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF25D366)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Get fast-track visa guidance, embassy clearance, and GCC relocation support.',
+                          style: TextStyle(fontSize: 11, color: _inkLight),
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => WhatsAppService.showWhatsAppAssistantSheet(
+                              context: context,
+                              title: 'Career Advisor — Tariq',
+                              referenceCode: 'ADVISOR-TARIQ-GCC',
+                            ),
+                            icon: const Icon(Icons.chat_rounded, size: 16, color: Colors.white),
+                            label: const Text('Chat on WhatsApp', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _crimson,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // ── Sign out ─────────────────────────────────────────
+                  Center(
+                    child: TextButton(
+                      onPressed: () {},
+                      child: const Text('Sign Out', style: TextStyle(fontSize: 12, color: Color(0xFFBA1A1A))),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ]),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Reusable small widgets ───────────────────────────────────────────────────
+
+class _Card extends StatelessWidget {
+  final Widget child;
+  const _Card({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2))],
+      ),
+      child: child,
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Widget? trailing;
+  const _SectionHeader({required this.icon, required this.title, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: const Color(0xFF6E0000)),
+        const SizedBox(width: 6),
+        Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF181C23))),
+        const Spacer(),
+        ?trailing,
+      ],
+    );
+  }
+}
+
+class _CardDivider extends StatelessWidget {
+  const _CardDivider();
+  @override
+  Widget build(BuildContext context) =>
+      const Divider(height: 16, thickness: 0.5, color: Color(0xFFE5E8F2));
+}
+
+class _Badge extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _Badge({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 12, color: const Color(0xFF6E0000)),
+        const SizedBox(width: 3),
+        Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF181C23))),
+      ],
+    );
+  }
+}
+
+class _Divider extends StatelessWidget {
+  const _Divider();
+  @override
+  Widget build(BuildContext context) =>
+      Container(width: 1, height: 14, color: const Color(0xFFE5E8F2));
+}
+
+class _DocTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String status;
+  final Color statusColor;
+  final VoidCallback onTap;
+
+  const _DocTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.status,
+    required this.statusColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: const Color(0xFFF1F3FD), borderRadius: BorderRadius.circular(8)),
+              child: Icon(icon, size: 18, color: const Color(0xFF6E0000)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF181C23))),
+                  Text(subtitle, style: const TextStyle(fontSize: 11, color: Color(0xFF5A5F67))),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(status, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right, size: 18, color: Color(0xFF5A5F67)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CountryToggle extends StatelessWidget {
+  final String flag;
+  final String country;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _CountryToggle(this.flag, this.country, this.subtitle, this.value, this.onChanged);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
           Text(flag, style: const TextStyle(fontSize: 20)),
@@ -880,63 +1234,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(country, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF181C23))),
-                Text(subtitle, style: TextStyle(fontSize: 10, color: value ? const Color(0xFF6E0000) : const Color(0xFF5A5F67), fontWeight: value ? FontWeight.w600 : FontWeight.normal)),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            activeThumbColor: const Color(0xFF6E0000),
-            onChanged: onChanged,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChannelTile({
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBg,
-    required String title,
-    required String subtitle,
-    required String? note,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F3FD),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(6)),
-            child: Icon(icon, size: 18, color: iconColor),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF181C23))),
+                Text(country, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF181C23))),
                 Text(subtitle, style: const TextStyle(fontSize: 10, color: Color(0xFF5A5F67))),
-                if (note != null) ...[
-                  const SizedBox(height: 2),
-                  Text(note, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: Color(0xFF6E0000))),
-                ],
               ],
             ),
           ),
           Switch(
             value: value,
-            activeThumbColor: const Color(0xFF6E0000),
             onChanged: onChanged,
+            activeThumbColor: const Color(0xFF6E0000),
+            activeTrackColor: const Color(0xFF6E0000).withValues(alpha: 0.4),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ],
       ),
@@ -944,3 +1252,138 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
+class _NotifToggle extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _NotifToggle({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: iconColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF181C23))),
+                Text(subtitle, style: const TextStyle(fontSize: 11, color: Color(0xFF5A5F67))),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: const Color(0xFF6E0000),
+            activeTrackColor: const Color(0xFF6E0000).withValues(alpha: 0.4),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LangTab extends StatelessWidget {
+  final String label;
+  final String code;
+  final String selected;
+  final VoidCallback onTap;
+
+  const _LangTab(this.label, this.code, this.selected, this.onTap);
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = selected == code;
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF6E0000) : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: isSelected ? Colors.white : const Color(0xFF181C23),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VisibilityOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final String value;
+  final String selected;
+  final VoidCallback onTap;
+
+  const _VisibilityOption({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.value,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = selected == value;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFFF1F1) : const Color(0xFFF1F3FD),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF6E0000) : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: isSelected ? const Color(0xFF6E0000) : const Color(0xFF5A5F67)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isSelected ? const Color(0xFF6E0000) : const Color(0xFF181C23))),
+                  Text(subtitle, style: const TextStyle(fontSize: 10, color: Color(0xFF5A5F67))),
+                ],
+              ),
+            ),
+            if (isSelected) const Icon(Icons.check_circle, size: 18, color: Color(0xFF6E0000)),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -22,6 +22,22 @@ class WorkExperienceItem {
   });
 }
 
+class EducationItem {
+  String degree;
+  String institution;
+  String fieldOfStudy;
+  String graduationYear;
+  bool isVerified;
+
+  EducationItem({
+    required this.degree,
+    required this.institution,
+    required this.fieldOfStudy,
+    required this.graduationYear,
+    this.isVerified = false,
+  });
+}
+
 class CVReviewScreen extends ConsumerStatefulWidget {
   const CVReviewScreen({super.key});
 
@@ -63,6 +79,145 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
       ],
     ),
   ];
+
+  final List<EducationItem> _educationList = [
+    EducationItem(
+      degree: 'Bachelor of Science',
+      fieldOfStudy: 'Mechanical Engineering',
+      institution: 'Cairo University, Faculty of Engineering',
+      graduationYear: '2016',
+      isVerified: true,
+    ),
+  ];
+
+  void _showAddEducationModal({EducationItem? existing, int? editIndex}) {
+    final degreeCtrl = TextEditingController(text: existing?.degree ?? '');
+    final fieldCtrl = TextEditingController(text: existing?.fieldOfStudy ?? '');
+    final institutionCtrl = TextEditingController(text: existing?.institution ?? '');
+    final yearCtrl = TextEditingController(text: existing?.graduationYear ?? '');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          top: 20,
+          left: 20,
+          right: 20,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    existing == null ? 'Add Education' : 'Edit Education',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  ),
+                  IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: degreeCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Degree (e.g. Bachelor of Science)',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: fieldCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Field of Study (e.g. Mechanical Engineering)',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: institutionCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'University / Institution',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: yearCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Graduation Year (e.g. 2016)',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  if (existing != null) ...[
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        setState(() => _educationList.removeAt(editIndex!));
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (degreeCtrl.text.trim().isEmpty) return;
+                        final item = EducationItem(
+                          degree: degreeCtrl.text.trim(),
+                          fieldOfStudy: fieldCtrl.text.trim(),
+                          institution: institutionCtrl.text.trim(),
+                          graduationYear: yearCtrl.text.trim(),
+                          isVerified: existing?.isVerified ?? false,
+                        );
+                        setState(() {
+                          if (existing == null) {
+                            _educationList.add(item);
+                          } else {
+                            _educationList[editIndex!] = item;
+                          }
+                        });
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(existing == null ? '✓ Education added!' : '✓ Education updated!'),
+                            backgroundColor: const Color(0xFF059669),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6E0000),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Text(existing == null ? 'Save Education' : 'Update Education',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   void _showAddExperienceModal({WorkExperienceItem? existing, int? editIndex}) {
     final titleCtrl = TextEditingController(text: existing?.title ?? '');
@@ -276,6 +431,28 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Top-left back button
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.arrow_back, size: 18, color: Color(0xFF1E1B1B)),
+                        onPressed: () => context.pop(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               // Header Stepper Indicator
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -416,74 +593,100 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                     children: [
                       Icon(Icons.school_outlined, size: 18, color: Color(0xFF6E0000)),
                       SizedBox(width: 6),
-                      Text('Highest Education', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+                      Text('Education', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
                     ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: const Color(0xFFECFDF5), borderRadius: BorderRadius.circular(4)),
-                    child: const Text('Verified', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF065F46))),
-                  ),
+                  if (_educationList.any((e) => e.isVerified))
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: const Color(0xFFECFDF5), borderRadius: BorderRadius.circular(4)),
+                      child: const Text('Verified', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF065F46))),
+                    ),
                 ],
               ),
               const SizedBox(height: 10),
 
-              // Education Card
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE4DADB)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              // Dynamic Education Cards
+              ..._educationList.asMap().entries.map((entry) {
+                final idx = entry.key;
+                final edu = entry.value;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE4DADB)),
+                    ),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(8)),
-                          child: const Icon(Icons.account_balance, size: 20, color: Color(0xFF334155)),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(8)),
+                              child: const Icon(Icons.account_balance, size: 20, color: Color(0xFF334155)),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${edu.degree} in\n${edu.fieldOfStudy}',
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, height: 1.2),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${edu.institution}\n• Graduated ${edu.graduationYear}',
+                                    style: const TextStyle(fontSize: 10, color: Color(0xFF5B403C)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined, size: 16),
+                              onPressed: () => _showAddEducationModal(existing: edu, editIndex: idx),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Bachelor of Science in\nMechanical Engineering', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, height: 1.2)),
-                              SizedBox(height: 2),
-                              Text('Cairo University, Faculty of Engineering\n• Graduated 2016', style: TextStyle(fontSize: 10, color: Color(0xFF5B403C))),
-                            ],
+                        if (edu.isVerified) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(6)),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.verified, size: 12, color: Color(0xFF059669)),
+                                SizedBox(width: 4),
+                                Text('Apostille & Cultural Attestation Ready', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF1E1B1B))),
+                              ],
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 16),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Education attestation status: Verified')),
-                            );
-                          },
-                        ),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(6)),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.verified, size: 12, color: Color(0xFF059669)),
-                          SizedBox(width: 4),
-                          Text('Apostille & Cultural Attestation Ready', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF1E1B1B))),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
+                );
+              }),
+
+              // Add Education Button
+              OutlinedButton.icon(
+                onPressed: () => _showAddEducationModal(),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF6E0000),
+                  side: const BorderSide(color: Color(0xFFE4BEB8)),
+                  minimumSize: const Size.fromHeight(42),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
+                icon: const Icon(Icons.add_circle_outline, size: 16),
+                label: const Text('Add Education', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
               ),
               const SizedBox(height: 16),
+
 
               // Extracted Core Skills & Trades
               const Row(
@@ -562,57 +765,38 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Bottom Actions: Back button + Save & Continue to Certifications
-              Row(
-                children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back, size: 18),
-                      onPressed: () => context.pop(),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        try {
-                          final currentProfile = ref.read(profileProvider).value;
-                          if (currentProfile != null && _workHistory.isNotEmpty) {
-                            final firstExp = _workHistory.first;
-                            final updated = currentProfile.copyWith(
-                              targetTitle: firstExp.title,
-                            );
-                            await ref.read(profileRepositoryProvider).updateProfile(updated);
-                          }
-                        } catch (_) {}
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('✓ Profile updated with parsed CV details!'),
-                              backgroundColor: Color(0xFF059669),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                          context.push(RouteNames.certifications);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6E0000),
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(46),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              // Bottom Action: Save & Continue to Certifications
+              ElevatedButton.icon(
+                onPressed: () async {
+                  try {
+                    final currentProfile = ref.read(profileProvider).value;
+                    if (currentProfile != null && _workHistory.isNotEmpty) {
+                      final firstExp = _workHistory.first;
+                      final updated = currentProfile.copyWith(
+                        targetTitle: firstExp.title,
+                      );
+                      await ref.read(profileRepositoryProvider).updateProfile(updated);
+                    }
+                  } catch (_) {}
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('✓ Profile updated with parsed CV details!'),
+                        backgroundColor: Color(0xFF059669),
+                        duration: Duration(seconds: 2),
                       ),
-                      icon: const Text('Save & Continue to Certifications', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                      label: const Icon(Icons.arrow_forward, size: 16),
-                    ),
-                  ),
-                ],
+                    );
+                    context.push(RouteNames.certifications);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6E0000),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(46),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                icon: const Text('Save & Continue to Certifications', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                label: const Icon(Icons.arrow_forward, size: 16),
               ),
               const SizedBox(height: 20),
             ],
