@@ -7,7 +7,14 @@ enum RecruitmentRegion {
     flag: '🇸🇦',
     subtitle: 'Saudi Arabia, UAE, Qatar, Kuwait, Oman, Bahrain',
     description: 'Tax-free compensation, sponsored Iqamas, and mega giga-projects.',
-    countryCodes: ['sau', 'ksa', 'uae', 'are', 'qat', 'kwt', 'omn', 'bhr'],
+    countryCodes: [
+      'sau', 'ksa', 'saudi arabia', 'saudi',
+      'uae', 'are', 'united arab emirates', 'dubai', 'abu dhabi',
+      'qat', 'qatar', 'doha',
+      'kwt', 'kuwait',
+      'omn', 'oman', 'muscat',
+      'bhr', 'bahrain', 'manama',
+    ],
   ),
   apac(
     id: 'apac',
@@ -16,7 +23,18 @@ enum RecruitmentRegion {
     flag: '🌏',
     subtitle: 'Singapore, Malaysia, Japan, India, South Korea',
     description: 'LNG terminals, subsea pipelines, smart infrastructure & offshore energy.',
-    countryCodes: ['sgp', 'mys', 'jpn', 'ind', 'kor', 'vnm'],
+    countryCodes: [
+      'sgp', 'singapore',
+      'mys', 'malaysia',
+      'jpn', 'japan',
+      'ind', 'india',
+      'kor', 'south korea', 'korea',
+      'vnm', 'vietnam',
+      'idn', 'indonesia',
+      'phl', 'philippines',
+      'tha', 'thailand',
+      'twn', 'taiwan',
+    ],
   ),
   emea(
     id: 'emea',
@@ -25,7 +43,20 @@ enum RecruitmentRegion {
     flag: '🌍',
     subtitle: 'United Kingdom, Germany, Netherlands, South Africa',
     description: 'North Sea offshore wind, high-tech engineering, industrial refining & renewables.',
-    countryCodes: ['gbr', 'uk', 'deu', 'fra', 'nld', 'zaf', 'che'],
+    countryCodes: [
+      'gbr', 'uk', 'united kingdom', 'great britain', 'england', 'scotland',
+      'deu', 'germany',
+      'fra', 'france',
+      'nld', 'netherlands', 'holland',
+      'zaf', 'south africa',
+      'che', 'switzerland',
+      'nor', 'norway',
+      'irl', 'ireland',
+      'esp', 'spain',
+      'ita', 'italy',
+      'swe', 'sweden',
+      'dnk', 'denmark',
+    ],
   ),
   usa(
     id: 'usa',
@@ -34,7 +65,11 @@ enum RecruitmentRegion {
     flag: '🇺🇸',
     subtitle: 'United States, Canada',
     description: 'Deepwater drilling, refinery turnarounds, clean tech & heavy energy infrastructure.',
-    countryCodes: ['usa', 'can', 'mex'],
+    countryCodes: [
+      'usa', 'us', 'united states', 'united states of america',
+      'can', 'canada',
+      'mex', 'mexico',
+    ],
   ),
   oceania(
     id: 'oceania',
@@ -43,7 +78,12 @@ enum RecruitmentRegion {
     flag: '🇦🇺',
     subtitle: 'Australia, New Zealand, Papua New Guinea',
     description: 'Iron ore mining, ports & maritime logistics, trans-Tasman civil mega-projects.',
-    countryCodes: ['aus', 'nzl', 'png', 'fji'],
+    countryCodes: [
+      'aus', 'australia',
+      'nzl', 'new zealand',
+      'png', 'papua new guinea',
+      'fji', 'fiji',
+    ],
   ),
   global(
     id: 'global',
@@ -72,6 +112,15 @@ enum RecruitmentRegion {
     required this.description,
     required this.countryCodes,
   });
+
+  /// Checks if a job matches this region either via its region identifier or its country code.
+  bool matchesJob(String jobRegion, String countryCode) {
+    if (this == RecruitmentRegion.global) return true;
+    final r = jobRegion.toLowerCase().trim();
+    if (r == id.toLowerCase()) return true;
+    final c = countryCode.toLowerCase().trim();
+    return countryCodes.contains(c);
+  }
 
   static RecruitmentRegion fromId(String? id) {
     if (id == null) return RecruitmentRegion.gcc;

@@ -6,13 +6,39 @@ import 'package:mena_recruitment/features/jobs/domain/job_filter.dart';
 import 'package:mena_recruitment/features/jobs/domain/jobs_repository.dart';
 import 'package:mena_recruitment/features/jobs/domain/walkin_drive_entity.dart';
 import 'package:mena_recruitment/features/jobs/data/mock_jobs_data.dart';
+import 'package:mena_recruitment/features/jobs/domain/recruitment_region.dart';
 
 class JobsRepositoryImpl implements JobsRepository {
   final ApiClient _apiClient = ApiClient();
   final Set<String> _bookmarkedIds = {};
 
+  List<Job> _mergeJobs(List<Job> backendJobs, List<Job> localJobs) {
+    if (backendJobs.isEmpty) return List<Job>.from(localJobs);
+
+    final seenIds = <String>{};
+    final seenTitles = <String>{};
+    final merged = <Job>[];
+
+    for (final job in backendJobs) {
+      seenIds.add(job.id.toLowerCase());
+      seenTitles.add('${job.title.toLowerCase().trim()}_${job.countryCode.toLowerCase().trim()}');
+      merged.add(job);
+    }
+
+    for (final job in localJobs) {
+      final idKey = job.id.toLowerCase();
+      final titleKey = '${job.title.toLowerCase().trim()}_${job.countryCode.toLowerCase().trim()}';
+      if (!seenIds.contains(idKey) && !seenTitles.contains(titleKey)) {
+        merged.add(job);
+      }
+    }
+
+    return merged;
+  }
+
   @override
   Future<List<Job>> getJobs({JobFilter? filter, int page = 1, int pageSize = 20}) async {
+    List<Job> backendJobs = [];
     try {
       final queryParams = <String, dynamic>{
         'page': page,
@@ -42,26 +68,22 @@ class JobsRepositoryImpl implements JobsRepository {
       if (response.statusCode == 200 && response.data is List) {
         final rawList = response.data as List;
         if (rawList.isNotEmpty) {
-          final jobs = rawList
+          backendJobs = rawList
               .map((json) => Job.fromJson(json as Map<String, dynamic>))
-              .map((job) => job.copyWith(
-                    isBookmarked: _bookmarkedIds.contains(job.id) || job.isBookmarked,
-                  ))
               .toList();
-          return jobs;
         }
       }
     } catch (e) {
-      debugPrint('[JobsRepo] Backend unreachable, falling back to mock jobs: $e');
+      debugPrint('[JobsRepo] Backend unreachable, using comprehensive regional mock jobs: $e');
     }
 
-    // Graceful fallback to mock data
-    await Future.delayed(const Duration(milliseconds: 100));
-    var filtered = MockJobsData.jobs;
+    // Merge backend jobs and local mock jobs so no vacancies are left out
+    var filtered = _mergeJobs(backendJobs, MockJobsData.jobs);
+
     if (filter != null) {
       if (filter.region != null && filter.region!.isNotEmpty && filter.region != 'global' && filter.region != 'all') {
-        final reg = filter.region!.toLowerCase();
-        filtered = filtered.where((job) => job.region.toLowerCase() == reg).toList();
+        final regionObj = RecruitmentRegion.fromId(filter.region);
+        filtered = filtered.where((job) => regionObj.matchesJob(job.region, job.countryCode)).toList();
       }
 
       if (filter.searchQuery != null && filter.searchQuery!.trim().isNotEmpty) {

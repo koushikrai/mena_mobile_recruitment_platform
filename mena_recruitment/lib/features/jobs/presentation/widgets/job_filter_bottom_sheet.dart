@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mena_recruitment/core/theme/app_colors.dart';
+import 'package:mena_recruitment/features/jobs/domain/recruitment_region.dart';
 import 'package:mena_recruitment/features/jobs/providers/job_filter_provider.dart';
+import 'package:mena_recruitment/features/jobs/providers/region_provider.dart';
 
 class JobFilterBottomSheet extends ConsumerStatefulWidget {
   const JobFilterBottomSheet({super.key});
@@ -26,14 +28,61 @@ class _JobFilterBottomSheetState extends ConsumerState<JobFilterBottomSheet> {
   bool _housingIncluded = false;
   String _selectedSector = 'All';
 
-  final List<Map<String, String>> _countryOptions = [
-    {'code': 'sau', 'label': '🇸🇦 Saudi Arabia'},
-    {'code': 'uae', 'label': '🇦🇪 United Arab Emirates'},
-    {'code': 'qat', 'label': '🇶🇦 Qatar'},
-    {'code': 'kwt', 'label': '🇰🇼 Kuwait'},
-    {'code': 'omn', 'label': '🇴🇲 Oman'},
-    {'code': 'bhr', 'label': '🇧🇭 Bahrain'},
-  ];
+  List<Map<String, String>> _getCountryOptionsForRegion(RecruitmentRegion region) {
+    switch (region) {
+      case RecruitmentRegion.gcc:
+        return const [
+          {'code': 'sau', 'label': '🇸🇦 Saudi Arabia'},
+          {'code': 'uae', 'label': '🇦🇪 UAE'},
+          {'code': 'qat', 'label': '🇶🇦 Qatar'},
+          {'code': 'kwt', 'label': '🇰🇼 Kuwait'},
+          {'code': 'omn', 'label': '🇴🇲 Oman'},
+          {'code': 'bhr', 'label': '🇧🇭 Bahrain'},
+        ];
+      case RecruitmentRegion.apac:
+        return const [
+          {'code': 'sgp', 'label': '🇸🇬 Singapore'},
+          {'code': 'mys', 'label': '🇲🇾 Malaysia'},
+          {'code': 'jpn', 'label': '🇯🇵 Japan'},
+          {'code': 'ind', 'label': '🇮🇳 India'},
+          {'code': 'kor', 'label': '🇰🇷 South Korea'},
+          {'code': 'twn', 'label': '🇹🇼 Taiwan'},
+          {'code': 'vnm', 'label': '🇻🇳 Vietnam'},
+        ];
+      case RecruitmentRegion.emea:
+        return const [
+          {'code': 'gbr', 'label': '🇬🇧 UK'},
+          {'code': 'deu', 'label': '🇩🇪 Germany'},
+          {'code': 'nld', 'label': '🇳🇱 Netherlands'},
+          {'code': 'nor', 'label': '🇳🇴 Norway'},
+          {'code': 'fra', 'label': '🇫🇷 France'},
+          {'code': 'zaf', 'label': '🇿🇦 South Africa'},
+        ];
+      case RecruitmentRegion.usa:
+        return const [
+          {'code': 'usa', 'label': '🇺🇸 USA'},
+          {'code': 'can', 'label': '🇨🇦 Canada'},
+          {'code': 'mex', 'label': '🇲🇽 Mexico'},
+        ];
+      case RecruitmentRegion.oceania:
+        return const [
+          {'code': 'aus', 'label': '🇦🇺 Australia'},
+          {'code': 'nzl', 'label': '🇳🇿 New Zealand'},
+          {'code': 'png', 'label': '🇵🇬 Papua New Guinea'},
+        ];
+      case RecruitmentRegion.global:
+        return const [
+          {'code': 'sau', 'label': '🇸🇦 Saudi Arabia'},
+          {'code': 'uae', 'label': '🇦🇪 UAE'},
+          {'code': 'sgp', 'label': '🇸🇬 Singapore'},
+          {'code': 'gbr', 'label': '🇬🇧 UK'},
+          {'code': 'deu', 'label': '🇩🇪 Germany'},
+          {'code': 'usa', 'label': '🇺🇸 USA'},
+          {'code': 'can', 'label': '🇨🇦 Canada'},
+          {'code': 'aus', 'label': '🇦🇺 Australia'},
+        ];
+    }
+  }
 
   final List<String> _sectors = [
     'All',
@@ -57,6 +106,8 @@ class _JobFilterBottomSheetState extends ConsumerState<JobFilterBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedRegion = ref.watch(selectedRegionProvider);
+    final countryOptions = _getCountryOptionsForRegion(selectedRegion);
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -108,13 +159,16 @@ class _JobFilterBottomSheetState extends ConsumerState<JobFilterBottomSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // GCC Countries
-                  const Text('GCC Destination Countries', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.onSurface)),
+                  // Regional Destination Countries
+                  Text(
+                    '${selectedRegion.shortLabel} Destination Countries',
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                  ),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: _countryOptions.map((country) {
+                    children: countryOptions.map((country) {
                       final isSelected = _selectedCountries.contains(country['code']);
                       return FilterChip(
                         selected: isSelected,

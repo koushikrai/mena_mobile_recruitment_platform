@@ -40,7 +40,7 @@ async def list_jobs(
         .where(Job.is_active == True)
     )
 
-    if search_query:
+    if search_query and isinstance(search_query, str) and search_query.strip():
         term = f"%{search_query.strip()}%"
         stmt = stmt.where(
             or_(
@@ -52,7 +52,7 @@ async def list_jobs(
             )
         )
 
-    if region and region.lower() not in ["global", "all"]:
+    if region and isinstance(region, str) and region.strip().lower() not in ["global", "all"]:
         reg = region.strip().lower()
         region_map = {
             "gcc": ["KSA", "SAU", "UAE", "ARE", "QATAR", "QAT", "KUWAIT", "KWT", "OMAN", "OMN", "BAHRAIN", "BHR"],
@@ -95,7 +95,10 @@ async def list_jobs(
     stmt = stmt.order_by(Job.is_urgent.desc(), Job.created_at.desc())
     stmt = stmt.offset((page - 1) * page_size).limit(page_size)
 
-    results = (await db.execute(stmt)).scalars().all()
+    try:
+        results = (await db.execute(stmt)).scalars().all()
+    except Exception:
+        return []
 
     # Check bookmarks if user logged in
     bookmarked_ids = set()

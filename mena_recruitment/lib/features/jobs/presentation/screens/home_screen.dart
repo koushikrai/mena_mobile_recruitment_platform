@@ -343,25 +343,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Urgent Vacancies',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF1E1B1B),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'Urgent Vacancies',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1E1B1B),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              jobsAsync.maybeWhen(
+                                data: (jobs) => Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFEF2F2),
+                                    borderRadius: BorderRadius.circular(9999),
+                                    border: Border.all(color: const Color(0xFFFEE2E2)),
+                                  ),
+                                  child: Text(
+                                    '${jobs.length} in ${selectedRegion.shortLabel}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF990000),
+                                    ),
+                                  ),
+                                ),
+                                orElse: () => const SizedBox.shrink(),
+                              ),
+                            ],
                           ),
-                        ),
-                        Text(
-                          'Immediate processing & fast-track deployment',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF5B403C),
+                          Text(
+                            'Immediate processing & fast-track deployment • ${selectedRegion.name}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF5B403C),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -382,6 +408,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
                 data: (jobs) {
+                  if (jobs.isEmpty) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFE4BEB8).withValues(alpha: 0.5)),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFEF2F2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.work_outline_rounded, color: Color(0xFF990000), size: 32),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'No jobs matching criteria in ${selectedRegion.name}',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1E1B1B),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Try clearing your search query or filters to see all available vacancies.',
+                            style: TextStyle(fontSize: 12, color: Color(0xFF5B403C)),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              ref.read(jobFilterProvider.notifier).clearFilters();
+                              RegionController.switchRegion(ref, selectedRegion);
+                            },
+                            icon: const Icon(Icons.refresh_rounded, size: 16, color: Colors.white),
+                            label: Text('Show All ${selectedRegion.shortLabel} Jobs', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF990000),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              elevation: 0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
                   return ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),

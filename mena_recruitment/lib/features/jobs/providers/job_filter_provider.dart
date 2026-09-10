@@ -31,7 +31,8 @@ class JobFilterNotifier extends StateNotifier<JobFilter> {
   }
 
   void setRegion(String? region) {
-    state = state.copyWith(region: region);
+    // Clean reset of sub-filters (country, query, visa) so all jobs in the newly selected region are shown without being filtered out.
+    state = JobFilter(region: region);
   }
 
   void setSearchQuery(String query) {

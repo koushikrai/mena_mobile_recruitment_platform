@@ -21,7 +21,7 @@ class RegionSelectorSheet extends ConsumerWidget {
     if (region == RecruitmentRegion.global) {
       return MockJobsData.jobs.length;
     }
-    return MockJobsData.jobs.where((j) => j.region.toLowerCase() == region.id.toLowerCase()).length;
+    return MockJobsData.jobs.where((j) => region.matchesJob(j.region, j.countryCode)).length;
   }
 
   @override
