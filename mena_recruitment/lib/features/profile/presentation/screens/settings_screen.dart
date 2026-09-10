@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
+import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
 import 'package:mena_recruitment/core/widgets/notifications_sheet.dart';
-import 'package:mena_recruitment/features/auth/presentation/auth_sheet.dart';
 import 'package:mena_recruitment/features/auth/providers/auth_provider.dart';
 import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
 import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
@@ -17,6 +17,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  static const containerCrimson = Color(0xFF990000);
   // ── Privacy state ──────────────────────────────────────────────────────────
   String _visibilityMode = 'sponsors_only'; // 'sponsors_only' | 'all_recruiters' | 'private'
   String _hiddenFromCompany = 'PetroGulf Energy Ltd.';
@@ -170,6 +171,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text('Relocation Availability', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         content: SingleChildScrollView(
+  @override
+  Widget build(BuildContext context) {
+    const lightSurface = Color(0xFFFBF8F8);
+    const cardLowest = Colors.white;
+    const cardLow = Color(0xFFF4EFF0);
+    const cardHigh = Color(0xFFE4DADB);
+    const primaryCrimson = Color(0xFF990000);
+    const textOnSurface = Color(0xFF181C23);
+    const textSecondary = Color(0xFF5A5F67);
+
+    final profileAsync = ref.watch(profileProvider);
+    final authState = ref.watch(authStateProvider);
+    final profile = profileAsync.value;
+    final currentUser = authState.user;
+    final candidateName = profile?.fullName ?? currentUser?.fullName ?? 'Ahmed Mansoor Al-Farooq';
+    final candidateTitle = profile?.targetTitle ?? 'Senior HSE Supervisor';
+    final candidateExp = '${profile?.gccExperience ?? 4} yrs GCC Exp';
+    final candidateUid = profile?.uid ?? currentUser?.id ?? 'SUH-GCC-88219';
+    final readiness = (profile?.readinessScore ?? 85) / 100.0;
+    final readinessPct = '${profile?.readinessScore ?? 85}%';
+
+    return Scaffold(
+      backgroundColor: lightSurface,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -419,6 +446,144 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     strokeWidth: 5,
                                     backgroundColor: _cardMid,
                                     valueColor: const AlwaysStoppedAnimation<Color>(_crimson),
+              // Header
+              Container(
+                color: cardLowest,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF1F1),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFFFD4D4)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.shield, color: containerCrimson, size: 14),
+                              SizedBox(width: 4),
+                              Text(
+                                'GLOBAL JOBS',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.0,
+                                  color: primaryCrimson,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          'Account Settings',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: textOnSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.notifications, color: textSecondary, size: 22),
+                          onPressed: () => NotificationsSheet.show(context),
+                        ),
+                        InkWell(
+                          onTap: () => context.push(RouteNames.login),
+                          borderRadius: BorderRadius.circular(15),
+                          child: const CircleAvatar(
+                            radius: 15,
+                            backgroundColor: cardHigh,
+                            child: Icon(Icons.person, size: 18, color: primaryCrimson),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top Intro Context
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'EXECUTIVE CANDIDATE HUB',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.0,
+                            color: primaryCrimson,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFDAD6).withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Row(
+                            children: [
+                              CircleAvatar(radius: 3, backgroundColor: primaryCrimson),
+                              SizedBox(width: 4),
+                              Text(
+                                'Qiwa Synchronized',
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: primaryCrimson),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Account & Settings',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: textOnSurface,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const Text(
+                      'Manage target GCC mobility quotas, instant recruiter channels, and confidential privacy shields.',
+                      style: TextStyle(fontSize: 12, color: textSecondary),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Candidate Profile Snapshot Card
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: cardLowest,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Stack(
+                                children: [
+                                  const CircleAvatar(
+                                    radius: 26,
+                                    backgroundColor: cardHigh,
+                                    child: Icon(Icons.person, size: 30, color: primaryCrimson),
                                   ),
                                 ),
                                 Column(
@@ -1298,6 +1463,135 @@ class _DocTile extends StatelessWidget {
             const SizedBox(width: 4),
             trailing ?? const Icon(Icons.chevron_right, size: 18, color: Color(0xFF5A5F67)),
           ],
+                    // Dedicated Mobility Advisor Card
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: cardLowest,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              const CircleAvatar(
+                                radius: 20,
+                                backgroundColor: Color(0xFFFFF1F1),
+                                child: Icon(Icons.support_agent, size: 22, color: primaryCrimson),
+                              ),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('DEDICATED MOBILITY ADVISOR', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: textSecondary)),
+                                    Text('Eng. Tariq Al-Ghamdi', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textOnSurface)),
+                                  ],
+                                ),
+                              ),
+                              Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF25D366))),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Assigned to guide your embassy trade tests, medical staging, and final Saudi visa endorsements.',
+                            style: TextStyle(fontSize: 11, color: textSecondary),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 44,
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                final uri = Uri.parse('https://wa.me/966550123456?text=Hello%20Eng.%20Tariq,%20I%20need%20assistance%20with%20my%20GCC%20mobility%20process');
+                                try {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                } catch (_) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Advisor WhatsApp: +966 55 012 3456')),
+                                    );
+                                  }
+                                }
+                              },
+                              icon: const Icon(Icons.send, size: 16, color: Colors.white),
+                              label: const Text('Message Advisor via WhatsApp', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: primaryCrimson,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                elevation: 0,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Sign Out & Version Info
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Sign Out', style: TextStyle(fontWeight: FontWeight.bold)),
+                              content: const Text('Are you sure you want to sign out of the GCC Recruitment Portal?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFBA1A1A), foregroundColor: Colors.white),
+                                  onPressed: () async {
+                                    Navigator.pop(ctx);
+                                    await ref.read(authStateProvider.notifier).logout();
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('✓ Signed out successfully. You can sign in anytime.'),
+                                          backgroundColor: Color(0xFF059669),
+                                        ),
+                                      );
+                                        context.go(RouteNames.login);
+                                      }
+                                    },
+                                    child: const Text('Sign Out'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.logout, size: 18, color: Color(0xFFBA1A1A)),
+                        label: const Text('Sign Out of GCC Portal', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFBA1A1A))),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFFFDAD6)),
+                          backgroundColor: cardLow,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Center(
+                      child: Column(
+                        children: [
+                          Text('Global Jobs by Suhana • v2.4.1 (Build 890)', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF42474F))),
+                          SizedBox(height: 2),
+                          Text('Certified Overseas Manpower License #OM-9823/GCC', style: TextStyle(fontSize: 9, color: textSecondary)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

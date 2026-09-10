@@ -30,12 +30,16 @@ class JobFilterNotifier extends StateNotifier<JobFilter> {
     state = state.copyWith(housingIncluded: state.housingIncluded == true ? null : true);
   }
 
+  void setRegion(String? region) {
+    state = state.copyWith(region: region);
+  }
+
   void setSearchQuery(String query) {
     state = state.copyWith(searchQuery: query);
   }
 
-  void clearFilters() {
-    state = const JobFilter();
+  void clearFilters({bool preserveRegion = true}) {
+    state = JobFilter(region: preserveRegion ? state.region : 'gcc');
   }
 }
 

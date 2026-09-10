@@ -23,10 +23,15 @@ async def register(req: UserRegisterRequest, db: AsyncSession = Depends(get_db))
             detail="A user with this email address already exists."
         )
 
+    # Determine phone number
+    import random
+    phone = req.phone_number.strip() if req.phone_number and req.phone_number.strip() else f"5{random.randint(10000000, 99999999)}"
+    phone_code = req.phone_country_code or "+966"
+
     # Check phone number
-    stmt = select(User).where(User.phone_number == req.phone_number.strip())
+    stmt = select(User).where(User.phone_number == phone)
     existing_phone = (await db.execute(stmt)).scalar_one_or_none()
-    if existing_phone:
+    if existing_phone and req.phone_number:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A user with this phone number already exists."
@@ -35,8 +40,8 @@ async def register(req: UserRegisterRequest, db: AsyncSession = Depends(get_db))
     # Create new user
     new_user = User(
         email=req.email.lower().strip(),
-        phone_country_code=req.phone_country_code,
-        phone_number=req.phone_number.strip(),
+        phone_country_code=phone_code,
+        phone_number=phone,
         password_hash=get_password_hash(req.password),
         full_name=req.full_name.strip(),
         role=req.role or "candidate",
@@ -52,10 +57,10 @@ async def register(req: UserRegisterRequest, db: AsyncSession = Depends(get_db))
         profile = CandidateProfile(
             user_id=new_user.id,
             target_job_title="Candidate",
-            current_resident_country="Egypt",
-            current_city="Cairo",
-            nationality="Egyptian",
-            relocation_readiness_score=20
+            current_resident_country="Saudi Arabia",
+            current_city="Riyadh",
+            nationality="GCC Applicant",
+            relocation_readiness_score=35
         )
         db.add(profile)
 
@@ -74,7 +79,8 @@ async def register(req: UserRegisterRequest, db: AsyncSession = Depends(get_db))
         user_id=new_user.id,
         role=new_user.role,
         full_name=new_user.full_name,
-        email=new_user.email
+        email=new_user.email,
+        avatar_url=new_user.avatar_url
     )
 
 @router.post("/login", response_model=TokenResponse)
@@ -106,7 +112,8 @@ async def login(req: UserLoginRequest, db: AsyncSession = Depends(get_db)):
         user_id=user.id,
         role=user.role,
         full_name=user.full_name,
-        email=user.email
+        email=user.email,
+        avatar_url=user.avatar_url
     )
 
 @router.get("/me", response_model=UserResponse)

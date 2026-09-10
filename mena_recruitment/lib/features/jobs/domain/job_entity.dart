@@ -1,14 +1,17 @@
+import 'package:mena_recruitment/features/jobs/domain/recruitment_region.dart';
+
 class Job {
   final String id;
   final String title;
   final String department;
   final String companyName;
   final String companyLogoUrl;
-  final String countryCode; // uae, sau, qat, kwt, omn, bhr
+  final String countryCode; // uae, sau, qat, kwt, omn, bhr, etc.
+  final String region; // gcc, apac, emea, usa, oceania
   final String city;
   final double salaryMin;
   final double salaryMax;
-  final String currency; // AED, SAR, QAR, KWD, OMR, BHD
+  final String currency; // AED, SAR, QAR, KWD, OMR, BHD, SGD, USD, EUR, etc.
   final bool isTaxFree;
   final String visaStatus; // 'Fully Sponsored', 'Transferable Iqama', 'Visit Visa'
   final String accommodation; // 'Provided', 'Housing Allowance', 'Not Included'
@@ -37,6 +40,7 @@ class Job {
     required this.companyName,
     required this.companyLogoUrl,
     required this.countryCode,
+    this.region = 'gcc',
     required this.city,
     required this.salaryMin,
     required this.salaryMax,
@@ -70,6 +74,7 @@ class Job {
     String? companyName,
     String? companyLogoUrl,
     String? countryCode,
+    String? region,
     String? city,
     double? salaryMin,
     double? salaryMax,
@@ -102,6 +107,7 @@ class Job {
       companyName: companyName ?? this.companyName,
       companyLogoUrl: companyLogoUrl ?? this.companyLogoUrl,
       countryCode: countryCode ?? this.countryCode,
+      region: region ?? this.region,
       city: city ?? this.city,
       salaryMin: salaryMin ?? this.salaryMin,
       salaryMax: salaryMax ?? this.salaryMax,
@@ -130,13 +136,15 @@ class Job {
   }
 
   factory Job.fromJson(Map<String, dynamic> json) {
+    final parsedCountryCode = (json['country_code'] as String? ?? json['countryCode'] as String? ?? 'sau').toLowerCase();
     return Job(
       id: json['id']?.toString() ?? '',
       title: json['title'] as String? ?? '',
       department: json['sector'] as String? ?? json['department'] as String? ?? 'General',
       companyName: json['company_name'] as String? ?? json['companyName'] as String? ?? 'Verified Employer',
       companyLogoUrl: json['company_logo'] as String? ?? json['companyLogoUrl'] as String? ?? 'https://images.unsplash.com/photo-1541888946425-d0fbb1861593?w=128',
-      countryCode: (json['country_code'] as String? ?? json['countryCode'] as String? ?? 'sau').toLowerCase(),
+      countryCode: parsedCountryCode,
+      region: json['region'] as String? ?? RecruitmentRegion.inferRegionFromCountry(parsedCountryCode),
       city: json['city'] as String? ?? '',
       salaryMin: (json['salary_min'] as num? ?? json['salaryMin'] as num?)?.toDouble() ?? 0.0,
       salaryMax: (json['salary_max'] as num? ?? json['salaryMax'] as num?)?.toDouble() ?? 0.0,
@@ -184,6 +192,7 @@ class Job {
       'company_name': companyName,
       'company_logo': companyLogoUrl,
       'country_code': countryCode,
+      'region': region,
       'city': city,
       'salary_min': salaryMin,
       'salary_max': salaryMax,
