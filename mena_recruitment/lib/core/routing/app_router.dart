@@ -13,6 +13,7 @@ import 'package:mena_recruitment/features/vault/presentation/screens/passport_up
 import 'package:mena_recruitment/features/vault/presentation/screens/certifications_screen.dart';
 import 'package:mena_recruitment/features/profile/presentation/screens/settings_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_upload_screen.dart';
+import 'package:mena_recruitment/features/cv_parser/presentation/screens/manual_details_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_review_screen.dart';
 import 'package:mena_recruitment/features/sectors/presentation/screens/sectors_screen.dart';
 import 'package:mena_recruitment/features/jobs/presentation/screens/job_application_screen.dart';
@@ -125,6 +126,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.cvUpload,
         builder: (context, state) => const CVUploadScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.cvManualDetails,
+        builder: (context, state) => const ManualDetailsScreen(),
       ),
       GoRoute(
         path: RouteNames.cvReview,

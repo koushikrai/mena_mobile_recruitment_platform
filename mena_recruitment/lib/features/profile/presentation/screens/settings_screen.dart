@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
 import 'package:mena_recruitment/core/widgets/notifications_sheet.dart';
 import 'package:mena_recruitment/features/auth/presentation/auth_sheet.dart';
@@ -95,6 +96,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // Relocation & Salary Preferences
   String _relocationTimeline = 'Within 15 days';
   String _minSalary = 'SAR 15,000 / mo';
+
+  // CV document state
+  bool _hasCv = true;
+  String _cvFileName = 'Ahmed_Mansoor_HSE_CV_2026.pdf';
+
+  void _confirmDeleteCv() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFBA1A1A)),
+            SizedBox(width: 8),
+            Text('Delete CV?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to delete your active CV?\n\nThis will remove your attached resume document. You can upload an updated CV anytime.',
+          style: TextStyle(fontSize: 12, color: _ink, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: _inkLight)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _hasCv = false;
+              });
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✓ CV deleted from profile. You can upload a new one anytime.'),
+                  backgroundColor: Color(0xFFBA1A1A),
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFBA1A1A),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete CV'),
+          ),
+        ],
+      ),
+    );
+  }
 
   // ── Colours ──────────────────────────────────────────────────────────────
   static const _crimson = Color(0xFF6E0000);
@@ -426,7 +477,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       ),
                                       const Spacer(),
                                       GestureDetector(
-                                        onTap: () => context.push('/cv/review'),
+                                        onTap: () => context.push(RouteNames.cvUpload),
                                         child: const Row(
                                           children: [
                                             Text('Edit', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _crimson)),
@@ -446,14 +497,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                           decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              _Badge(icon: Icons.verified, label: 'PASSPORT OK'),
-                              _Divider(),
-                              _Badge(icon: Icons.document_scanner, label: 'CV PARSED'),
-                              _Divider(),
-                              _Badge(icon: Icons.workspace_premium, label: 'NEBOSH'),
+                              const _Badge(icon: Icons.verified, label: 'PASSPORT OK'),
+                              const _Divider(),
+                              _Badge(
+                                icon: _hasCv ? Icons.document_scanner : Icons.error_outline,
+                                label: _hasCv ? 'CV PARSED' : 'CV MISSING',
+                                color: _hasCv ? null : const Color(0xFFBA1A1A),
+                              ),
+                              const _Divider(),
+                              const _Badge(icon: Icons.workspace_premium, label: 'NEBOSH'),
                             ],
                           ),
                         ),
@@ -469,7 +524,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     trailing: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(color: _cardMid, borderRadius: BorderRadius.circular(6)),
-                      child: Text('$docCount files',
+                      child: Text('${_hasCv ? docCount : docCount - 1} files',
                           style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _inkLight)),
                     ),
                   ),
@@ -478,12 +533,72 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Column(
                       children: [
                         _DocTile(
-                          icon: Icons.description_rounded,
+                          icon: _hasCv ? Icons.description_rounded : Icons.upload_file_rounded,
                           title: 'CV / Resume',
-                          subtitle: 'Parsed & Active',
-                          status: 'Verified',
-                          statusColor: _crimson,
-                          onTap: () => context.push('/cv/review'),
+                          subtitle: _hasCv ? _cvFileName : 'Not uploaded · Tap to upload',
+                          status: _hasCv ? 'Verified' : 'Missing',
+                          statusColor: _hasCv ? _crimson : const Color(0xFFBA1A1A),
+                          onTap: () => context.push(RouteNames.cvUpload),
+                          trailing: PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert, size: 20, color: _inkLight),
+                            padding: EdgeInsets.zero,
+                            tooltip: 'CV Options',
+                            onSelected: (action) {
+                              if (action == 'review') {
+                                context.push('/cv/review');
+                              } else if (action == 'update') {
+                                context.push('/cv/upload');
+                              } else if (action == 'delete') {
+                                _confirmDeleteCv();
+                              }
+                            },
+                            itemBuilder: (ctx) => [
+                              if (_hasCv) ...[
+                                const PopupMenuItem(
+                                  value: 'review',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit_note_rounded, size: 18, color: _ink),
+                                      SizedBox(width: 8),
+                                      Text('Review & Edit Details', style: TextStyle(fontSize: 12)),
+                                    ],
+                                  ),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'update',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.cloud_upload_outlined, size: 18, color: _crimson),
+                                      SizedBox(width: 8),
+                                      Text('Update / Replace CV', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _crimson)),
+                                    ],
+                                  ),
+                                ),
+                                const PopupMenuDivider(),
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.delete_outline_rounded, size: 18, color: Color(0xFFBA1A1A)),
+                                      SizedBox(width: 8),
+                                      Text('Delete CV', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFBA1A1A))),
+                                    ],
+                                  ),
+                                ),
+                              ] else ...[
+                                const PopupMenuItem(
+                                  value: 'update',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.upload_file_rounded, size: 18, color: _crimson),
+                                      SizedBox(width: 8),
+                                      Text('Upload CV', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _crimson)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                         const _CardDivider(),
                         _DocTile(
@@ -1133,16 +1248,18 @@ class _CardDivider extends StatelessWidget {
 class _Badge extends StatelessWidget {
   final IconData icon;
   final String label;
-  const _Badge({required this.icon, required this.label});
+  final Color? color;
+  const _Badge({required this.icon, required this.label, this.color});
 
   @override
   Widget build(BuildContext context) {
+    final c = color ?? const Color(0xFF6E0000);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 12, color: const Color(0xFF6E0000)),
+        Icon(icon, size: 12, color: c),
         const SizedBox(width: 3),
-        Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF181C23))),
+        Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: color != null ? c : const Color(0xFF181C23))),
       ],
     );
   }
@@ -1170,7 +1287,10 @@ class _DocTile extends StatelessWidget {
     required this.status,
     required this.statusColor,
     required this.onTap,
+    this.trailing,
   });
+
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -1192,7 +1312,7 @@ class _DocTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF181C23))),
-                  Text(subtitle, style: const TextStyle(fontSize: 11, color: Color(0xFF5A5F67))),
+                  Text(subtitle, style: const TextStyle(fontSize: 11, color: Color(0xFF5A5F67)), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
@@ -1205,7 +1325,7 @@ class _DocTile extends StatelessWidget {
               child: Text(status, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
             ),
             const SizedBox(width: 4),
-            const Icon(Icons.chevron_right, size: 18, color: Color(0xFF5A5F67)),
+            trailing ?? const Icon(Icons.chevron_right, size: 18, color: Color(0xFF5A5F67)),
           ],
         ),
       ),
