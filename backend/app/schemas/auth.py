@@ -7,8 +7,8 @@ class UserRegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6)
     full_name: str = Field(..., min_length=2)
-    phone_country_code: str = Field(default="+966") # GCC default
-    phone_number: str = Field(..., min_length=7)
+    phone_country_code: Optional[str] = "+966" # GCC default
+    phone_number: Optional[str] = None
     role: Optional[str] = "candidate"
     preferred_language: Optional[str] = "en"
 
@@ -24,6 +24,7 @@ class TokenResponse(BaseModel):
     role: str
     full_name: str
     email: str
+    avatar_url: Optional[str] = None
 
 class UserResponse(BaseModel):
     id: UUID

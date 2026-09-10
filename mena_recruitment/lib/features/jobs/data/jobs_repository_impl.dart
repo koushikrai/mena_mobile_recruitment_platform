@@ -20,6 +20,9 @@ class JobsRepositoryImpl implements JobsRepository {
       };
 
       if (filter != null) {
+        if (filter.region != null && filter.region!.isNotEmpty && filter.region != 'global' && filter.region != 'all') {
+          queryParams['region'] = filter.region;
+        }
         if (filter.searchQuery != null && filter.searchQuery!.trim().isNotEmpty) {
           queryParams['search_query'] = filter.searchQuery!.trim();
         }
@@ -56,6 +59,11 @@ class JobsRepositoryImpl implements JobsRepository {
     await Future.delayed(const Duration(milliseconds: 100));
     var filtered = MockJobsData.jobs;
     if (filter != null) {
+      if (filter.region != null && filter.region!.isNotEmpty && filter.region != 'global' && filter.region != 'all') {
+        final reg = filter.region!.toLowerCase();
+        filtered = filtered.where((job) => job.region.toLowerCase() == reg).toList();
+      }
+
       if (filter.searchQuery != null && filter.searchQuery!.trim().isNotEmpty) {
         final query = filter.searchQuery!.toLowerCase().trim();
         filtered = filtered.where((job) {

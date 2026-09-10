@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/core/widgets/notifications_sheet.dart';
-import 'package:mena_recruitment/features/auth/presentation/auth_sheet.dart';
 import 'package:mena_recruitment/features/auth/providers/auth_provider.dart';
 import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,6 +15,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  static const containerCrimson = Color(0xFF990000);
   bool _ksaQuota = true;
   bool _uaeQuota = true;
   bool _qatarQuota = true;
@@ -30,19 +31,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryCrimson = Color(0xFF6E0000);
-    const containerCrimson = Color(0xFF990000);
-    const lightSurface = Color(0xFFF9F9FF);
+    const lightSurface = Color(0xFFFBF8F8);
     const cardLowest = Colors.white;
-    const cardLow = Color(0xFFF1F3FD);
-    const cardHigh = Color(0xFFE5E8F2);
+    const cardLow = Color(0xFFF4EFF0);
+    const cardHigh = Color(0xFFE4DADB);
+    const primaryCrimson = Color(0xFF990000);
     const textOnSurface = Color(0xFF181C23);
     const textSecondary = Color(0xFF5A5F67);
 
     final profileAsync = ref.watch(profileProvider);
     final authState = ref.watch(authStateProvider);
     final profile = profileAsync.value;
-    final currentUser = authState.value;
+    final currentUser = authState.user;
     final candidateName = profile?.fullName ?? currentUser?.fullName ?? 'Ahmed Mansoor Al-Farooq';
     final candidateTitle = profile?.targetTitle ?? 'Senior HSE Supervisor';
     final candidateExp = '${profile?.gccExperience ?? 4} yrs GCC Exp';
@@ -108,7 +108,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           onPressed: () => NotificationsSheet.show(context),
                         ),
                         InkWell(
-                          onTap: () => AuthSheet.show(context),
+                          onTap: () => context.push(RouteNames.login),
                           borderRadius: BorderRadius.circular(15),
                           child: const CircleAvatar(
                             radius: 15,
@@ -827,10 +827,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           backgroundColor: Color(0xFF059669),
                                         ),
                                       );
-                                      AuthSheet.show(context);
-                                    }
-                                  },
-                                  child: const Text('Sign Out'),
+                                        context.go(RouteNames.login);
+                                      }
+                                    },
+                                    child: const Text('Sign Out'),
                                 ),
                               ],
                             ),

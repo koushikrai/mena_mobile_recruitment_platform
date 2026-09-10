@@ -47,7 +47,11 @@ class _AuthSheetState extends ConsumerState<AuthSheet> {
     }
 
     if (_isSignUp) {
-      await ref.read(authStateProvider.notifier).register(email, password, name.isEmpty ? 'New Candidate' : name);
+      await ref.read(authStateProvider.notifier).register(
+            email: email,
+            password: password,
+            fullName: name.isEmpty ? 'New Candidate' : name,
+          );
     } else {
       await ref.read(authStateProvider.notifier).login(email, password);
     }

@@ -8,9 +8,11 @@ import 'package:mena_recruitment/features/jobs/presentation/widgets/mega_walkin_
 import 'package:mena_recruitment/features/jobs/presentation/widgets/walkin_drive_details_sheet.dart';
 import 'package:mena_recruitment/features/jobs/presentation/widgets/profile_readiness_banner.dart';
 import 'package:mena_recruitment/features/jobs/presentation/widgets/stitch_job_card.dart';
-import 'package:mena_recruitment/features/jobs/presentation/widgets/top_gcc_sectors_grid.dart';
 import 'package:mena_recruitment/core/widgets/notifications_sheet.dart';
 import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
+import 'package:mena_recruitment/features/jobs/domain/recruitment_region.dart';
+import 'package:mena_recruitment/features/jobs/providers/region_provider.dart';
+import 'package:mena_recruitment/features/jobs/presentation/widgets/region_selector_sheet.dart';
 import 'package:mena_recruitment/features/jobs/providers/bookmark_provider.dart';
 import 'package:mena_recruitment/features/jobs/providers/job_filter_provider.dart';
 import 'package:mena_recruitment/features/jobs/providers/jobs_provider.dart';
@@ -23,20 +25,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  String selectedCountryKey = 'all';
-
-  final List<Map<String, String>> countryTabs = [
-    {'key': 'all', 'label': 'All GCC'},
-    {'key': 'ksa', 'label': '🇸🇦 Saudi Arabia'},
-    {'key': 'uae', 'label': '🇦🇪 UAE (Dubai/Abu Dhabi)'},
-    {'key': 'qatar', 'label': '🇶🇦 Qatar'},
-    {'key': 'kuwait', 'label': '🇰🇼 Kuwait'},
-    {'key': 'oman', 'label': '🇴🇲 Oman'},
-    {'key': 'bahrain', 'label': '🇧🇭 Bahrain'},
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final selectedRegion = ref.watch(selectedRegionProvider);
     final jobsAsync = ref.watch(jobsProvider);
     final bookmarkedJobs = ref.watch(bookmarkProvider);
     final profileAsync = ref.watch(profileProvider);
@@ -128,31 +119,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   // Top right actions: GCC location button + Notifications badge + Profile
                   Row(
                     children: [
-                      Container(
-                        height: 32,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF2F2),
-                          borderRadius: BorderRadius.circular(9999),
-                          border: Border.all(color: const Color(0xFFFEE2E2)),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('🇸🇦', style: TextStyle(fontSize: 12)),
-                            SizedBox(width: 4),
-                            Text(
-                              'GCC / Global',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF990000),
-                                fontFamily: 'monospace',
+                      // Active Recruitment Region Switcher Button
+                      InkWell(
+                        onTap: () => RegionSelectorSheet.show(context),
+                        borderRadius: BorderRadius.circular(9999),
+                        child: Container(
+                          height: 32,
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(9999),
+                            border: Border.all(color: const Color(0xFFFEE2E2)),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color.fromRGBO(153, 0, 0, 0.04),
+                                blurRadius: 4,
+                                offset: Offset(0, 1),
                               ),
-                            ),
-                            SizedBox(width: 2),
-                            Icon(Icons.expand_more_rounded, size: 14, color: Color(0xFF990000)),
-                          ],
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(selectedRegion.flag, style: const TextStyle(fontSize: 12)),
+                              const SizedBox(width: 4),
+                              Text(
+                                selectedRegion == RecruitmentRegion.global
+                                    ? 'Global'
+                                    : '${selectedRegion.shortLabel} / Global',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF990000),
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              const Icon(Icons.expand_more_rounded, size: 14, color: Color(0xFF990000)),
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -304,65 +309,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              // Horizontal Country Filter Pills
-              SizedBox(
-                height: 38,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  itemCount: countryTabs.length,
-                  separatorBuilder: (ctx, i) => const SizedBox(width: 8),
-                  itemBuilder: (ctx, index) {
-                    final tab = countryTabs[index];
-                    final isSelected = tab['key'] == selectedCountryKey;
-                    return InkWell(
-                      onTap: () {
-                        setState(() {
-                          selectedCountryKey = tab['key']!;
-                        });
-                        final notifier = ref.read(jobFilterProvider.notifier);
-                        notifier.clearFilters();
-                        if (tab['key'] != 'all') {
-                          notifier.toggleCountry(tab['key']!);
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(9999),
-                      child: Container(
-                        height: 36,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF990000) : Colors.white,
-                          borderRadius: BorderRadius.circular(9999),
-                          border: Border.all(
-                            color: isSelected
-                                ? const Color(0xFF990000)
-                                : const Color(0xFFE4BEB8).withValues(alpha: 0.6),
-                          ),
-                          boxShadow: [
-                            if (isSelected)
-                              const BoxShadow(
-                                color: Color.fromRGBO(153, 0, 0, 0.2),
-                                blurRadius: 4,
-                                offset: Offset(0, 1),
-                              ),
-                          ],
-                        ),
-                        child: Text(
-                          tab['label']!.toUpperCase(),
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : const Color(0xFF5B403C),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
               const SizedBox(height: 16),
               // Profile Readiness Smart Alert
               Padding(
@@ -383,63 +329,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              // Top GCC Sectors Grid
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: TopGccSectorsGrid(
-                  onSelectSector: (sector) {
-                    ref.read(jobFilterProvider.notifier).setSearchQuery(sector);
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
               // Urgent Vacancies Header
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF990000),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF990000),
-                            shape: BoxShape.circle,
+                        Text(
+                          'Urgent Vacancies',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E1B1B),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Urgent Vacancies',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF1E1B1B),
-                              ),
-                            ),
-                            Text(
-                              'Immediate processing & fast-track deployment',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF5B403C),
-                              ),
-                            ),
-                          ],
+                        Text(
+                          'Immediate processing & fast-track deployment',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF5B403C),
+                          ),
                         ),
                       ],
-                    ),
-                    const Text(
-                      'Live Updates',
-                      style: TextStyle(
-                        color: Color(0xFF990000),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'monospace',
-                      ),
                     ),
                   ],
                 ),

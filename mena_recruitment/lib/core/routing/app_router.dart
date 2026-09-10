@@ -16,6 +16,7 @@ import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_uplo
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_review_screen.dart';
 import 'package:mena_recruitment/features/sectors/presentation/screens/sectors_screen.dart';
 import 'package:mena_recruitment/features/jobs/presentation/screens/job_application_screen.dart';
+import 'package:mena_recruitment/features/auth/presentation/screens/auth_screen.dart';
 
 // Auth State Provider
 final isAuthenticatedProvider = StateProvider<bool>((ref) => true);
@@ -27,6 +28,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.onboarding,
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.login,
+        builder: (context, state) => const AuthScreen(initialIsSignUp: false),
+      ),
+      GoRoute(
+        path: RouteNames.register,
+        builder: (context, state) => const AuthScreen(initialIsSignUp: true),
       ),
       ShellRoute(
         builder: (context, state, child) {

@@ -1,6 +1,7 @@
 class JobFilter {
   final String? searchQuery;
   final List<String> selectedCountries;
+  final String? region;
   final bool? visaSponsored;
   final bool? transferableIqama;
   final bool? immediateHiring;
@@ -12,6 +13,7 @@ class JobFilter {
   const JobFilter({
     this.searchQuery,
     this.selectedCountries = const [],
+    this.region = 'gcc',
     this.visaSponsored,
     this.transferableIqama,
     this.immediateHiring,
@@ -40,6 +42,7 @@ class JobFilter {
   JobFilter copyWith({
     String? searchQuery,
     List<String>? selectedCountries,
+    String? region,
     bool? visaSponsored,
     bool? transferableIqama,
     bool? immediateHiring,
@@ -51,6 +54,7 @@ class JobFilter {
     return JobFilter(
       searchQuery: searchQuery ?? this.searchQuery,
       selectedCountries: selectedCountries ?? this.selectedCountries,
+      region: region ?? this.region,
       visaSponsored: visaSponsored ?? this.visaSponsored,
       transferableIqama: transferableIqama ?? this.transferableIqama,
       immediateHiring: immediateHiring ?? this.immediateHiring,

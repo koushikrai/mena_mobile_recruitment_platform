@@ -24,6 +24,7 @@ router = APIRouter(prefix="/jobs", tags=["Jobs & Drives"])
 async def list_jobs(
     search_query: Optional[str] = Query(None),
     countries: Optional[List[str]] = Query(None),
+    region: Optional[str] = Query(None),
     sector: Optional[str] = Query(None),
     visa_sponsored: Optional[bool] = Query(None),
     min_salary: Optional[float] = Query(None),
@@ -50,6 +51,18 @@ async def list_jobs(
                 Company.name.ilike(term)
             )
         )
+
+    if region and region.lower() not in ["global", "all"]:
+        reg = region.strip().lower()
+        region_map = {
+            "gcc": ["KSA", "SAU", "UAE", "ARE", "QATAR", "QAT", "KUWAIT", "KWT", "OMAN", "OMN", "BAHRAIN", "BHR"],
+            "apac": ["SGP", "MYS", "IND", "JPN", "KOR", "VNM", "IDN", "PHL", "THA", "AUS"],
+            "emea": ["GBR", "UK", "DEU", "FRA", "NLD", "ZAF", "IRL", "ESP", "ITA", "CHE", "SWE"],
+            "usa": ["USA", "CAN", "MEX"],
+            "oceania": ["AUS", "NZL", "FJI", "PNG"],
+        }
+        if reg in region_map:
+            stmt = stmt.where(Job.country_code.in_(region_map[reg]))
 
     if countries:
         country_set = set()
