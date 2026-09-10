@@ -94,21 +94,97 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   String _selectedLanguage = 'en';
 
+  // Relocation & Salary Preferences
+  String _relocationTimeline = 'Within 15 days';
+  String _minSalary = 'SAR 15,000 / mo';
+
+  // CV document state
+  bool _hasCv = true;
+  String _cvFileName = 'Ahmed_Mansoor_HSE_CV_2026.pdf';
+
+  void _confirmDeleteCv() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFBA1A1A)),
+            SizedBox(width: 8),
+            Text('Delete CV?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to delete your active CV?\n\nThis will remove your attached resume document. You can upload an updated CV anytime.',
+          style: TextStyle(fontSize: 12, color: _ink, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: _inkLight)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _hasCv = false;
+              });
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✓ CV deleted from profile. You can upload a new one anytime.'),
+                  backgroundColor: Color(0xFFBA1A1A),
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFBA1A1A),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete CV'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Colours ──────────────────────────────────────────────────────────────
+  static const _crimson = Color(0xFF6E0000);
+  static const _surface = Color(0xFFF9F9FF);
+  static const _white = Colors.white;
+  static const _cardLow = Color(0xFFF1F3FD);
+  static const _cardMid = Color(0xFFE5E8F2);
+  static const _ink = Color(0xFF181C23);
+  static const _inkLight = Color(0xFF5A5F67);
+
+  void _editRelocationTimeline() {
+    final options = [
+      'Immediate (Ready now)',
+      'Within 15 days',
+      'Within 30 days',
+      'Within 60 days',
+      '2+ months notice',
+    ];
+    final customCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Relocation Availability', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
   @override
   Widget build(BuildContext context) {
-    const primaryCrimson = Color(0xFF6E0000);
-    const containerCrimson = Color(0xFF990000);
-    const lightSurface = Color(0xFFF9F9FF);
+    const lightSurface = Color(0xFFFBF8F8);
     const cardLowest = Colors.white;
-    const cardLow = Color(0xFFF1F3FD);
-    const cardHigh = Color(0xFFE5E8F2);
+    const cardLow = Color(0xFFF4EFF0);
+    const cardHigh = Color(0xFFE4DADB);
+    const primaryCrimson = Color(0xFF990000);
     const textOnSurface = Color(0xFF181C23);
     const textSecondary = Color(0xFF5A5F67);
 
     final profileAsync = ref.watch(profileProvider);
     final authState = ref.watch(authStateProvider);
     final profile = profileAsync.value;
-    final currentUser = authState.value;
+    final currentUser = authState.user;
     final candidateName = profile?.fullName ?? currentUser?.fullName ?? 'Ahmed Mansoor Al-Farooq';
     final candidateTitle = profile?.targetTitle ?? 'Senior HSE Supervisor';
     final candidateExp = '${profile?.gccExperience ?? 4} yrs GCC Exp';
@@ -125,6 +201,251 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              ...options.map((opt) {
+                final isSelected = _relocationTimeline == opt;
+                return InkWell(
+                  onTap: () {
+                    setState(() => _relocationTimeline = opt);
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('✓ Relocation timeline updated to: $opt'),
+                        backgroundColor: const Color(0xFF059669),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFFFFF1F1) : const Color(0xFFF1F3FD),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected ? _crimson : Colors.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                          size: 16,
+                          color: isSelected ? _crimson : _inkLight,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            opt,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? _crimson : _ink,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              const SizedBox(height: 12),
+              const Text('Or enter custom timeline:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: _inkLight)),
+              const SizedBox(height: 4),
+              TextField(
+                controller: customCtrl,
+                decoration: const InputDecoration(
+                  hintText: 'e.g. 45 days, Negotiable',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (customCtrl.text.trim().isNotEmpty) {
+                setState(() => _relocationTimeline = customCtrl.text.trim());
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('✓ Relocation timeline updated to: ${customCtrl.text.trim()}'),
+                    backgroundColor: const Color(0xFF059669),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: _crimson, foregroundColor: Colors.white),
+            child: const Text('Save Custom'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editMinSalary() {
+    final presets = [
+      'SAR 10,000 / mo',
+      'SAR 12,500 / mo',
+      'SAR 15,000 / mo',
+      'SAR 18,000 / mo',
+      'SAR 20,000 / mo',
+      'SAR 25,000+ / mo',
+    ];
+    final salaryCtrl = TextEditingController(text: _minSalary);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Minimum Expected Salary', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Enter target minimum monthly pay:', style: TextStyle(fontSize: 11, color: _inkLight)),
+              const SizedBox(height: 6),
+              TextField(
+                controller: salaryCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Minimum Salary',
+                  hintText: 'e.g. SAR 15,000 / mo',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text('Or select standard tier:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _inkLight)),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: presets.map((p) {
+                  return ActionChip(
+                    label: Text(p, style: const TextStyle(fontSize: 11)),
+                    backgroundColor: _minSalary == p ? const Color(0xFFFFF1F1) : const Color(0xFFF1F3FD),
+                    side: BorderSide(color: _minSalary == p ? _crimson : Colors.transparent),
+                    onPressed: () {
+                      salaryCtrl.text = p;
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (salaryCtrl.text.trim().isNotEmpty) {
+                setState(() => _minSalary = salaryCtrl.text.trim());
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('✓ Min. salary updated to: ${salaryCtrl.text.trim()}'),
+                    backgroundColor: const Color(0xFF059669),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: _crimson, foregroundColor: Colors.white),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profileAsync = ref.watch(profileProvider);
+    final authState = ref.watch(authStateProvider);
+    final vaultDocsAsync = ref.watch(vaultDocumentsProvider);
+
+    final profile = profileAsync.value;
+    final currentUser = authState.value;
+    final name = profile?.fullName ?? currentUser?.fullName ?? 'Ahmed Mansoor Al-Sayed';
+    final title = profile?.targetTitle ?? 'Senior Offshore HSE Supervisor';
+    final gccExp = profile?.gccExperience ?? 4;
+    final uid = profile?.uid ?? currentUser?.id ?? 'SUH-GCC-88219';
+    final score = (profile?.readinessScore ?? 85);
+    final scoreFraction = score / 100.0;
+    final docCount = vaultDocsAsync.value?.length ?? 4;
+
+    return Scaffold(
+      backgroundColor: _surface,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // ── App Bar ──────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Container(
+                color: _white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'My Profile',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _ink),
+                    ),
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.notifications_outlined, color: _inkLight, size: 22),
+                          onPressed: () => NotificationsSheet.show(context),
+                        ),
+                        InkWell(
+                          onTap: () => AuthSheet.show(context),
+                          borderRadius: BorderRadius.circular(16),
+                          child: const CircleAvatar(
+                            radius: 16,
+                            backgroundColor: _cardMid,
+                            child: Icon(Icons.person, size: 18, color: _crimson),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            SliverPadding(
+              padding: const EdgeInsets.all(16),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+
+                  // ── 1. Profile Hero Card ─────────────────────────────
+                  _Card(
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            // Verification Ring
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 72,
+                                  height: 72,
+                                  child: CircularProgressIndicator(
+                                    value: scoreFraction,
+                                    strokeWidth: 5,
+                                    backgroundColor: _cardMid,
+                                    valueColor: const AlwaysStoppedAnimation<Color>(_crimson),
               // Header
               Container(
                 color: cardLowest,
@@ -175,7 +496,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           onPressed: () => NotificationsSheet.show(context),
                         ),
                         InkWell(
-                          onTap: () => AuthSheet.show(context),
+                          onTap: () => context.push(RouteNames.login),
                           borderRadius: BorderRadius.circular(15),
                           child: const CircleAvatar(
                             radius: 15,
@@ -961,6 +1282,216 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 14),
 
+                  // ── 8. Mobility Advisor ──────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: _cardMid,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const CircleAvatar(
+                              radius: 20,
+                              backgroundColor: _white,
+                              child: Icon(Icons.support_agent_rounded, size: 22, color: _crimson),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('YOUR CAREER ADVISOR', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
+                                  Text('Eng. Tariq Al-Ghamdi', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _ink)),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF25D366)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Get fast-track visa guidance, embassy clearance, and GCC relocation support.',
+                          style: TextStyle(fontSize: 11, color: _inkLight),
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => WhatsAppService.showWhatsAppAssistantSheet(
+                              context: context,
+                              title: 'Career Advisor — Tariq',
+                              referenceCode: 'ADVISOR-TARIQ-GCC',
+                            ),
+                            icon: const Icon(Icons.chat_rounded, size: 16, color: Colors.white),
+                            label: const Text('Chat on WhatsApp', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _crimson,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // ── Sign out ─────────────────────────────────────────
+                  Center(
+                    child: TextButton(
+                      onPressed: () {},
+                      child: const Text('Sign Out', style: TextStyle(fontSize: 12, color: Color(0xFFBA1A1A))),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ]),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Reusable small widgets ───────────────────────────────────────────────────
+
+class _Card extends StatelessWidget {
+  final Widget child;
+  const _Card({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2))],
+      ),
+      child: child,
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Widget? trailing;
+  const _SectionHeader({required this.icon, required this.title, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: const Color(0xFF6E0000)),
+        const SizedBox(width: 6),
+        Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF181C23))),
+        const Spacer(),
+        ?trailing,
+      ],
+    );
+  }
+}
+
+class _CardDivider extends StatelessWidget {
+  const _CardDivider();
+  @override
+  Widget build(BuildContext context) =>
+      const Divider(height: 16, thickness: 0.5, color: Color(0xFFE5E8F2));
+}
+
+class _Badge extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color? color;
+  const _Badge({required this.icon, required this.label, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = color ?? const Color(0xFF6E0000);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 12, color: c),
+        const SizedBox(width: 3),
+        Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: color != null ? c : const Color(0xFF181C23))),
+      ],
+    );
+  }
+}
+
+class _Divider extends StatelessWidget {
+  const _Divider();
+  @override
+  Widget build(BuildContext context) =>
+      Container(width: 1, height: 14, color: const Color(0xFFE5E8F2));
+}
+
+class _DocTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String status;
+  final Color statusColor;
+  final VoidCallback onTap;
+
+  const _DocTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.status,
+    required this.statusColor,
+    required this.onTap,
+    this.trailing,
+  });
+
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: const Color(0xFFF1F3FD), borderRadius: BorderRadius.circular(8)),
+              child: Icon(icon, size: 18, color: const Color(0xFF6E0000)),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF181C23))),
+                  Text(subtitle, style: const TextStyle(fontSize: 11, color: Color(0xFF5A5F67)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(status, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
+            ),
+            const SizedBox(width: 4),
+            trailing ?? const Icon(Icons.chevron_right, size: 18, color: Color(0xFF5A5F67)),
+          ],
                     // Dedicated Mobility Advisor Card
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -1057,10 +1588,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           backgroundColor: Color(0xFF059669),
                                         ),
                                       );
-                                      AuthSheet.show(context);
-                                    }
-                                  },
-                                  child: const Text('Sign Out'),
+                                        context.go(RouteNames.login);
+                                      }
+                                    },
+                                    child: const Text('Sign Out'),
                                 ),
                               ],
                             ),
