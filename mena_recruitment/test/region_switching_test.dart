@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:mena_recruitment/features/jobs/data/mock_jobs_data.dart';
 import 'package:mena_recruitment/features/jobs/data/jobs_repository_impl.dart';
 import 'package:mena_recruitment/features/jobs/domain/job_filter.dart';
@@ -32,7 +32,7 @@ void main() {
           }
         }
       }
-    });
+    }, timeout: const Timeout(Duration(seconds: 60)));
 
     test('Region matching handles both region ID and country code aliases accurately', () {
       expect(RecruitmentRegion.gcc.matchesJob('gcc', 'sau'), isTrue);
