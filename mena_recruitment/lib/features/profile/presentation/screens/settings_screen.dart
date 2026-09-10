@@ -99,7 +99,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   // CV document state
   bool _hasCv = true;
-  String _cvFileName = 'Ahmed_Mansoor_HSE_CV_2026.pdf';
+  final String _cvFileName = 'Ahmed_Mansoor_HSE_CV_2026.pdf';
 
   void _confirmDeleteCv() {
     showDialog(
@@ -492,23 +492,75 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        // Verification badges
-                        Container(
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                          decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // ── 2. Career KPI: GCC Job Match ─────────────────────────
+                  _SectionHeader(
+                    icon: Icons.corporate_fare_rounded,
+                    title: 'GCC Job Match',
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF1F1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.bolt, size: 12, color: _crimson),
+                          SizedBox(width: 2),
+                          Text('High Demand', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _crimson)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text.rich(
+                          TextSpan(
+                            text: 'You qualify for ',
+                            style: TextStyle(fontSize: 13, color: _inkLight),
                             children: [
-                              const _Badge(icon: Icons.verified, label: 'PASSPORT OK'),
-                              const _Divider(),
-                              _Badge(
-                                icon: _hasCv ? Icons.document_scanner : Icons.error_outline,
-                                label: _hasCv ? 'CV PARSED' : 'CV MISSING',
-                                color: _hasCv ? null : const Color(0xFFBA1A1A),
+                              TextSpan(
+                                text: '48 verified vacancies',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: _ink),
                               ),
-                              const _Divider(),
-                              const _Badge(icon: Icons.workspace_premium, label: 'NEBOSH'),
+                              TextSpan(text: ' across Saudi Arabia, UAE & Qatar.'),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('EST. TAX-FREE SALARY', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
+                                  SizedBox(height: 2),
+                                  Text.rich(
+                                    TextSpan(
+                                      text: 'SAR 14,000 – 18,500',
+                                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _crimson),
+                                      children: [
+                                        TextSpan(text: ' / mo', style: TextStyle(fontSize: 12, color: _inkLight, fontWeight: FontWeight.normal)),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text('+ Family status & furnished accommodation', style: TextStyle(fontSize: 10, color: _inkLight)),
+                                ],
+                              ),
+                              Icon(Icons.trending_up_rounded, color: _crimson, size: 28),
                             ],
                           ),
                         ),
@@ -517,7 +569,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // ── 2. My Documents (Vault merged in) ────────────────
+                  // ── 3. My Documents (Vault merged in) ────────────────
                   _SectionHeader(
                     icon: Icons.folder_open_rounded,
                     title: 'My Documents',
@@ -646,62 +698,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // ── 3. GCC Job Match ─────────────────────────────────
-                  _SectionHeader(icon: Icons.corporate_fare_rounded, title: 'GCC Job Match'),
-                  const SizedBox(height: 8),
-                  _Card(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text.rich(
-                          TextSpan(
-                            text: 'You qualify for ',
-                            style: TextStyle(fontSize: 13, color: _inkLight),
-                            children: [
-                              TextSpan(
-                                text: '48 verified vacancies',
-                                style: TextStyle(fontWeight: FontWeight.bold, color: _ink),
-                              ),
-                              TextSpan(text: ' across Saudi Arabia, UAE & Qatar.'),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('EST. TAX-FREE SALARY', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
-                                  SizedBox(height: 2),
-                                  Text.rich(
-                                    TextSpan(
-                                      text: 'SAR 14,000 – 18,500',
-                                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _crimson),
-                                      children: [
-                                        TextSpan(text: ' / mo', style: TextStyle(fontSize: 12, color: _inkLight, fontWeight: FontWeight.normal)),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(height: 2),
-                                  Text('+ Family status & furnished accommodation', style: TextStyle(fontSize: 10, color: _inkLight)),
-                                ],
-                              ),
-                              Icon(Icons.trending_up_rounded, color: _crimson, size: 28),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
                   // ── 4. Target Countries ──────────────────────────────
-                  _SectionHeader(icon: Icons.public_rounded, title: 'Target Countries'),
+                  const _SectionHeader(icon: Icons.public_rounded, title: 'Target Countries'),
                   const SizedBox(height: 8),
                   _Card(
                     child: Column(
@@ -825,45 +823,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // ── 5. Notifications ─────────────────────────────────
-                  _SectionHeader(icon: Icons.notifications_outlined, title: 'Notifications'),
-                  const SizedBox(height: 8),
-                  _Card(
-                    child: Column(
-                      children: [
-                        _NotifToggle(
-                          icon: Icons.chat_bubble_rounded,
-                          iconColor: const Color(0xFF128C7E),
-                          label: 'WhatsApp',
-                          subtitle: 'Interview invites & embassy updates',
-                          value: _whatsappAlerts,
-                          onChanged: (v) => setState(() => _whatsappAlerts = v),
-                        ),
-                        const _CardDivider(),
-                        _NotifToggle(
-                          icon: Icons.phone_android_rounded,
-                          iconColor: _crimson,
-                          label: 'Push Notifications',
-                          subtitle: 'New jobs & pipeline updates',
-                          value: _pushAlerts,
-                          onChanged: (v) => setState(() => _pushAlerts = v),
-                        ),
-                        const _CardDivider(),
-                        _NotifToggle(
-                          icon: Icons.forward_to_inbox_rounded,
-                          iconColor: _inkLight,
-                          label: 'Email Digest',
-                          subtitle: 'Weekly profile view summary',
-                          value: _emailDigest,
-                          onChanged: (v) => setState(() => _emailDigest = v),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // ── 6. Privacy ───────────────────────────────────────
-                  _SectionHeader(icon: Icons.shield_outlined, title: 'Privacy & Security'),
+                  // ── 5. Privacy & Security ───────────────────────────
+                  const _SectionHeader(icon: Icons.shield_outlined, title: 'Privacy & Security'),
                   const SizedBox(height: 8),
                   _Card(
                     child: Column(
@@ -1046,9 +1007,46 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 14),
 
+                  // ── 6. Notifications ─────────────────────────────────
+                  const _SectionHeader(icon: Icons.notifications_outlined, title: 'Notifications'),
+                  const SizedBox(height: 8),
+                  _Card(
+                    child: Column(
+                      children: [
+                        _NotifToggle(
+                          icon: Icons.chat_bubble_rounded,
+                          iconColor: const Color(0xFF128C7E),
+                          label: 'WhatsApp',
+                          subtitle: 'Interview invites & embassy updates',
+                          value: _whatsappAlerts,
+                          onChanged: (v) => setState(() => _whatsappAlerts = v),
+                        ),
+                        const _CardDivider(),
+                        _NotifToggle(
+                          icon: Icons.phone_android_rounded,
+                          iconColor: _crimson,
+                          label: 'Push Notifications',
+                          subtitle: 'New jobs & pipeline updates',
+                          value: _pushAlerts,
+                          onChanged: (v) => setState(() => _pushAlerts = v),
+                        ),
+                        const _CardDivider(),
+                        _NotifToggle(
+                          icon: Icons.forward_to_inbox_rounded,
+                          iconColor: _inkLight,
+                          label: 'Email Digest',
+                          subtitle: 'Weekly profile view summary',
+                          value: _emailDigest,
+                          onChanged: (v) => setState(() => _emailDigest = v),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
 
                   // ── 7. Language & Region ─────────────────────────────
-                  _SectionHeader(icon: Icons.language_rounded, title: 'Language & Region'),
+                  const _SectionHeader(icon: Icons.language_rounded, title: 'Language & Region'),
                   const SizedBox(height: 8),
                   _Card(
                     child: Column(
@@ -1243,33 +1241,6 @@ class _CardDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       const Divider(height: 16, thickness: 0.5, color: Color(0xFFE5E8F2));
-}
-
-class _Badge extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color? color;
-  const _Badge({required this.icon, required this.label, this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = color ?? const Color(0xFF6E0000);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 12, color: c),
-        const SizedBox(width: 3),
-        Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: color != null ? c : const Color(0xFF181C23))),
-      ],
-    );
-  }
-}
-
-class _Divider extends StatelessWidget {
-  const _Divider();
-  @override
-  Widget build(BuildContext context) =>
-      Container(width: 1, height: 14, color: const Color(0xFFE5E8F2));
 }
 
 class _DocTile extends StatelessWidget {
