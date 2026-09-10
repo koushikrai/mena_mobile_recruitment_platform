@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/features/vault/domain/vault_document_entity.dart';
 import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 
@@ -25,6 +26,16 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
 
   final List<Map<String, String>> _extraCredentials = [];
 
+  static const _crimson = Color(0xFF6E0000);
+  static const _surface = Color(0xFFF9F9FF);
+  static const _white = Colors.white;
+  static const _cardLow = Color(0xFFF1F3FD);
+  static const _cardMid = Color(0xFFE5E8F2);
+  static const _ink = Color(0xFF181C23);
+  static const _inkLight = Color(0xFF5A5F67);
+  static const _green = Color(0xFF059669);
+  static const _greenBg = Color(0xFFECFDF5);
+
   @override
   void dispose() {
     _medicalLicenseController.dispose();
@@ -38,15 +49,15 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Add Verified Credential', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        title: const Text('Add Credential / License', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Certificate Title', border: OutlineInputBorder(), isDense: true)),
             const SizedBox(height: 10),
-            TextField(controller: issuerCtrl, decoration: const InputDecoration(labelText: 'Issuing Body', border: OutlineInputBorder(), isDense: true)),
+            TextField(controller: issuerCtrl, decoration: const InputDecoration(labelText: 'Issuing Body / Institute', border: OutlineInputBorder(), isDense: true)),
             const SizedBox(height: 10),
-            TextField(controller: codeCtrl, decoration: const InputDecoration(labelText: 'Credential # (optional)', border: OutlineInputBorder(), isDense: true)),
+            TextField(controller: codeCtrl, decoration: const InputDecoration(labelText: 'License / Credential # (Optional)', border: OutlineInputBorder(), isDense: true)),
           ],
         ),
         actions: [
@@ -81,13 +92,13 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                 } catch (_) {}
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('✓ Credential added to Suhana Verified Vault!'), backgroundColor: Color(0xFF059669)),
+                    const SnackBar(content: Text('✓ Credential added to your profile!'), backgroundColor: _green),
                   );
                 }
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6E0000), foregroundColor: Colors.white),
-            child: const Text('Add to Vault'),
+            style: ElevatedButton.styleFrom(backgroundColor: _crimson, foregroundColor: Colors.white),
+            child: const Text('Add Credential'),
           ),
         ],
       ),
@@ -102,14 +113,9 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Select a new PDF or JPEG scan from your device.', style: TextStyle(fontSize: 12, color: Color(0xFF5B403C))),
-            SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.cloud_upload_outlined, size: 36, color: Color(0xFF6E0000)),
-              ],
-            ),
+            Text('Select a new document scan (PDF, JPG, PNG) from your device.', style: TextStyle(fontSize: 12, color: _inkLight)),
+            SizedBox(height: 16),
+            Icon(Icons.cloud_upload_outlined, size: 40, color: _crimson),
           ],
         ),
         actions: [
@@ -118,10 +124,10 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
             onPressed: () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('✓ Successfully replaced document for $certName!'), backgroundColor: const Color(0xFF059669)),
+                SnackBar(content: Text('✓ Document updated for $certName!'), backgroundColor: _green),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6E0000), foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: _crimson, foregroundColor: Colors.white),
             child: const Text('Upload New File'),
           ),
         ],
@@ -147,15 +153,15 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
           children: [
             const Row(
               children: [
-                Icon(Icons.badge, color: Color(0xFF6E0000)),
+                Icon(Icons.badge, color: _crimson),
                 SizedBox(width: 8),
-                Text('Upload Saudi Aramco Approval Card', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('Saudi Aramco Approval Card', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 8),
             const Text(
-              'Upload front and back scan of your Aramco SAP ID card or Safety Work Permit Receiver card.',
-              style: TextStyle(fontSize: 12, color: Color(0xFF5B403C)),
+              'Upload front and back scan of your SAP ID card or Safety Work Permit Receiver card.',
+              style: TextStyle(fontSize: 12, color: _inkLight),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -173,17 +179,17 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                 Navigator.pop(ctx);
                 setState(() => _hasAramcoCard = true);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('✓ Saudi Aramco Approval Card verified & attached!'), backgroundColor: Color(0xFF059669)),
+                  const SnackBar(content: Text('✓ Saudi Aramco Approval Card verified!'), backgroundColor: _green),
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6E0000),
+                backgroundColor: _crimson,
                 foregroundColor: Colors.white,
                 minimumSize: const Size.fromHeight(44),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              icon: const Icon(Icons.cloud_upload),
-              label: const Text('Confirm Upload & Verify Card', style: TextStyle(fontWeight: FontWeight.bold)),
+              icon: const Icon(Icons.cloud_upload, size: 18),
+              label: const Text('Confirm & Save Card', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -205,9 +211,9 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: Color(0xFF6E0000)),
+                CircularProgressIndicator(color: _crimson),
                 SizedBox(width: 16),
-                Text('Verifying with DHA/MOH Healthcare Registry...'),
+                Text('Verifying with DHA/MOH Registry...'),
               ],
             ),
           ),
@@ -221,7 +227,7 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
 
     setState(() => _isMedicalVerified = true);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('✓ License $text verified active in MHRSD & DHA Registry!'), backgroundColor: const Color(0xFF059669)),
+      SnackBar(content: Text('✓ License $text verified active!'), backgroundColor: _green),
     );
   }
 
@@ -230,7 +236,7 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Add GCC License', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        title: const Text('Add GCC Driving License', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         content: TextField(
           controller: nameCtrl,
           decoration: const InputDecoration(labelText: 'License details', border: OutlineInputBorder(), isDense: true),
@@ -244,10 +250,10 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
               }
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('✓ Added GCC driving license!'), backgroundColor: Color(0xFF059669)),
+                const SnackBar(content: Text('✓ GCC driving license added!'), backgroundColor: _green),
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6E0000), foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: _crimson, foregroundColor: Colors.white),
             child: const Text('Add License'),
           ),
         ],
@@ -257,140 +263,100 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const primaryCrimson = Color(0xFF6E0000);
-    const containerCrimson = Color(0xFF990000);
-    const lightSurface = Color(0xFFF9F9FF);
-    const cardLowest = Colors.white;
-    const cardLow = Color(0xFFF1F3FD);
-    const cardHigh = Color(0xFFE5E8F2);
-    const textOnSurface = Color(0xFF181C23);
-    const textSecondary = Color(0xFF5A5F67);
-
     return Scaffold(
-      backgroundColor: lightSurface,
+      backgroundColor: _surface,
       body: SafeArea(
         child: Column(
           children: [
-            // Progress Header
+            // ── Clean Header with Top-Left Back Button ────────────────────────
             Container(
-              color: cardLowest,
+              color: _white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  // Top navigation row
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'STEP 3 OF 4: GCC TRADE & SAFETY LICENSES',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.8,
-                          color: textSecondary,
+                      // Back Button on Top-Left
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: _cardLow,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(Icons.arrow_back, size: 18, color: _ink),
+                          onPressed: () => context.pop(),
                         ),
                       ),
-                      Text(
-                        '75% Completed',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: primaryCrimson,
-                        ),
+                      // Step Indicator
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'STEP 3 OF 4',
+                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight, letterSpacing: 0.8),
+                          ),
+                          Text(
+                            '75% Completed',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _crimson),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 10),
+                  // Progress Bar
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: const LinearProgressIndicator(
                       value: 0.75,
-                      minHeight: 5,
-                      backgroundColor: cardHigh,
-                      valueColor: AlwaysStoppedAnimation<Color>(primaryCrimson),
+                      minHeight: 4,
+                      backgroundColor: _cardMid,
+                      valueColor: AlwaysStoppedAnimation<Color>(_crimson),
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Row(
-                    children: [
-                      Icon(Icons.verified_user, size: 14, color: primaryCrimson),
-                      SizedBox(width: 4),
-                      Text(
-                        'GLOBAL JOBS BY SUHANA',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
-                          color: textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
                   const Text(
                     'Certifications & GCC Accreditations',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: textOnSurface,
-                      letterSpacing: -0.3,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _ink, letterSpacing: -0.3),
                   ),
                   const SizedBox(height: 2),
                   const Text(
-                    'Gulf employers require validated certificates for visa quotas and Aramco/ADNOC approvals.',
-                    style: TextStyle(fontSize: 12, color: textSecondary),
+                    'Validated credentials required for GCC visas and Aramco/ADNOC approvals.',
+                    style: TextStyle(fontSize: 12, color: _inkLight),
                   ),
                 ],
               ),
             ),
 
-            // Scrollable Content
+            // ── Scrollable Body ───────────────────────────────────────────────
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Smart Verification Callout Banner
+                    // Clean Callout Tip
                     Container(
-                      padding: const EdgeInsets.all(14),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFF4F4),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: const Color(0xFFFFE2E2)),
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: const Row(
                         children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: primaryCrimson,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(Icons.workspace_premium, color: Colors.white, size: 22),
-                          ),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Priority Shortlist Acceleration',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: primaryCrimson,
-                                  ),
-                                ),
-                                SizedBox(height: 3),
-                                Text(
-                                  'Upload certificates with valid expiration dates to unlock high-priority GCC interview shortlists and fast-tracked visa clearances.',
-                                  style: TextStyle(fontSize: 11, color: textOnSurface, height: 1.4),
-                                ),
-                              ],
+                          Icon(Icons.workspace_premium, color: _crimson, size: 20),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Verified certifications unlock high-priority employer shortlists & expedited visas.',
+                              style: TextStyle(fontSize: 11, color: _ink, height: 1.3),
                             ),
                           ),
                         ],
@@ -398,56 +364,47 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Section: Pre-identified Certificates
+                    // ── 1. Verified Credentials Section ───────────────────────
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
+                        const Row(
                           children: [
-                            const Text(
+                            Icon(Icons.verified, size: 16, color: _crimson),
+                            SizedBox(width: 6),
+                            Text(
                               'Verified Credentials',
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textOnSurface),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFDFE2EC),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Text(
-                                'Extracted from CV',
-                                style: TextStyle(fontSize: 10, color: textSecondary, fontWeight: FontWeight.w500),
-                              ),
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _ink),
                             ),
                           ],
                         ),
                         InkWell(
                           onTap: _showAddCredentialDialog,
-                          child: const Row(
-                            children: [
-                              Icon(Icons.add, size: 16, color: primaryCrimson),
-                              SizedBox(width: 2),
-                              Text('Add New', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: primaryCrimson)),
-                            ],
+                          borderRadius: BorderRadius.circular(6),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                            child: Row(
+                              children: [
+                                Icon(Icons.add, size: 16, color: _crimson),
+                                SizedBox(width: 2),
+                                Text('Add New', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _crimson)),
+                              ],
+                            ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
 
-                    // Additional user-added credentials
-                    ..._extraCredentials.map((extra) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: _buildCertificateCard(
-                            issuer: extra['issuer']!,
-                            code: extra['code']?.isEmpty ?? true ? null : extra['code'],
-                            title: extra['title']!,
-                            validText: 'Valid: Dec 2028',
-                            fileName: extra['file']!,
-                            fileMeta: 'PDF Document • 1.9 MB',
-                            icon: Icons.verified,
-                          ),
+                    // Dynamic User-Added Credentials
+                    ..._extraCredentials.map((extra) => _buildCertificateCard(
+                          issuer: extra['issuer']!,
+                          code: extra['code']?.isEmpty ?? true ? null : extra['code'],
+                          title: extra['title']!,
+                          validText: 'Valid: Dec 2028',
+                          fileName: extra['file']!,
+                          fileMeta: 'PDF Document • 1.9 MB',
+                          icon: Icons.verified,
                         )),
 
                     // Certificate 1: NEBOSH
@@ -460,11 +417,10 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                       fileMeta: 'PDF Document • 2.4 MB',
                       icon: Icons.picture_as_pdf,
                     ),
-                    const SizedBox(height: 12),
 
                     // Certificate 2: OPITO BOSIET
                     _buildCertificateCard(
-                      issuer: 'OPITO Approved Training Center',
+                      issuer: 'OPITO Approved Center',
                       code: null,
                       title: 'OPITO BOSIET + CA-EBS (Offshore Survival)',
                       validText: 'Valid: Jun 2026',
@@ -472,131 +428,131 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                       fileMeta: 'JPEG Image • 1.8 MB',
                       icon: Icons.sailing,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
 
-                    // Certificate 3: Aramco Card Missing / Action Required
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: cardLowest,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: _hasAramcoCard ? const Color(0xFFD1FAE5) : const Color(0xFFFFDAD6),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  _hasAramcoCard ? Icons.verified : Icons.priority_high,
-                                  size: 13,
-                                  color: _hasAramcoCard ? const Color(0xFF065F46) : const Color(0xFFBA1A1A),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  _hasAramcoCard ? 'Verified Active Aramco Approval' : 'Document Scan Missing',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: _hasAramcoCard ? const Color(0xFF065F46) : const Color(0xFFBA1A1A),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            _hasAramcoCard ? 'Saudi Aramco Approval Card ($_aramcoCardNumber)' : 'Saudi Aramco SAP ID / Safety Work Permit Receiver',
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textOnSurface),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _hasAramcoCard
-                                ? '✓ Verified in Aramco Contractor Registry. Valid for Yanbu & Jubail operations.'
-                                : 'Identified in CV text. Please upload front/back scan of your Aramco Approval Card to verify.',
-                            style: const TextStyle(fontSize: 11, color: textSecondary),
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Upload Box with Red/Green Outline
-                          InkWell(
-                            onTap: _showAramcoUploadModal,
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 18),
-                              decoration: BoxDecoration(
-                                color: _hasAramcoCard ? const Color(0xFFF0FDF4) : const Color(0xFFFFF6F6),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: _hasAramcoCard ? const Color(0xFF059669) : containerCrimson.withValues(alpha: 0.35),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 20,
-                                    backgroundColor: cardLowest,
-                                    child: Icon(
-                                      _hasAramcoCard ? Icons.check_circle : Icons.cloud_upload,
-                                      color: _hasAramcoCard ? const Color(0xFF059669) : primaryCrimson,
-                                      size: 22,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    _hasAramcoCard ? 'Replace Aramco Card Scan' : '+ Upload Aramco Card',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: _hasAramcoCard ? const Color(0xFF059669) : primaryCrimson,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    _hasAramcoCard ? 'aramco_approval_card_scan.pdf • 1.6 MB' : 'JPEG, PNG, or PDF (Max 10MB)',
-                                    style: const TextStyle(fontSize: 10, color: textSecondary),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-
-                    // Section: GCC Regulatory Licenses
+                    // ── 2. Saudi Aramco Approval Card ─────────────────────────
                     const Row(
                       children: [
-                        Icon(Icons.badge, size: 18, color: primaryCrimson),
+                        Icon(Icons.shield_outlined, size: 16, color: _crimson),
                         SizedBox(width: 6),
                         Text(
-                          'GCC Regulatory Licenses',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textOnSurface),
+                          'GCC Industry Approvals',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _ink),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
 
-                    // Medical & Prometric Toggle Card
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: cardLowest,
-                        borderRadius: BorderRadius.circular(14),
+                        color: _white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE4DADB), width: 0.8),
                         boxShadow: const [
-                          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
+                          BoxShadow(color: Color(0x06000000), blurRadius: 4, offset: Offset(0, 2)),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: _hasAramcoCard ? _greenBg : const Color(0xFFFFF1F1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  _hasAramcoCard ? Icons.verified : Icons.badge_outlined,
+                                  color: _hasAramcoCard ? _green : _crimson,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _hasAramcoCard
+                                          ? 'Saudi Aramco Approval Card ($_aramcoCardNumber)'
+                                          : 'Saudi Aramco SAP ID / Work Permit Receiver',
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: _ink),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _hasAramcoCard
+                                          ? 'Verified Active in Aramco Contractor Registry'
+                                          : 'Upload card scan for fast-track operator approval',
+                                      style: const TextStyle(fontSize: 11, color: _inkLight),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: _hasAramcoCard ? _greenBg : const Color(0xFFFFF1F1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  _hasAramcoCard ? 'Verified' : 'Required',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: _hasAramcoCard ? _green : _crimson,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: _showAramcoUploadModal,
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: _hasAramcoCard ? _green : _crimson, width: 1),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                              ),
+                              icon: Icon(_hasAramcoCard ? Icons.check : Icons.cloud_upload, size: 16, color: _hasAramcoCard ? _green : _crimson),
+                              label: Text(
+                                _hasAramcoCard ? 'Replace Aramco Scan' : 'Upload Aramco Card Scan',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _hasAramcoCard ? _green : _crimson),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ── 3. Regulatory & Trade Licenses ────────────────────────
+                    const Row(
+                      children: [
+                        Icon(Icons.assignment_ind_outlined, size: 16, color: _crimson),
+                        SizedBox(width: 6),
+                        Text(
+                          'Regulatory & Driving Licenses',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _ink),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Healthcare License
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: _white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE4DADB), width: 0.8),
+                        boxShadow: const [
+                          BoxShadow(color: Color(0x06000000), blurRadius: 4, offset: Offset(0, 2)),
                         ],
                       ),
                       child: Column(
@@ -604,253 +560,171 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFDEE2ED),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(Icons.medical_services, size: 18, color: Color(0xFF171C23)),
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
+                                child: const Icon(Icons.medical_services_outlined, size: 18, color: _ink),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 10),
                               const Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      'Prometric / MOH / DHA License',
-                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textOnSurface),
-                                    ),
-                                    Text(
-                                      'Healthcare and allied health practitioners',
-                                      style: TextStyle(fontSize: 10, color: textSecondary),
-                                    ),
+                                    Text('Prometric / MOH / DHA License', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: _ink)),
+                                    Text('For healthcare & allied professionals', style: TextStyle(fontSize: 10, color: _inkLight)),
                                   ],
                                 ),
                               ),
                               Switch(
                                 value: _isMedicalActive,
-                                activeThumbColor: primaryCrimson,
+                                activeThumbColor: _crimson,
+                                activeTrackColor: _crimson.withValues(alpha: 0.4),
                                 onChanged: (val) => setState(() => _isMedicalActive = val),
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
                             ],
                           ),
                           if (_isMedicalActive) ...[
-                            const SizedBox(height: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            const SizedBox(height: 10),
+                            Row(
                               children: [
-                                const Text(
-                                  'LICENSE / ELIGIBILITY NUMBER',
-                                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: textSecondary, letterSpacing: 0.8),
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                                        decoration: BoxDecoration(
-                                          color: cardLow,
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: TextField(
-                                          controller: _medicalLicenseController,
-                                          decoration: const InputDecoration(
-                                            hintText: 'e.g. DHA-P-0029319',
-                                            hintStyle: TextStyle(fontSize: 12, color: textSecondary),
-                                            border: InputBorder.none,
-                                            isDense: true,
-                                          ),
-                                          style: const TextStyle(fontSize: 12, color: textOnSurface),
-                                        ),
-                                      ),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _medicalLicenseController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'License / Eligibility #',
+                                      border: OutlineInputBorder(),
+                                      isDense: true,
                                     ),
-                                    const SizedBox(width: 8),
-                                    ElevatedButton(
-                                      onPressed: _verifyMedicalLicense,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: primaryCrimson,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                        elevation: 0,
-                                      ),
-                                      child: const Text('Verify', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
-                                    ),
-                                  ],
-                                ),
-                                if (_isMedicalVerified) ...[
-                                  const SizedBox(height: 6),
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFD1FAE5),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: const Row(
-                                      children: [
-                                        Icon(Icons.check_circle, color: Color(0xFF059669), size: 14),
-                                        SizedBox(width: 6),
-                                        Text('✓ Verified Active in MHRSD / DHA Practitioner Database', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF065F46))),
-                                      ],
-                                    ),
+                                    style: const TextStyle(fontSize: 12),
                                   ),
-                                ],
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: _verifyMedicalLicense,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: _crimson,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    elevation: 0,
+                                  ),
+                                  child: const Text('Verify', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                ),
                               ],
                             ),
+                            if (_isMedicalVerified) ...[
+                              const SizedBox(height: 6),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                decoration: BoxDecoration(color: _greenBg, borderRadius: BorderRadius.circular(6)),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.check_circle, color: _green, size: 14),
+                                    SizedBox(width: 6),
+                                    Text('✓ Verified active in DHA / MOH database', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF065F46))),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ],
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
 
-                    // GCC Driving License Card
+                    // GCC Driving License
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: cardLowest,
-                        borderRadius: BorderRadius.circular(14),
+                        color: _white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE4DADB), width: 0.8),
                         boxShadow: const [
-                          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
+                          BoxShadow(color: Color(0x06000000), blurRadius: 4, offset: Offset(0, 2)),
                         ],
                       ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              CircleAvatar(
-                                radius: 16,
-                                backgroundColor: Color(0xFFDEE2ED),
-                                child: Icon(Icons.directions_car, size: 18, color: Color(0xFF171C23)),
-                              ),
-                              SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              const Row(
                                 children: [
-                                  Text(
-                                    'GCC Driving License',
-                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textOnSurface),
-                                  ),
-                                  Text(
-                                    'Transport & heavy equipment qualification',
-                                    style: TextStyle(fontSize: 10, color: textSecondary),
-                                  ),
+                                  Icon(Icons.directions_car_outlined, size: 18, color: _ink),
+                                  SizedBox(width: 8),
+                                  Text('GCC Driving License', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: _ink)),
                                 ],
+                              ),
+                              InkWell(
+                                onTap: _showAddLicenseDialog,
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.add, size: 14, color: _crimson),
+                                    SizedBox(width: 2),
+                                    Text('Add', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _crimson)),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 10),
-
+                          const SizedBox(height: 8),
                           ..._gccDrivingLicenses.map((lic) => Container(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: cardLow,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
+                                margin: const EdgeInsets.only(bottom: 6),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      children: [
-                                        const Text('🇸🇦', style: TextStyle(fontSize: 20)),
-                                        const SizedBox(width: 8),
-                                        Text(lic, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textOnSurface)),
-                                      ],
+                                    const Text('🇸🇦', style: TextStyle(fontSize: 18)),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(lic, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
                                     ),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFE8F5E9),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: const Row(
-                                        children: [
-                                          Icon(Icons.check, size: 12, color: Color(0xFF1B5E20)),
-                                          SizedBox(width: 3),
-                                          Text('Valid', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20))),
-                                        ],
-                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(color: _greenBg, borderRadius: BorderRadius.circular(4)),
+                                      child: const Text('Valid', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF065F46))),
                                     ),
                                   ],
                                 ),
                               )),
-
-                          const SizedBox(height: 4),
-                          InkWell(
-                            onTap: _showAddLicenseDialog,
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 9),
-                              decoration: BoxDecoration(
-                                color: cardHigh,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.add_circle, size: 16, color: textOnSurface),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    '+ Add License (UAE / Qatar / Kuwait)',
-                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textOnSurface),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
 
-            // Sticky Bottom Bar
+            // ── Sticky Full-Width Action Button ──────────────────────────────
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
-                color: cardLowest,
+                color: _white,
                 boxShadow: [
-                  BoxShadow(color: Color(0x14000000), blurRadius: 10, offset: Offset(0, -2)),
+                  BoxShadow(color: Color(0x0C000000), blurRadius: 8, offset: Offset(0, -2)),
                 ],
               ),
-              child: Row(
-                children: [
-                  InkWell(
-                    onTap: () => context.pop(),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: cardHigh,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.arrow_back, color: textOnSurface, size: 20),
-                    ),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => context.go(RouteNames.profile),
+                  icon: const Text(
+                    'Save & Continue to Profile',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: SizedBox(
-                      height: 46,
-                      child: ElevatedButton.icon(
-                        onPressed: () => context.go('/vault'),
-                        icon: const Icon(Icons.arrow_forward, size: 18, color: Colors.white),
-                        label: const Text(
-                          'Continue to Profile Summary',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: containerCrimson,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          elevation: 0,
-                        ),
-                      ),
-                    ),
+                  label: const Icon(Icons.arrow_forward, size: 16, color: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _crimson,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(46),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 0,
                   ),
-                ],
+                ),
               ),
             ),
           ],
@@ -869,12 +743,14 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
     required IconData icon,
   }) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: _white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE4DADB), width: 0.8),
         boxShadow: const [
-          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2)),
+          BoxShadow(color: Color(0x06000000), blurRadius: 4, offset: Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -882,60 +758,59 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: _cardLow,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 18, color: _crimson),
+              ),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F3FD),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.domain, size: 12, color: Color(0xFF5A5F67)),
-                          const SizedBox(width: 4),
-                          Text(
-                            issuer,
-                            style: const TextStyle(fontSize: 10, color: Color(0xFF5A5F67), fontWeight: FontWeight.w600),
-                          ),
-                          if (code != null) ...[
-                            const SizedBox(width: 4),
-                            const Text('•', style: TextStyle(fontSize: 10, color: Color(0xFF5A5F67))),
-                            const SizedBox(width: 4),
-                            Text(
-                              code,
-                              style: const TextStyle(fontSize: 10, fontFamily: 'monospace', color: Color(0xFF5A5F67)),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
                     Text(
                       title,
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF181C23)),
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: _ink),
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Text(
+                          issuer,
+                          style: const TextStyle(fontSize: 11, color: _inkLight, fontWeight: FontWeight.w500),
+                        ),
+                        if (code != null) ...[
+                          const Text(' · ', style: TextStyle(color: _inkLight)),
+                          Text(
+                            code,
+                            style: const TextStyle(fontSize: 10, color: _inkLight, fontFamily: 'monospace'),
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  borderRadius: BorderRadius.circular(12),
+                  color: _greenBg,
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle, size: 12, color: Color(0xFF1B5E20)),
-                    const SizedBox(width: 4),
+                    const Icon(Icons.check_circle, size: 12, color: _green),
+                    const SizedBox(width: 3),
                     Text(
                       validText,
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1B5E20)),
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF065F46)),
                     ),
                   ],
                 ),
@@ -944,43 +819,35 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
           ),
           const SizedBox(height: 10),
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F3FD),
-              borderRadius: BorderRadius.circular(8),
+              color: _cardLow,
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDFE2EC),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Icon(icon, size: 18, color: const Color(0xFF6E0000)),
-                ),
-                const SizedBox(width: 10),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        fileName,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF181C23)),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        fileMeta,
-                        style: const TextStyle(fontSize: 10, color: Color(0xFF5A5F67)),
+                      const Icon(Icons.attachment, size: 14, color: _inkLight),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          '$fileName ($fileMeta)',
+                          style: const TextStyle(fontSize: 10, color: _inkLight),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                TextButton(
-                  onPressed: () => _showReplaceDialog(title),
-                  child: const Text('Replace', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6E0000))),
+                InkWell(
+                  onTap: () => _showReplaceDialog(title),
+                  child: const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: Text('Replace', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _crimson)),
+                  ),
                 ),
               ],
             ),
@@ -990,4 +857,3 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
     );
   }
 }
-

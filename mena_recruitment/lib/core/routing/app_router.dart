@@ -13,6 +13,7 @@ import 'package:mena_recruitment/features/vault/presentation/screens/passport_up
 import 'package:mena_recruitment/features/vault/presentation/screens/certifications_screen.dart';
 import 'package:mena_recruitment/features/profile/presentation/screens/settings_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_upload_screen.dart';
+import 'package:mena_recruitment/features/cv_parser/presentation/screens/manual_details_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_review_screen.dart';
 import 'package:mena_recruitment/features/sectors/presentation/screens/sectors_screen.dart';
 import 'package:mena_recruitment/features/jobs/presentation/screens/job_application_screen.dart';
@@ -48,10 +49,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             currentIndex = 1;
           } else if (location.startsWith(RouteNames.applications)) {
             currentIndex = 2;
-          } else if (location.startsWith(RouteNames.vault)) {
-            currentIndex = 3;
           } else if (location.startsWith(RouteNames.profile)) {
-            currentIndex = 4;
+            currentIndex = 3;
           }
 
           return Scaffold(
@@ -70,9 +69,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     context.go(RouteNames.applications);
                     break;
                   case 3:
-                    context.go(RouteNames.vault);
-                    break;
-                  case 4:
                     context.go(RouteNames.profile);
                     break;
                 }
@@ -98,26 +94,27 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const ApplicationsScreen(),
           ),
           GoRoute(
-            path: RouteNames.vault,
-            builder: (context, state) => const VaultScreen(),
-            routes: [
-              GoRoute(
-                path: 'passport-scan',
-                builder: (context, state) => const PassportScanScreen(),
-              ),
-              GoRoute(
-                path: 'passport-update',
-                builder: (context, state) => const PassportUpdateScreen(),
-              ),
-              GoRoute(
-                path: 'certifications',
-                builder: (context, state) => const CertificationsScreen(),
-              ),
-            ],
-          ),
-          GoRoute(
             path: RouteNames.profile,
             builder: (context, state) => const SettingsScreen(),
+          ),
+        ],
+      ),
+      // Vault sub-screens — accessed via context.push(), no bottom nav
+      GoRoute(
+        path: RouteNames.vault,
+        builder: (context, state) => const VaultScreen(),
+        routes: [
+          GoRoute(
+            path: 'passport-scan',
+            builder: (context, state) => const PassportScanScreen(),
+          ),
+          GoRoute(
+            path: 'passport-update',
+            builder: (context, state) => const PassportUpdateScreen(),
+          ),
+          GoRoute(
+            path: 'certifications',
+            builder: (context, state) => const CertificationsScreen(),
           ),
         ],
       ),
@@ -138,6 +135,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.cvUpload,
         builder: (context, state) => const CVUploadScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.cvManualDetails,
+        builder: (context, state) => const ManualDetailsScreen(),
       ),
       GoRoute(
         path: RouteNames.cvReview,

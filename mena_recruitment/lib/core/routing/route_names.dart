@@ -17,5 +17,6 @@ class RouteNames {
   static const String certifications = '/vault/certifications';
   static const String profile = '/profile';
   static const String cvUpload = '/cv/upload';
+  static const String cvManualDetails = '/cv/manual-details';
   static const String cvReview = '/cv/review';
 }
