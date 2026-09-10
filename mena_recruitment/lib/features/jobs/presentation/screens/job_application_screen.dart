@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/core/theme/app_colors.dart';
 import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
@@ -36,33 +37,65 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
     super.dispose();
   }
 
-  void _simulateManualUpload() async {
-    setState(() {
-      _isUploadingNew = true;
-      _uploadProgress = 0.1;
-    });
+  bool _isCustomCv = false;
 
-    for (int i = 2; i <= 10; i++) {
-      await Future.delayed(const Duration(milliseconds: 120));
+  void _handleDeviceUpload() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx'],
+        withData: true,
+      );
+
+      // If user closed or canceled the file picker dialog, do nothing
+      if (result == null || result.files.isEmpty) {
+        return;
+      }
+
+      final file = result.files.first;
+      final fileName = file.name;
+      final sizeInBytes = file.size;
+      final sizeFormatted = sizeInBytes > 1024 * 1024
+          ? '${(sizeInBytes / (1024 * 1024)).toStringAsFixed(1)} MB'
+          : '${(sizeInBytes / 1024).toStringAsFixed(0)} KB';
+
+      setState(() {
+        _isUploadingNew = true;
+        _uploadProgress = 0.2;
+      });
+
+      for (int i = 3; i <= 10; i++) {
+        await Future.delayed(const Duration(milliseconds: 70));
+        if (!mounted) return;
+        setState(() {
+          _uploadProgress = i / 10.0;
+        });
+      }
+
       if (!mounted) return;
       setState(() {
-        _uploadProgress = i / 10.0;
+        _isUploadingNew = false;
+        _isCustomCv = true;
+        _selectedCvName = fileName;
+        _selectedCvSize = sizeFormatted;
       });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✓ Attached $fileName ($sizeFormatted) to this application'),
+          backgroundColor: const Color(0xFF059669),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open file picker: $e'),
+          backgroundColor: const Color(0xFFBA1A1A),
+        ),
+      );
     }
-
-    if (!mounted) return;
-    setState(() {
-      _isUploadingNew = false;
-      _selectedCvName = 'Updated_HSE_Supervisor_Resume_2026.pdf';
-      _selectedCvSize = '2.3 MB';
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('✓ New CV uploaded and verified with Suhana AI parser!'),
-        backgroundColor: Color(0xFF059669),
-      ),
-    );
   }
 
   void _showLinkedInImportDialog() {
@@ -379,15 +412,27 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFD1FAE5),
+                                      color: _isCustomCv ? const Color(0xFFEFF6FF) : const Color(0xFFD1FAE5),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
-                                    child: const Text('✓ Auto-Attached', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Color(0xFF065F46))),
+                                    child: Text(
+                                      _isCustomCv ? '✓ Custom Selected' : '✓ Auto-Attached',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w700,
+                                        color: _isCustomCv ? const Color(0xFF1D4ED8) : const Color(0xFF065F46),
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 2),
-                              const Text(' • GCC HSE Specialist • Suhana Parsed', style: TextStyle(fontSize: 10, color: Color(0xFF5B403C))),
+                              Text(
+                                _isCustomCv
+                                    ? '$_selectedCvSize • Custom resume selected for this application'
+                                    : '1.8 MB • GCC HSE Specialist • Suhana Parsed',
+                                style: const TextStyle(fontSize: 10, color: Color(0xFF5B403C)),
+                              ),
                             ],
                           ),
                         ),
@@ -502,7 +547,7 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
                 children: [
                   Expanded(
                     child: InkWell(
-                      onTap: _simulateManualUpload,
+                      onTap: _handleDeviceUpload,
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
