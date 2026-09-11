@@ -6,6 +6,11 @@ abstract class ApplicationsRepository {
   Future<List<JobApplication>> filterByStage(RelocationStage stage);
   Future<JobApplication> applyForJob({
     required String jobId,
+    String? jobTitle,
+    String? companyName,
+    String? companyLogoUrl,
+    String? countryCode,
+    String? city,
     String? coverNote,
     List<String>? documentIds,
   });

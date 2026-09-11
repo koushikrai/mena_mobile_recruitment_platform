@@ -7,25 +7,37 @@ import 'mock_applications_data.dart';
 
 class ApplicationsRepositoryImpl implements ApplicationsRepository {
   final ApiClient _apiClient = ApiClient();
+  static final List<JobApplication> _submittedApplications = [];
 
   @override
   Future<List<JobApplication>> getApplications() async {
+    List<JobApplication> baseList = [];
     try {
       final response = await _apiClient.get(ApiEndpoints.applications);
       if (response.statusCode == 200 && response.data is List) {
         final rawList = response.data as List;
         if (rawList.isNotEmpty) {
-          return rawList
+          baseList = rawList
               .map((json) => JobApplication.fromJson(json as Map<String, dynamic>))
               .toList();
         }
       }
     } catch (e) {
-      debugPrint('[ApplicationsRepo] Backend error, falling back to mock: $e');
+      debugPrint('[ApplicationsRepo] Backend error: $e');
     }
 
-    await Future.delayed(const Duration(milliseconds: 300));
-    return mockApplications;
+    if (baseList.isEmpty) {
+      baseList = List<JobApplication>.from(mockApplications);
+    }
+
+    // Merge in newly submitted applications at the top
+    final merged = <JobApplication>[
+      ..._submittedApplications,
+      ...baseList.where((b) => !_submittedApplications.any((s) => s.jobId == b.jobId || s.id == b.id)),
+    ];
+
+    await Future.delayed(const Duration(milliseconds: 100));
+    return merged;
   }
 
   @override
@@ -39,9 +51,10 @@ class ApplicationsRepositoryImpl implements ApplicationsRepository {
       debugPrint('[ApplicationsRepo] Backend error for getApplicationById($id): $e');
     }
 
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(milliseconds: 100));
     try {
-      return mockApplications.firstWhere((app) => app.id == id);
+      final all = await getApplications();
+      return all.firstWhere((app) => app.id == id);
     } catch (e) {
       return null;
     }
@@ -56,9 +69,15 @@ class ApplicationsRepositoryImpl implements ApplicationsRepository {
   @override
   Future<JobApplication> applyForJob({
     required String jobId,
+    String? jobTitle,
+    String? companyName,
+    String? companyLogoUrl,
+    String? countryCode,
+    String? city,
     String? coverNote,
     List<String>? documentIds,
   }) async {
+    JobApplication? backendApp;
     try {
       final payload = <String, dynamic>{'job_id': jobId};
       if (coverNote != null) payload['cover_note'] = coverNote;
@@ -70,27 +89,34 @@ class ApplicationsRepositoryImpl implements ApplicationsRepository {
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (response.data is Map<String, dynamic>) {
-          return JobApplication.fromJson(response.data as Map<String, dynamic>);
+          backendApp = JobApplication.fromJson(response.data as Map<String, dynamic>);
         }
       }
     } catch (e) {
-      debugPrint('[ApplicationsRepo] Backend apply error, creating local item: $e');
+      debugPrint('[ApplicationsRepo] Local fallback for apply: $e');
     }
 
-    final newApp = JobApplication(
-      id: 'app-${DateTime.now().millisecondsSinceEpoch}',
-      jobId: jobId,
-      jobTitle: 'Verified Position',
-      companyName: 'GCC Verified Employer',
-      companyLogoUrl: 'https://images.unsplash.com/photo-1541888946425-d0fbb1861593?w=128',
-      countryCode: 'sau',
-      city: 'Riyadh',
-      appliedDate: DateTime.now(),
-      currentStage: RelocationStage.applied,
-      statusLabel: 'Stage 1/6: Applied & Verification Underway',
-      severity: StatusSeverity.info,
-    );
+    final newApp = backendApp ??
+        JobApplication(
+          id: 'app-${DateTime.now().millisecondsSinceEpoch}',
+          jobId: jobId,
+          jobTitle: jobTitle ?? 'Offshore HSE Supervisor',
+          companyName: companyName ?? 'PetroGulf Offshore Operations',
+          companyLogoUrl: companyLogoUrl ??
+              'https://lh3.googleusercontent.com/aida-public/AB6AXuDs-2n5_Xkj2vrxXdOf2fHsOMdsLLjyHxlt2zdSglN6_hNoax51Oy7zvrFWVg5wE92lNPIzitVFTiVUp-oEzavNgACz4k3TFFQCNQNGgNlpPaCeDrr7_Mq0ocBcf18c-rrT9U_qaCpPNt2viUaUq0zWEODqB5wpAV-Ozpd16hE_BTt7YkEfTgsvzhqYmMv99HUKEt5rh4zAPN-01d4GOoIrMoexzML6K8mbSSd0tRvl3_GT5-xT166wmw',
+          countryCode: (countryCode ?? 'SA').toUpperCase(),
+          city: city ?? 'Yanbu',
+          appliedDate: DateTime.now(),
+          currentStage: RelocationStage.applied,
+          statusLabel: 'Stage 1/6: Application Submitted & Verification Underway',
+          severity: StatusSeverity.info,
+        );
+
+    _submittedApplications.removeWhere((a) => a.jobId == jobId);
+    _submittedApplications.insert(0, newApp);
+    mockApplications.removeWhere((a) => a.jobId == jobId);
     mockApplications.insert(0, newApp);
+
     return newApp;
   }
 

@@ -6,6 +6,7 @@ import 'package:mena_recruitment/core/widgets/bottom_nav_bar.dart';
 import 'package:mena_recruitment/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:mena_recruitment/features/jobs/presentation/screens/home_screen.dart';
 import 'package:mena_recruitment/features/jobs/presentation/screens/job_details_screen.dart';
+import 'package:mena_recruitment/features/jobs/presentation/screens/job_application_screen.dart';
 import 'package:mena_recruitment/features/applications/presentation/screens/applications_screen.dart';
 import 'package:mena_recruitment/features/vault/presentation/screens/vault_screen.dart';
 import 'package:mena_recruitment/features/vault/presentation/screens/passport_scan_screen.dart';
@@ -16,7 +17,6 @@ import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_uplo
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/manual_details_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_review_screen.dart';
 import 'package:mena_recruitment/features/sectors/presentation/screens/sectors_screen.dart';
-import 'package:mena_recruitment/features/jobs/presentation/screens/job_application_screen.dart';
 import 'package:mena_recruitment/features/auth/presentation/screens/auth_screen.dart';
 
 // Auth State Provider

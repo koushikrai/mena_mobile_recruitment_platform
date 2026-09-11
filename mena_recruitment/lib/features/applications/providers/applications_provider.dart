@@ -127,6 +127,15 @@ class ApplicationsNotifier extends AsyncNotifier<List<JobApplication>> {
     });
   }
 
+  void recordNewApplication(JobApplication newApp) {
+    final currentList = state.value ?? [];
+    final updated = [
+      newApp,
+      ...currentList.where((a) => a.id != newApp.id && a.jobId != newApp.jobId),
+    ];
+    state = AsyncValue.data(updated);
+  }
+
   Future<bool> advanceStage(String applicationId, RelocationStage newStage) async {
     final repo = ref.read(applicationsRepositoryProvider);
     final success = await repo.updateApplicationStage(applicationId, newStage);

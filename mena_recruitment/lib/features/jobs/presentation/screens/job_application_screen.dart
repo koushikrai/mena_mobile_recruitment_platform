@@ -164,8 +164,13 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
   void _submitApplication(Job job) async {
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(applicationsRepositoryProvider).applyForJob(
+      final newApp = await ref.read(applicationsRepositoryProvider).applyForJob(
         jobId: job.id,
+        jobTitle: job.title,
+        companyName: job.companyName,
+        companyLogoUrl: job.companyLogoUrl,
+        countryCode: job.countryCode,
+        city: job.city,
         coverNote: _coverNoteController.text.trim().isNotEmpty
             ? _coverNoteController.text.trim()
             : 'Priority application submitted with verified credentials.',
@@ -174,6 +179,7 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
           if (_useVaultCertificates) 'doc-cert-01',
         ],
       );
+      ref.read(applicationsProvider.notifier).recordNewApplication(newApp);
       ref.invalidate(applicationsProvider);
     } catch (e) {
       debugPrint('[JobApplication] Apply notice: $e');
@@ -348,7 +354,7 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
                         children: [
                           Text(job.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF1E1B1B))),
                           const SizedBox(height: 2),
-                          const Text(' • , Saudi Arabia', style: TextStyle(fontSize: 11, color: Color(0xFF5B403C))),
+                          Text('${job.companyName} • ${job.city}, ${job.countryCode.toUpperCase()}', style: const TextStyle(fontSize: 11, color: Color(0xFF5B403C))),
                         ],
                       ),
                     ),

@@ -269,7 +269,94 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  if (applications.isNotEmpty && (applications.first.currentStage == RelocationStage.applied || applications.first.currentStage == RelocationStage.screening)) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFF334155)),
+                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3))],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF22C55E),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'LATEST APPLIED JOB TRACKING',
+                                    style: TextStyle(color: Color(0xFF86EFAC), fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.6),
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF22C55E).withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFF22C55E).withValues(alpha: 0.4)),
+                                ),
+                                child: const Text(
+                                  'STAGE 1 OF 6',
+                                  style: TextStyle(color: Color(0xFF86EFAC), fontSize: 9, fontWeight: FontWeight.w800),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            applications.first.jobTitle,
+                            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${applications.first.companyName} • ${applications.first.city}, ${applications.first.countryCode}',
+                            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11, fontWeight: FontWeight.w500),
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.06),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.bolt, color: Color(0xFFFDE047), size: 14),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    applications.first.statusLabel,
+                                    style: const TextStyle(color: Color(0xFFE2E8F0), fontSize: 11, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
 
                   // Horizontal Filter Tabs
                   SizedBox(
@@ -619,6 +706,87 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
                 ],
               ),
             ),
+          ] else if (app.currentStage == RelocationStage.applied || app.currentStage == RelocationStage.screening) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFBBF7D0)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.bolt, color: Color(0xFF16A34A), size: 18),
+                          SizedBox(width: 6),
+                          Text(
+                            'LIVE APPLICATION TRACKING',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF15803D), letterSpacing: 0.5),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF16A34A),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text('STAGE 1 / 6', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Transmitted to employer HR with verified passport & CV. Initial recruiter screening underway.',
+                    style: TextStyle(fontSize: 11, color: Color(0xFF14532D)),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            WhatsAppService.showWhatsAppAssistantSheet(
+                              context: context,
+                              title: app.jobTitle,
+                              referenceCode: app.id.length > 8 ? app.id.substring(0, 8).toUpperCase() : app.id.toUpperCase(),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF15803D),
+                            side: const BorderSide(color: Color(0xFF86EFAC)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                          icon: const Icon(Icons.chat, size: 14, color: Color(0xFF16A34A)),
+                          label: const Text('WhatsApp HR', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showApplicationTrackingModal(app),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF16A34A),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                          ),
+                          icon: const Icon(Icons.track_changes, size: 14),
+                          label: const Text('Track Details', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ],
           const SizedBox(height: 8),
           Row(
@@ -627,6 +795,120 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
               Text('Ref: ${app.id.substring(0, app.id.length > 8 ? 8 : app.id.length).toUpperCase()}', style: const TextStyle(fontSize: 10, color: Color(0xFF8F706B), fontFamily: 'monospace')),
               const Text('Direct Sponsor Visa', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF6E0000))),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showApplicationTrackingModal(JobApplication app) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(color: Color(0xFFDCFCE7), shape: BoxShape.circle),
+                  child: const Icon(Icons.verified, color: Color(0xFF16A34A), size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(app.jobTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                      Text('${app.companyName} • ${app.city}, ${app.countryCode}', style: const TextStyle(fontSize: 12, color: Color(0xFF5B403C))),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 12),
+            const Text('Hiring Pipeline Timeline', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            _buildTimelineStep('1. Application Transmitted', 'Directly dispatched to licensed employer HR portal with verified passport.', isDone: true, isCurrent: app.currentStage == RelocationStage.applied),
+            _buildTimelineStep('2. HR Screening & Shortlist', 'Recruiter review against offshore/onshore requirements.', isDone: app.currentStage.index > 0, isCurrent: app.currentStage == RelocationStage.screening),
+            _buildTimelineStep('3. Technical Video Interview', 'Direct panel interview via Microsoft Teams with engineering lead.', isDone: app.currentStage.index > 1, isCurrent: app.currentStage == RelocationStage.interview),
+            _buildTimelineStep('4. Formal Offer & Salary Package', 'Official contract issued with expatriate benefits and accommodation.', isDone: app.currentStage.index > 2, isCurrent: app.currentStage == RelocationStage.offerIssued),
+            _buildTimelineStep('5. Visa Stamping & GAMCA Medical', 'Direct employer visa issuance through MHRSD/Qiwa portal.', isDone: app.currentStage.index > 3, isCurrent: app.currentStage == RelocationStage.visaProcessing),
+            _buildTimelineStep('6. Flight Ticket & Mobilization', 'Expedited arrival and site induction handover.', isDone: app.currentStage.index > 4, isCurrent: app.currentStage == RelocationStage.flightOnboarding),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  WhatsAppService.showWhatsAppAssistantSheet(
+                    context: context,
+                    title: app.jobTitle,
+                    referenceCode: app.id.length > 8 ? app.id.substring(0, 8).toUpperCase() : app.id.toUpperCase(),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF16A34A),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                icon: const Icon(Icons.chat),
+                label: const Text('Direct Recruiter WhatsApp Query', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimelineStep(String title, String desc, {required bool isDone, required bool isCurrent}) {
+    Color dotColor = const Color(0xFFCBD5E1);
+    if (isDone) dotColor = const Color(0xFF16A34A);
+    if (isCurrent) dotColor = const Color(0xFF2563EB);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 2),
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+            child: isDone ? const Icon(Icons.check, size: 8, color: Colors.white) : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontSize: 12, fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w600, color: isCurrent ? const Color(0xFF2563EB) : const Color(0xFF1E1B1B))),
+                Text(desc, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+              ],
+            ),
           ),
         ],
       ),

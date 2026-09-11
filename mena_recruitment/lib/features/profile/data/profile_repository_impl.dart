@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mena_recruitment/core/network/api_client.dart';
 import 'package:mena_recruitment/core/network/api_endpoints.dart';
@@ -38,7 +39,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
         return _profile;
       }
     } catch (e) {
-      debugPrint('[ProfileRepo] Backend getProfile error, falling back: $e');
+      if (e is DioException && e.response?.statusCode == 401) {
+        debugPrint('[ProfileRepo] Guest session active, using profile');
+      } else {
+        debugPrint('[ProfileRepo] Backend getProfile error, falling back: $e');
+      }
     }
 
     await Future.delayed(const Duration(milliseconds: 200));

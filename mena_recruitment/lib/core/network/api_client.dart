@@ -44,7 +44,9 @@ class ApiClient {
           return handler.next(options);
         },
         onError: (DioException error, handler) {
-          debugPrint('[API Error] ${error.requestOptions.method} ${error.requestOptions.path} -> ${error.message}');
+          if (error.response?.statusCode != 401) {
+            debugPrint('[API Error] ${error.requestOptions.method} ${error.requestOptions.path} -> ${error.message}');
+          }
           return handler.next(error);
         },
       ),

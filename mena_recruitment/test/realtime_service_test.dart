@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mena_recruitment/core/network/realtime_event.dart';
-import 'package:mena_recruitment/core/network/realtime_service.dart';
 import 'package:mena_recruitment/features/applications/domain/application_entity.dart';
 
 void main() {

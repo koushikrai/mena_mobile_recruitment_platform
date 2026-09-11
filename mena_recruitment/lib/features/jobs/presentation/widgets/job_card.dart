@@ -111,13 +111,34 @@ class JobCard extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${job.currency} ${job.salaryMin.toInt()} - ${job.salaryMax.toInt()}',
-                  style: AppTypography.labelLarge.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${job.currency} ${job.salaryMin.toInt()} - ${job.salaryMax.toInt()}',
+                      style: AppTypography.labelLarge.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
+                    ),
+                    Text(
+                      'Closes in ${job.applicationDeadline.difference(DateTime.now()).inDays} days',
+                      style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary, fontSize: 10),
+                    ),
+                  ],
                 ),
-                Text(
-                  'Closes ${job.applicationDeadline.difference(DateTime.now()).inDays}d',
-                  style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                ElevatedButton.icon(
+                  onPressed: () => context.push('/jobs/${job.id}/apply'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryDark,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    minimumSize: const Size(0, 34),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  icon: const Icon(Icons.flash_on_rounded, size: 14, color: Colors.amber),
+                  label: const Text(
+                    'Apply',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+                  ),
                 ),
               ],
             ),
