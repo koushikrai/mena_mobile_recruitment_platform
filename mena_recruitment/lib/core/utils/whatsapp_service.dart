@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:mena_recruitment/core/config/env_config.dart';
 
 class WhatsAppService {
-  static const String defaultRecruiterPhone = '+966540001122'; // Suhana KSA Desk
+  /// Fetched dynamically from .env (`DIRECT_RECRUITER_QUERY_NUMBER` or `RECRUITER_PHONE`)
+  static String get defaultRecruiterPhone => EnvConfig.directRecruiterQueryNumber;
 
   static Future<bool> launchChat({
     String? phone,
@@ -28,6 +30,7 @@ class WhatsAppService {
     String? title,
     String? referenceCode,
     String? initialMessage,
+    String? recruiterPhone,
   }) {
     final message = initialMessage ??
         'Hello Suhana Recruitment Team, I would like assistance regarding ${title ?? "recruitment and visa processing"}${referenceCode != null ? " (Ref: $referenceCode)" : ""}.';
@@ -111,7 +114,10 @@ class WhatsAppService {
             ElevatedButton.icon(
               onPressed: () async {
                 Navigator.pop(ctx);
-                final launched = await launchChat(message: message);
+                final launched = await launchChat(
+                  phone: recruiterPhone ?? defaultRecruiterPhone,
+                  message: message,
+                );
                 if (!launched && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

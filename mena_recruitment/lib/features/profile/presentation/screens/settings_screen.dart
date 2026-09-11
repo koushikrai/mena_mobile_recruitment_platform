@@ -9,6 +9,7 @@ import 'package:mena_recruitment/features/auth/providers/auth_provider.dart';
 import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
 import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/widgets/cv_preview_modal.dart';
+import 'package:mena_recruitment/features/jobs/providers/regional_vacancies_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -358,6 +359,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final scoreFraction = score / 100.0;
     final docCount = vaultDocsAsync.value?.length ?? 4;
 
+    final regionalStatsAsync = ref.watch(regionalVacanciesStatsProvider(_selectedRegion));
+    final regionalStats = regionalStatsAsync.valueOrNull;
+    final vacanciesCount = regionalStats?.totalVacancies ?? 8;
+    final countriesSummary = regionalStats?.countriesSummary ?? 'Saudi Arabia, UAE & Qatar';
+    final salaryRange = regionalStats?.formattedSalaryRange ?? 'SAR 14,000 – 18,500';
+    final isTaxFree = regionalStats?.isTaxFree ?? true;
+
     return Scaffold(
       backgroundColor: _surface,
       body: SafeArea(
@@ -498,22 +506,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // ── 2. Career KPI: GCC Job Match ─────────────────────────
+                  // ── 2. Career KPI: Regional Job Match ─────────────────────
                   _SectionHeader(
                     icon: Icons.corporate_fare_rounded,
-                    title: 'GCC Job Match',
+                    title: '$_selectedRegion Job Match',
                     trailing: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFF1F1),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.bolt, size: 12, color: _crimson),
-                          SizedBox(width: 2),
-                          Text('High Demand', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _crimson)),
+                          Icon(regionalStats?.isHighDemand == true ? Icons.bolt : Icons.trending_up, size: 12, color: _crimson),
+                          const SizedBox(width: 2),
+                          Text(
+                            regionalStats?.isHighDemand == true ? 'High Demand' : 'Live Openings',
+                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _crimson),
+                          ),
                         ],
                       ),
                     ),
@@ -523,16 +534,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text.rich(
+                        Text.rich(
                           TextSpan(
                             text: 'You qualify for ',
-                            style: TextStyle(fontSize: 13, color: _inkLight),
+                            style: const TextStyle(fontSize: 13, color: _inkLight),
                             children: [
                               TextSpan(
-                                text: '48 verified vacancies',
-                                style: TextStyle(fontWeight: FontWeight.bold, color: _ink),
+                                text: '$vacanciesCount verified vacancies',
+                                style: const TextStyle(fontWeight: FontWeight.bold, color: _ink),
                               ),
-                              TextSpan(text: ' across Saudi Arabia, UAE & Qatar.'),
+                              TextSpan(text: ' across $countriesSummary.'),
                             ],
                           ),
                         ),
@@ -540,28 +551,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('EST. TAX-FREE SALARY', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight)),
-                                  SizedBox(height: 2),
+                                  Text(
+                                    isTaxFree ? 'EST. TAX-FREE SALARY' : 'EST. SALARY RANGE',
+                                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: _inkLight),
+                                  ),
+                                  const SizedBox(height: 2),
                                   Text.rich(
                                     TextSpan(
-                                      text: 'SAR 14,000 – 18,500',
-                                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _crimson),
-                                      children: [
+                                      text: salaryRange,
+                                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _crimson),
+                                      children: const [
                                         TextSpan(text: ' / mo', style: TextStyle(fontSize: 12, color: _inkLight, fontWeight: FontWeight.normal)),
                                       ],
                                     ),
                                   ),
-                                  SizedBox(height: 2),
-                                  Text('+ Family status & furnished accommodation', style: TextStyle(fontSize: 10, color: _inkLight)),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    isTaxFree ? '+ Family status & furnished accommodation' : 'Direct employer sponsorship',
+                                    style: const TextStyle(fontSize: 10, color: _inkLight),
+                                  ),
                                 ],
                               ),
-                              Icon(Icons.trending_up_rounded, color: _crimson, size: 28),
+                              const Icon(Icons.trending_up_rounded, color: _crimson, size: 28),
                             ],
                           ),
                         ),

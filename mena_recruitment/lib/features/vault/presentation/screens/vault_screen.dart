@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
 import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
 import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
+import 'package:mena_recruitment/features/jobs/providers/regional_vacancies_provider.dart';
 
 class VaultScreen extends ConsumerWidget {
   const VaultScreen({super.key});
@@ -21,6 +22,13 @@ class VaultScreen extends ConsumerWidget {
         ? candidate.targetTitle
         : 'Senior HSE Supervisor';
     final candidateExp = candidate?.gccExperience ?? 4;
+
+    final statsAsync = ref.watch(activeRegionVacanciesStatsProvider);
+    final stats = statsAsync.valueOrNull;
+    final vacanciesCount = stats?.totalVacancies ?? 8;
+    final countriesSummary = stats?.countriesSummary ?? 'Saudi Arabia, UAE & Qatar';
+    final salaryRange = stats?.formattedSalaryRange ?? 'SAR 14,000 – 18,500';
+    final regionLabel = stats?.regionLabel ?? 'GCC';
 
     const primaryCrimson = Color(0xFF6E0000);
     const containerCrimson = Color(0xFF990000);
@@ -269,29 +277,29 @@ class VaultScreen extends ConsumerWidget {
                                 child: const Icon(Icons.corporate_fare, color: primaryCrimson, size: 22),
                               ),
                               const SizedBox(width: 12),
-                              const Expanded(
+                              Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'GCC Employer Match',
-                                      style: TextStyle(
+                                      '$regionLabel Employer Match',
+                                      style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                         color: textOnSurface,
                                       ),
                                     ),
-                                    SizedBox(height: 2),
+                                    const SizedBox(height: 2),
                                     Text.rich(
                                       TextSpan(
                                         text: 'You qualify for ',
-                                        style: TextStyle(fontSize: 12, color: textSecondary),
+                                        style: const TextStyle(fontSize: 12, color: textSecondary),
                                         children: [
                                           TextSpan(
-                                            text: '48 High-Priority Vacancies',
-                                            style: TextStyle(fontWeight: FontWeight.bold, color: textOnSurface),
+                                            text: '$vacanciesCount High-Priority Vacancies',
+                                            style: const TextStyle(fontWeight: FontWeight.bold, color: textOnSurface),
                                           ),
-                                          TextSpan(text: ' across Saudi Arabia, UAE & Qatar.'),
+                                          TextSpan(text: ' across $countriesSummary.'),
                                         ],
                                       ),
                                     ),
@@ -307,19 +315,19 @@ class VaultScreen extends ConsumerWidget {
                               color: cardLow,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Column(
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   'ESTIMATED TAX-FREE SALARY RANGE',
                                   style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.8, color: textSecondary),
                                 ),
-                                SizedBox(height: 4),
+                                const SizedBox(height: 4),
                                 Text.rich(
                                   TextSpan(
-                                    text: 'SAR 14,000 - 18,500 ',
-                                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: primaryCrimson),
-                                    children: [
+                                    text: '$salaryRange ',
+                                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: primaryCrimson),
+                                    children: const [
                                       TextSpan(
                                         text: '/ mo',
                                         style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: textSecondary),
@@ -327,8 +335,8 @@ class VaultScreen extends ConsumerWidget {
                                     ],
                                   ),
                                 ),
-                                SizedBox(height: 4),
-                                Row(
+                                const SizedBox(height: 4),
+                                const Row(
                                   children: [
                                     Icon(Icons.apartment, size: 14, color: primaryCrimson),
                                     SizedBox(width: 4),
