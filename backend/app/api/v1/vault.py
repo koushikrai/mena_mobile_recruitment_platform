@@ -20,8 +20,10 @@ from app.services.mrz_service import parse_td3_mrz
 from app.services.cv_parser_service import parse_cv_with_ai
 from app.services.storage_service import save_uploaded_file
 from app.services.readiness_service import calculate_relocation_readiness
+from app.core.realtime import manager
 
 router = APIRouter(prefix="/vault", tags=["Document Vault & AI Services"])
+
 
 @router.get("/documents", response_model=List[DocumentVaultResponse])
 async def list_vault_documents(
@@ -127,7 +129,35 @@ async def upload_vault_document(
         all_docs = (await db.execute(doc_stmt)).scalars().all()
         readiness = calculate_relocation_readiness(profile, all_docs)
         profile.relocation_readiness_score = readiness.relocation_readiness_score
-
     await db.commit()
+
     await db.refresh(doc)
+
+    # Real-time WebSocket event dispatch
+    await manager.broadcast_to_user(
+        current_user.id,
+        "document_status_updated",
+        {
+            "document_id": str(doc.id),
+            "document_type": doc.document_type,
+            "verification_status": doc.verification_status,
+            "is_verified": doc.is_verified,
+            "file_name": doc.file_name,
+            "has_six_months_validity": doc.has_six_months_validity,
+        }
+    )
+    if profile:
+        await manager.broadcast_to_user(
+            current_user.id,
+            "readiness_score_updated",
+            {
+                "relocation_readiness_score": profile.relocation_readiness_score,
+                "breakdown": {
+                    "has_valid_passport": doc.document_type == "passport" and doc.is_verified,
+                    "has_cv": True,
+                }
+            }
+        )
+
     return doc
+

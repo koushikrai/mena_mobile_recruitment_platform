@@ -17,8 +17,10 @@ from app.schemas.job import (
     WalkinRegistrationResponse
 )
 from app.core.security import get_current_user, get_optional_current_user
+from app.core.realtime import manager
 
 router = APIRouter(prefix="/jobs", tags=["Jobs & Drives"])
+
 
 @router.get("", response_model=List[JobResponse])
 async def list_jobs(
@@ -197,7 +199,35 @@ async def register_for_walkin(
     db.add(reg)
     await db.commit()
     await db.refresh(reg)
+
+    # Real-time WebSocket broadcasts
+    await manager.broadcast_to_topic(
+        "topic:walkin_drives",
+        "walkin_quota_updated",
+        {
+            "drive_id": str(drive.id),
+            "title": drive.title,
+            "registered_count": drive.registered_count,
+            "available_quotas": drive.available_quotas,
+            "remaining_slots": max(0, drive.available_quotas - drive.registered_count),
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+    )
+    await manager.broadcast_to_user(
+        current_user.id,
+        "walkin_registered",
+        {
+            "drive_id": str(drive.id),
+            "registration_id": str(reg.id),
+            "qr_pass_code": reg.qr_pass_code,
+            "time_slot": reg.time_slot,
+            "title": drive.title,
+            "venue": drive.venue_name,
+        }
+    )
+
     return reg
+
 
 @router.get("/{job_id}", response_model=JobResponse)
 async def get_job(

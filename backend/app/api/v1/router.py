@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import auth, candidates, jobs, applications, vault, compliance
+from app.api.v1 import auth, candidates, jobs, applications, vault, compliance, ws
 
 api_router = APIRouter()
 
@@ -9,3 +9,5 @@ api_router.include_router(jobs.router)
 api_router.include_router(applications.router)
 api_router.include_router(vault.router)
 api_router.include_router(compliance.router)
+api_router.include_router(ws.router)
+

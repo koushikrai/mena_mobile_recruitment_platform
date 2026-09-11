@@ -8,6 +8,7 @@ import 'package:mena_recruitment/features/auth/presentation/auth_sheet.dart';
 import 'package:mena_recruitment/features/auth/providers/auth_provider.dart';
 import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
 import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
+import 'package:mena_recruitment/features/cv_parser/presentation/widgets/cv_preview_modal.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -596,7 +597,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             padding: EdgeInsets.zero,
                             tooltip: 'CV Options',
                             onSelected: (action) {
-                              if (action == 'review') {
+                              if (action == 'preview') {
+                                CvPreviewModal.show(
+                                  context: context,
+                                  fileName: _cvFileName,
+                                  fileSize: '1.8 MB',
+                                  isCustom: false,
+                                  onReplaceCv: () => context.push(RouteNames.cvUpload),
+                                );
+                              } else if (action == 'review') {
                                 context.push('/cv/review');
                               } else if (action == 'update') {
                                 context.push('/cv/upload');
@@ -606,6 +615,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             },
                             itemBuilder: (ctx) => [
                               if (_hasCv) ...[
+                                const PopupMenuItem(
+                                  value: 'preview',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.visibility_outlined, size: 18, color: _crimson),
+                                      SizedBox(width: 8),
+                                      Text('View CV Document', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _crimson)),
+                                    ],
+                                  ),
+                                ),
                                 const PopupMenuItem(
                                   value: 'review',
                                   child: Row(

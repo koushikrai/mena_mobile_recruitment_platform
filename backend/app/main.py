@@ -54,3 +54,27 @@ async def root():
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "healthy", "service": "MENA Recruitment API"}
+
+@app.get("/health/db", tags=["Health"])
+async def health_db_check():
+    import time
+    start = time.time()
+    try:
+        async with engine.connect() as conn:
+            result = await conn.execute(text("SELECT count(*) FROM jobs"))
+            jobs_count = result.scalar()
+            latency_ms = round((time.time() - start) * 1000, 2)
+            return {
+                "status": "healthy",
+                "database": "Neon PostgreSQL (Connected)",
+                "latency_ms": latency_ms,
+                "jobs_count": jobs_count
+            }
+    except Exception as e:
+        latency_ms = round((time.time() - start) * 1000, 2)
+        return {
+            "status": "degraded",
+            "database": f"Error: {str(e)}",
+            "latency_ms": latency_ms
+        }
+

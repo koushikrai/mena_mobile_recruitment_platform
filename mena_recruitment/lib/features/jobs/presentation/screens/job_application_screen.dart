@@ -8,6 +8,7 @@ import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
 import 'package:mena_recruitment/features/jobs/domain/job_entity.dart';
 import 'package:mena_recruitment/features/jobs/providers/job_details_provider.dart';
 import 'package:mena_recruitment/features/applications/providers/applications_provider.dart';
+import 'package:mena_recruitment/features/cv_parser/presentation/widgets/cv_preview_modal.dart';
 
 class JobApplicationScreen extends ConsumerStatefulWidget {
   final String jobId;
@@ -409,6 +410,43 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
                                   Expanded(
                                     child: Text(_selectedCvName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
                                   ),
+                                   const SizedBox(width: 6),
+                                  InkWell(
+                                    onTap: () {
+                                      CvPreviewModal.show(
+                                        context: context,
+                                        fileName: _selectedCvName,
+                                        fileSize: _selectedCvSize,
+                                        isCustom: _isCustomCv,
+                                        onReplaceCv: _handleDeviceUpload,
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF990000).withValues(alpha: 0.08),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: const Color(0xFF990000).withValues(alpha: 0.25)),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.visibility_outlined, size: 12, color: Color(0xFF990000)),
+                                          SizedBox(width: 3),
+                                          Text(
+                                            'View',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF990000),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(

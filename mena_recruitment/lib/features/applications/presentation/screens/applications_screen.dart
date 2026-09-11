@@ -8,6 +8,9 @@ import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
 import 'package:mena_recruitment/core/widgets/notifications_sheet.dart';
 import 'package:mena_recruitment/features/applications/domain/application_entity.dart';
 import 'package:mena_recruitment/features/applications/providers/applications_provider.dart';
+import 'package:mena_recruitment/core/network/realtime_provider.dart';
+import 'package:mena_recruitment/core/network/realtime_service.dart';
+import 'package:mena_recruitment/core/network/realtime_event.dart';
 
 class ApplicationsScreen extends ConsumerStatefulWidget {
   const ApplicationsScreen({super.key});
@@ -29,6 +32,48 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
   @override
   Widget build(BuildContext context) {
     final applicationsAsync = ref.watch(applicationsProvider);
+    final realtimeStatus = ref.watch(realtimeStatusProvider).value ?? RealtimeConnectionStatus.disconnected;
+
+    // Listen for live pipeline updates and show interactive toast
+    ref.listen<AsyncValue<PipelineStageChangedEvent>>(pipelineUpdatesProvider, (previous, next) {
+      final event = next.value;
+      if (event != null && mounted) {
+        HapticFeedback.heavyImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF0F1E36),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            content: Row(
+              children: [
+                const Icon(Icons.verified_rounded, color: Color(0xFF10B981), size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Live Update: ${event.title}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
+                      ),
+                      Text(
+                        event.description,
+                        style: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 11),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    });
+
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCF9F9),
@@ -75,6 +120,50 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
                   ),
                   Row(
                     children: [
+                      // Live Real-Time Connection Indicator
+                      Container(
+                        height: 26,
+                        padding: const EdgeInsets.symmetric(horizontal: 7),
+                        decoration: BoxDecoration(
+                          color: realtimeStatus == RealtimeConnectionStatus.connected
+                              ? const Color(0xFFECFDF5)
+                              : const Color(0xFFFFFBEB),
+                          borderRadius: BorderRadius.circular(9999),
+                          border: Border.all(
+                            color: realtimeStatus == RealtimeConnectionStatus.connected
+                                ? const Color(0xFFA7F3D0)
+                                : const Color(0xFFFDE68A),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: realtimeStatus == RealtimeConnectionStatus.connected
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFF59E0B),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              realtimeStatus == RealtimeConnectionStatus.connected ? 'LIVE' : 'SYNC',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
+                                color: realtimeStatus == RealtimeConnectionStatus.connected
+                                    ? const Color(0xFF065F46)
+                                    : const Color(0xFF92400E),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
                       Container(
                         height: 28,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -91,6 +180,7 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
+
                       Stack(
                         children: [
                           IconButton(

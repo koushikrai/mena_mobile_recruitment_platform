@@ -17,6 +17,7 @@ from app.schemas.application import (
     TimelineEventResponse
 )
 from app.core.security import get_current_user
+from app.core.realtime import manager
 
 router = APIRouter(prefix="/applications", tags=["Relocation Pipeline & Applications"])
 
@@ -111,7 +112,7 @@ async def submit_application(
     await db.refresh(new_app)
 
     salary_str = f"{job.salary_currency} {int(job.salary_min):,} - {int(job.salary_max):,}"
-    return ApplicationResponse(
+    resp = ApplicationResponse(
         id=new_app.id,
         job_id=new_app.job_id,
         user_id=new_app.user_id,
@@ -134,6 +135,35 @@ async def submit_application(
             )
         ]
     )
+
+    # Real-time WebSocket event dispatch
+    await manager.broadcast_to_user(
+        current_user.id,
+        "application_created",
+        {
+            "application_id": str(new_app.id),
+            "job_id": str(job.id),
+            "job_title": job.title,
+            "company_name": job.company.name,
+            "status": new_app.status,
+            "stage": event.stage,
+            "timestamp": event.timestamp.isoformat(),
+        }
+    )
+    await manager.broadcast_to_topic(
+        "topic:applications",
+        "new_application",
+        {
+            "application_id": str(new_app.id),
+            "job_id": str(job.id),
+            "job_title": job.title,
+            "company_name": job.company.name,
+            "timestamp": event.timestamp.isoformat(),
+        }
+    )
+
+    return resp
+
 
 @router.post("/{app_id}/stage", response_model=ApplicationResponse)
 async def update_pipeline_stage(
@@ -168,7 +198,7 @@ async def update_pipeline_stage(
     await db.refresh(app)
 
     salary_str = f"{app.job.salary_currency} {int(app.job.salary_min):,} - {int(app.job.salary_max):,}" if app.job else ""
-    return ApplicationResponse(
+    resp = ApplicationResponse(
         id=app.id,
         job_id=app.job_id,
         user_id=app.user_id,
@@ -191,3 +221,21 @@ async def update_pipeline_stage(
             ) for ev in app.timeline_events
         ]
     )
+
+    # Real-time WebSocket event dispatch to the candidate's mobile client
+    await manager.broadcast_to_user(
+        app.user_id,
+        "pipeline_stage_changed",
+        {
+            "application_id": str(app.id),
+            "job_id": str(app.job_id),
+            "new_status": app.status,
+            "new_stage": req.status,
+            "title": req.title,
+            "description": req.description,
+            "updated_at": app.updated_at.isoformat() if app.updated_at else datetime.utcnow().isoformat(),
+        }
+    )
+
+    return resp
+
