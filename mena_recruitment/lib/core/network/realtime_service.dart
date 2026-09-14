@@ -40,15 +40,10 @@ class RealtimeService {
   final Set<String> _subscribedTopics = {};
 
   String get _wsBaseUrl {
-    if (kIsWeb) {
-      return 'ws://localhost:8000/api/v1/ws';
-    }
-    try {
-      if (Platform.isAndroid) {
-        return 'ws://10.0.2.2:8000/api/v1/ws';
-      }
-    } catch (_) {}
-    return 'ws://localhost:8000/api/v1/ws';
+    const customUrl = String.fromEnvironment('WS_BASE_URL');
+    if (customUrl.isNotEmpty) return customUrl;
+
+    return 'wss://mena-mobile-recruitment-platform.onrender.com/api/v1/ws';
   }
 
   void _setStatus(RealtimeConnectionStatus newStatus) {

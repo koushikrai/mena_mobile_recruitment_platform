@@ -54,18 +54,10 @@ class ApiClient {
   }
 
   static String _getDefaultBaseUrl() {
-    if (kIsWeb) {
-      return 'http://localhost:8000/api/v1';
-    }
-    try {
-      if (Platform.isAndroid) {
-        // Android emulator loopback to host localhost
-        return 'http://10.0.2.2:8000/api/v1';
-      }
-    } catch (_) {
-      // Fallback for non-standard platforms
-    }
-    return 'http://localhost:8000/api/v1';
+    const customUrl = String.fromEnvironment('API_BASE_URL');
+    if (customUrl.isNotEmpty) return customUrl;
+
+    return 'https://mena-mobile-recruitment-platform.onrender.com/api/v1';
   }
 
   void updateBaseUrl(String newUrl) {
