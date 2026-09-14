@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
-import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
+import 'package:mena_recruitment/features/cv_parser/providers/manual_profile_state.dart';
+import 'package:mena_recruitment/features/cv_parser/services/gemini_cv_parser_service.dart';
+import 'package:mena_recruitment/features/vault/domain/vault_document_entity.dart';
+import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 
 class CVUploadScreen extends ConsumerStatefulWidget {
   const CVUploadScreen({super.key});
@@ -13,13 +16,21 @@ class CVUploadScreen extends ConsumerStatefulWidget {
 }
 
 class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
-  String _fileName = 'Ahmed_Mansoor_HSE_CV_2026.pdf';
-  String _fileMeta = '1.8 MB • GCC HSE Specialist';
-  double _parseProgress = 0.0;
-  bool _isUploading = false;
-  bool _hasUploaded = false;
+  static const _crimson = Color(0xFF6E0000);
+  static const _green = Color(0xFF059669);
 
-  void _handleManualUpload() async {
+  PlatformFile? _selectedFile;
+  String _fileName = '';
+  String _fileMeta = '';
+  double _parseProgress = 0.0;
+  String _parsingStatus = '';
+
+  bool _isStaged = false; // File selected, but NOT parsed yet
+  bool _isParsing = false; // Gemini model is currently parsing
+  bool _isParsed = false; // Gemini model finished parsing
+  GeminiCvParserResult? _lastResult;
+
+  void _handleSelectDocument() async {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -40,39 +51,27 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
           : '${(sizeInBytes / 1024).toStringAsFixed(0)} KB';
 
       setState(() {
-        _isUploading = true;
-        _parseProgress = 0.15;
+        _selectedFile = file;
         _fileName = fileName;
-        _fileMeta = '$sizeFormatted • Uploading & Parsing...';
-        _hasUploaded = true;
+        _fileMeta = '$sizeFormatted • Document Selected (Ready to Parse)';
+        _isStaged = true;
+        _isParsing = false;
+        _isParsed = false;
+        _parseProgress = 0.0;
+        _parsingStatus = '';
+        _lastResult = null;
       });
-
-      for (int i = 2; i <= 10; i++) {
-        await Future.delayed(const Duration(milliseconds: 120));
-        if (!mounted) return;
-        setState(() {
-          _parseProgress = i / 10.0;
-        });
-      }
 
       if (!mounted) return;
-      setState(() {
-        _isUploading = false;
-        _fileMeta = '$sizeFormatted • AI Extraction Complete';
-      });
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('✓ "$fileName" uploaded & parsed successfully!'),
-          backgroundColor: const Color(0xFF059669),
+          content: Text('✓ "$fileName" selected. Tap "Ready to Parse" to start Gemini AI extraction.'),
+          backgroundColor: const Color(0xFF1E293B),
           duration: const Duration(seconds: 3),
         ),
       );
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _isUploading = false;
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('File selection error: $e'),
@@ -82,65 +81,99 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
     }
   }
 
-  void _showLinkedInModal() {
-    final controller = TextEditingController(text: 'https://linkedin.com/in/ahmed-mansoor-hse');
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.link, color: Color(0xFF0A66C2)),
-            SizedBox(width: 8),
-            Text('Import from LinkedIn', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          ],
+  Future<void> _startGeminiParse() async {
+    if (_selectedFile == null) return;
+
+    setState(() {
+      _isParsing = true;
+      _parseProgress = 0.2;
+      _parsingStatus = 'Connecting to Gemini AI...';
+    });
+
+    try {
+      // Step 1 animation
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (!mounted) return;
+      setState(() {
+        _parseProgress = 0.45;
+        _parsingStatus = 'Analyzing resume structure & career history...';
+      });
+
+      // Invoke Gemini parser service
+      final result = await GeminiCvParserService().parseResume(_selectedFile!);
+
+      // Step 2 animation
+      if (!mounted) return;
+      setState(() {
+        _parseProgress = 0.8;
+        _parsingStatus = 'Extracting skills, certifications & contact details...';
+      });
+
+      await Future.delayed(const Duration(milliseconds: 350));
+      if (!mounted) return;
+
+      // Auto-fill the candidate detail form in state
+      // (Salary & relocation left empty as requested)
+      ref.read(manualProfileProvider.notifier).applyParsedResumeData(
+        basicDetails: result.basicDetails,
+        workExperiences: result.workExperiences,
+        educations: result.educations,
+        certifications: result.certifications,
+        skills: result.skills,
+        salaryRelocation: result.salaryRelocation,
+      );
+
+      // Sync extracted certifications to Suhana Vault
+      try {
+        final vaultRepo = ref.read(vaultRepositoryProvider);
+        for (final cert in result.certifications) {
+          final vaultDoc = VaultDocument(
+            id: 'vault-${cert.id}',
+            category: DocumentCategory.tradeLicense,
+            title: cert.title,
+            documentNumber: cert.credentialNumber.isNotEmpty ? cert.credentialNumber : 'CERT-${DateTime.now().millisecondsSinceEpoch % 10000}',
+            issuingCountry: cert.issuer.isNotEmpty ? cert.issuer : 'Accredited Board',
+            isVerified: true,
+            isValidForGccVisa: true,
+          );
+          await vaultRepo.addDocument(vaultDoc);
+        }
+        ref.invalidate(vaultDocumentsProvider);
+      } catch (_) {}
+
+      final sizeFormatted = _selectedFile!.size > 1024 * 1024
+          ? '${(_selectedFile!.size / (1024 * 1024)).toStringAsFixed(1)} MB'
+          : '${(_selectedFile!.size / 1024).toStringAsFixed(0)} KB';
+
+      setState(() {
+        _isParsing = false;
+        _isParsed = true;
+        _parseProgress = 1.0;
+        _parsingStatus = 'AI Extraction Complete';
+        _lastResult = result;
+        _fileMeta = '$sizeFormatted • AI Extraction 100% Complete';
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✓ Successfully parsed ${result.basicDetails.fullName}\'s resume! Profile auto-filled.'),
+          backgroundColor: _green,
+          duration: const Duration(seconds: 3),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Enter your LinkedIn public profile link or username to import work experience, licenses, and verified skills.',
-              style: TextStyle(fontSize: 12, color: Color(0xFF5B403C)),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                labelText: 'LinkedIn URL',
-                prefixIcon: const Icon(Icons.person, size: 20),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                isDense: true,
-              ),
-            ),
-          ],
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isParsing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error parsing resume: $e'),
+          backgroundColor: Colors.red,
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              setState(() {
-                _fileName = 'LinkedIn_Extracted_Ahmed_Mansoor.pdf';
-                _fileMeta = '1.5 MB • LinkedIn Profile Sync';
-                _parseProgress = 1.0;
-                _hasUploaded = true;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('✓ LinkedIn profile imported and parsed!'),
-                  backgroundColor: Color(0xFF0A66C2),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0A66C2),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Import'),
-          ),
-        ],
-      ),
-    );
+      );
+    }
   }
 
   @override
@@ -153,52 +186,13 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Step Indicator & Back Button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // Top Bar: Back button only with hover and safe pop
+              const Row(
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          icon: const Icon(Icons.arrow_back, size: 16, color: Color(0xFF1E1B1B)),
-                          onPressed: () => context.pop(),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Row(
-                        children: [
-                          Icon(Icons.auto_awesome, size: 14, color: Color(0xFF6E0000)),
-                          SizedBox(width: 4),
-                          Text('Step 1 of 4: AI Resume Parsing', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF6E0000))),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Text(
-                    _parseProgress > 0 ? '${(_parseProgress * 100).toInt()}%' : 'Ready',
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF64748B)),
-                  ),
+                  _UploadBackButton(),
                 ],
               ),
-              const SizedBox(height: 6),
-              // Progress Bar
-              ClipRRect(
-                borderRadius: BorderRadius.circular(9999),
-                child: LinearProgressIndicator(
-                  value: _parseProgress > 0 ? _parseProgress : 0.05,
-                  minHeight: 4,
-                  backgroundColor: const Color(0xFFE4DADB),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6E0000)),
-                ),
-              ),
+
               const SizedBox(height: 14),
 
               // Title Header
@@ -210,19 +204,28 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
                   children: [
                     Icon(Icons.verified_outlined, size: 12, color: Color(0xFF334155)),
                     SizedBox(width: 4),
-                    Text('GLOBAL JOBS BY SUHANA • GCC DIRECT RELOCATION', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800, color: Color(0xFF334155))),
+                    Text(
+                      'GLOBAL JOBS BY SUHANA • GCC DIRECT RELOCATION',
+                      style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800, color: Color(0xFF334155)),
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 6),
-              const Text('Upload Your CV / Resume', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF1E1B1B))),
+              const Text(
+                'Upload Your CV / Resume',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF1E1B1B)),
+              ),
               const SizedBox(height: 4),
-              const Text('Our AI parser extracts your Gulf work experience, trades, and certifications to auto-fill your profile in seconds.', style: TextStyle(fontSize: 11, color: Color(0xFF5B403C))),
+              const Text(
+                'Select your resume document first, then tap "Ready to Parse" to let Gemini AI extract your details and auto-fill your candidate form.',
+                style: TextStyle(fontSize: 11, color: Color(0xFF5B403C)),
+              ),
               const SizedBox(height: 16),
 
-              // Upload Drop Zone (matching Screenshot 5)
+              // Upload Drop Zone
               GestureDetector(
-                onTap: _handleManualUpload,
+                onTap: _handleSelectDocument,
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
@@ -239,7 +242,7 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
                             width: 56,
                             height: 56,
                             decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(14)),
-                            child: const Icon(Icons.cloud_upload_outlined, color: Color(0xFF6E0000), size: 30),
+                            child: const Icon(Icons.cloud_upload_outlined, color: _crimson, size: 30),
                           ),
                           Positioned(
                             top: 0,
@@ -247,7 +250,7 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
                             child: Container(
                               width: 8,
                               height: 8,
-                              decoration: const BoxDecoration(color: Color(0xFF6E0000), shape: BoxShape.circle),
+                              decoration: const BoxDecoration(color: _crimson, shape: BoxShape.circle),
                             ),
                           ),
                         ],
@@ -264,12 +267,20 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      const Text('Tap to browse files', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1E1B1B))),
+                      Text(
+                        _isStaged ? 'Document Selected: $_fileName' : 'Tap to browse files',
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1E1B1B)),
+                      ),
                       const SizedBox(height: 2),
-                      const Text('or drop your file directly from WhatsApp / Files', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                      Text(
+                        _isStaged
+                            ? 'Tap to select a different document if desired'
+                            : 'or drop your file directly from WhatsApp / Files',
+                        style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                      ),
                       const SizedBox(height: 14),
                       ElevatedButton.icon(
-                        onPressed: _handleManualUpload,
+                        onPressed: _handleSelectDocument,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFF1F5F9),
                           foregroundColor: const Color(0xFF1E1B1B),
@@ -277,8 +288,11 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         ),
-                        icon: const Icon(Icons.folder_open, size: 16),
-                        label: Text(_isUploading ? 'Uploading...' : 'Select Document', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        icon: Icon(_isStaged ? Icons.change_circle_outlined : Icons.folder_open, size: 16),
+                        label: Text(
+                          _isStaged ? 'Change Document' : 'Select Document',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
@@ -286,135 +300,226 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
               ),
               const SizedBox(height: 14),
 
-              // Active Upload Card (Only displayed when file has been selected)
-              if (_hasUploaded || _isUploading) ...[
+              // STAGE 2: "READY TO PARSE" Card (When file is selected, but not parsed yet)
+              if (_isStaged && !_isParsing && !_isParsed) ...[
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: const Color(0xFFE4DADB)),
+                    boxShadow: const [
+                      BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.03), blurRadius: 8, offset: Offset(0, 2)),
+                    ],
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: const Color(0xFFFFDAD4), borderRadius: BorderRadius.circular(8)),
-                            child: const Icon(Icons.description_outlined, color: Color(0xFF6E0000), size: 20),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFDAD4),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.description_outlined, color: _crimson, size: 22),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(_fileName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
-                                const SizedBox(height: 1),
-                                Text(_fileMeta, style: const TextStyle(fontSize: 10, color: Color(0xFF5B403C))),
+                                Text(
+                                  _fileName,
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E1B1B)),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _fileMeta,
+                                  style: const TextStyle(fontSize: 11, color: Color(0xFF5B403C)),
+                                ),
                               ],
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.refresh, size: 18, color: Color(0xFF64748B)),
-                            onPressed: _handleManualUpload,
+                            icon: const Icon(Icons.refresh, size: 20, color: Color(0xFF64748B)),
+                            tooltip: 'Select different document',
+                            onPressed: _handleSelectDocument,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 14),
                       Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(8)),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF1F1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFFD4D4)),
+                        ),
+                        child: const Row(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: const BoxDecoration(color: Color(0xFF6E0000), shape: BoxShape.circle),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      _parseProgress >= 1.0 ? 'AI Extraction 100% Complete' : 'AI Extraction ${(_parseProgress * 100).toInt()}%',
-                                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF6E0000)),
-                                    ),
-                                  ],
-                                ),
-                                Text('${(_parseProgress * 100).toInt()}%', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(9999),
-                              child: LinearProgressIndicator(
-                                value: _parseProgress,
-                                minHeight: 4,
-                                backgroundColor: const Color(0xFFE2E8F0),
-                                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6E0000)),
+                            Icon(Icons.info_outline, size: 16, color: _crimson),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Document ready. Click the button below to extract candidate details with Gemini model.',
+                                style: TextStyle(fontSize: 11, color: _crimson, fontWeight: FontWeight.w600),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      _buildStatusItem('Contact & Personal Information Extracted', isDone: _parseProgress >= 0.3),
-                      _buildStatusItem('6.8 Yrs GCC Oil & Gas Experience Detected', isDone: _parseProgress >= 0.6),
-                      _buildStatusItem('NEBOSH IGC & BOSIET Certifications Identified', isDone: _parseProgress >= 0.8),
-                      _buildStatusItem('Parsing Trade Licenses & Relocation Availability...', isDone: _parseProgress >= 1.0),
+                      const SizedBox(height: 14),
+
+                      // Prominent "Ready to Parse" Button
+                      ElevatedButton.icon(
+                        onPressed: _startGeminiParse,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _crimson,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          elevation: 2,
+                        ),
+                        icon: const Icon(Icons.auto_awesome, size: 18, color: Colors.amber),
+                        label: const Text(
+                          'Ready to Parse Resume with Gemini AI',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 14),
               ],
 
-              // Fast Import Alternatives Divider
-              const Row(
-                children: [
-                  Expanded(child: Divider(color: Color(0xFFE4DADB))),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text('FAST IMPORT ALTERNATIVES', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Color(0xFF8F706B))),
+              // PARSING ACTIVE PROGRESS CARD
+              if (_isParsing) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE4DADB)),
                   ),
-                  Expanded(child: Divider(color: Color(0xFFE4DADB))),
-                ],
-              ),
-              const SizedBox(height: 12),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2.4, color: _crimson),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _parsingStatus,
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _crimson),
+                            ),
+                          ),
+                          Text(
+                            '${(_parseProgress * 100).toInt()}%',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(9999),
+                        child: LinearProgressIndicator(
+                          value: _parseProgress,
+                          minHeight: 6,
+                          backgroundColor: const Color(0xFFE2E8F0),
+                          valueColor: const AlwaysStoppedAnimation<Color>(_crimson),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
 
-              // LinkedIn & WhatsApp Alternatives
-              InkWell(
-                onTap: _showLinkedInModal,
-                borderRadius: BorderRadius.circular(10),
-                child: _buildAlternativeCard(
-                  icon: Icons.link,
-                  title: 'Import from LinkedIn',
-                  subtitle: 'Pre-fill skills, tenure, and recommendations',
-                  trailing: const Icon(Icons.chevron_right, size: 18, color: Color(0xFF64748B)),
+              // PARSED COMPLETE CARD
+              if (_isParsed && _lastResult != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFA7F3D0)),
+                    boxShadow: const [
+                      BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.03), blurRadius: 8, offset: Offset(0, 2)),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFECFDF5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.check_circle_rounded, color: _green, size: 22),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _fileName,
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Candidate: ${_lastResult!.basicDetails.fullName} • ${_lastResult!.modelUsed ?? "Gemini AI"}',
+                                  style: const TextStyle(fontSize: 11, color: _green, fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.refresh, size: 18, color: Color(0xFF64748B)),
+                            tooltip: 'Upload another file',
+                            onPressed: _handleSelectDocument,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Status extraction breakdown
+                      _buildStatusItem(
+                        'Contact: ${_lastResult!.basicDetails.email.isNotEmpty ? _lastResult!.basicDetails.email : "Identified"} • ${_lastResult!.basicDetails.countryCode} ${_lastResult!.basicDetails.phone}',
+                        isDone: true,
+                      ),
+                      _buildStatusItem(
+                        'Target Role: ${_lastResult!.basicDetails.targetTitle} (${_lastResult!.workExperiences.length} Experience Records)',
+                        isDone: true,
+                      ),
+                      _buildStatusItem(
+                        '${_lastResult!.skills.length} Technical & GCC Skills Detected (${_lastResult!.skills.take(3).join(", ")}...)',
+                        isDone: true,
+                      ),
+                      _buildStatusItem(
+                        '${_lastResult!.certifications.length} Certifications & Licenses Extracted',
+                        isDone: true,
+                      ),
+                      _buildStatusItem(
+                        'Salary & Relocation left empty for candidate review',
+                        isDone: true,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              InkWell(
-                onTap: () {
-                  WhatsAppService.showWhatsAppAssistantSheet(
-                    context: context,
-                    title: 'Offshore HSE Supervisor',
-                    referenceCode: 'CV-DIRECT-908',
-                  );
-                },
-                borderRadius: BorderRadius.circular(10),
-                child: _buildAlternativeCard(
-                  icon: Icons.chat_bubble_outline,
-                  title: 'Upload via WhatsApp',
-                  subtitle: 'Send CV to +966 Suhana Bot',
-                  tag: 'Bot',
-                  trailing: const Icon(Icons.arrow_outward, size: 16, color: Color(0xFF64748B)),
-                ),
-              ),
-              const SizedBox(height: 14),
+                const SizedBox(height: 14),
+              ],
 
               // Suhana Privacy Notice
               Container(
@@ -423,7 +528,7 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.shield_outlined, size: 18, color: Color(0xFF6E0000)),
+                    Icon(Icons.shield_outlined, size: 18, color: _crimson),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -450,24 +555,31 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
               ),
               const SizedBox(height: 14),
 
-              // CTA Button
+              // CTA Button: Continue to Review & Edit (Stage 1 of 4)
               ElevatedButton.icon(
-                onPressed: () => context.go(RouteNames.cvReview),
+                onPressed: _isParsed
+                    ? () {
+                        ref.read(manualProfileProvider.notifier).setStage(0);
+                        context.push(RouteNames.cvManualDetails);
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6E0000),
+                  backgroundColor: _crimson,
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor: const Color(0xFFD1D5DB),
+                  disabledForegroundColor: const Color(0xFF9CA3AF),
                   minimumSize: const Size.fromHeight(48),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                icon: const Text('Continue to Review & Edit (AI Parsed)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                label: const Icon(Icons.arrow_forward, size: 16),
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: TextButton(
-                  onPressed: () => context.push(RouteNames.cvManualDetails),
-                  child: const Text('Skip and enter manually', style: TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                icon: Text(
+                  _isParsed
+                      ? 'Continue to Review & Edit (AI Parsed)'
+                      : _isStaged
+                          ? 'Tap "Ready to Parse" Above First'
+                          : 'Select a Document to Continue',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                 ),
+                label: const Icon(Icons.arrow_forward, size: 16),
               ),
               const SizedBox(height: 20),
             ],
@@ -497,54 +609,9 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
       padding: const EdgeInsets.symmetric(vertical: 3.0),
       child: Row(
         children: [
-          Icon(isDone ? Icons.check : Icons.sync, size: 14, color: isDone ? const Color(0xFF059669) : const Color(0xFF6E0000)),
+          Icon(isDone ? Icons.check_circle : Icons.sync, size: 14, color: isDone ? _green : _crimson),
           const SizedBox(width: 6),
           Expanded(child: Text(text, style: const TextStyle(fontSize: 10, color: Color(0xFF1E1B1B)))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAlternativeCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    String? tag,
-    required Widget trailing,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE4DADB))),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(8)),
-            child: Icon(icon, size: 18, color: const Color(0xFF334155)),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    if (tag != null) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                        decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(4)),
-                        child: Text(tag, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
-                  ],
-                ),
-                Text(subtitle, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B))),
-              ],
-            ),
-          ),
-          trailing,
         ],
       ),
     );
@@ -570,6 +637,54 @@ class _CVUploadScreenState extends ConsumerState<CVUploadScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Upload Back Button with Theme Crimson Hover & Safe Pop
+// ─────────────────────────────────────────────────────────────────────────────
+class _UploadBackButton extends StatefulWidget {
+  const _UploadBackButton();
+
+  @override
+  State<_UploadBackButton> createState() => _UploadBackButtonState();
+}
+
+class _UploadBackButtonState extends State<_UploadBackButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go(RouteNames.profileEntryOptions);
+          }
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: _hovered
+                ? const Color(0xFF6E0000)
+                : const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            Icons.arrow_back,
+            size: 18,
+            color: _hovered ? Colors.white : const Color(0xFF1E1B1B),
+          ),
+        ),
       ),
     );
   }

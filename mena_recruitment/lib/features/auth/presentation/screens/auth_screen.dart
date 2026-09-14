@@ -21,8 +21,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   late bool _isSignUp;
 
   // Controllers for Sign In
-  final _signInEmailController = TextEditingController(text: 'candidate@suhana-global.com');
-  final _signInPasswordController = TextEditingController(text: 'Secret123!');
+  final _signInEmailController = TextEditingController();
+  final _signInPasswordController = TextEditingController();
   bool _signInObscure = true;
 
   // Controllers for Sign Up
@@ -31,7 +31,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _signUpPhoneController = TextEditingController();
   final _signUpPasswordController = TextEditingController();
   String _selectedCountryCode = '+966';
-  String _selectedRole = 'candidate';
   bool _signUpObscure = true;
   bool _agreeToTerms = true;
 
@@ -139,7 +138,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       fullName: name,
       phoneCountryCode: _selectedCountryCode,
       phoneNumber: phone.isNotEmpty ? phone : null,
-      role: _selectedRole,
+      role: 'candidate',
     );
 
     if (success && mounted) {
@@ -656,6 +655,43 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         ),
+
+        const SizedBox(height: 16),
+
+        // New User -> Create One Option
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'New user? ',
+              style: TextStyle(
+                fontSize: 13,
+                color: Color(0xFF5B403C),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                ref.read(authStateProvider.notifier).clearError();
+                setState(() => _isSignUp = true);
+              },
+              borderRadius: BorderRadius.circular(4),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Text(
+                  'Create one',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF990000),
+                    decoration: TextDecoration.underline,
+                    decorationColor: Color(0xFF990000),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -691,7 +727,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         TextField(
           controller: _signUpNameController,
           decoration: InputDecoration(
-            hintText: 'e.g. Tariq Al-Mansoor',
+            hintText: 'e.g. John Doe',
             prefixIcon: const Icon(Icons.person_outline_rounded, size: 20, color: Color(0xFF8F706B)),
             filled: true,
             fillColor: const Color(0xFFFAFAFA),
@@ -837,44 +873,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
         const SizedBox(height: 12),
 
-        // Role Selector Chips
-        const Text(
-          'Account Role',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF1E1B1B)),
-        ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            Expanded(
-              child: ChoiceChip(
-                label: const Center(child: Text('Candidate / Job Seeker', style: TextStyle(fontSize: 11))),
-                selected: _selectedRole == 'candidate',
-                selectedColor: const Color(0xFF990000),
-                labelStyle: TextStyle(
-                  color: _selectedRole == 'candidate' ? Colors.white : const Color(0xFF5B403C),
-                  fontWeight: FontWeight.w600,
-                ),
-                onSelected: (val) => setState(() => _selectedRole = 'candidate'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: ChoiceChip(
-                label: const Center(child: Text('Recruiter / Employer', style: TextStyle(fontSize: 11))),
-                selected: _selectedRole == 'employer',
-                selectedColor: const Color(0xFF990000),
-                labelStyle: TextStyle(
-                  color: _selectedRole == 'employer' ? Colors.white : const Color(0xFF5B403C),
-                  fontWeight: FontWeight.w600,
-                ),
-                onSelected: (val) => setState(() => _selectedRole = 'employer'),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 12),
-
         // Terms Agreement Checkbox
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -919,6 +917,43 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   'Create Candidate Account',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                 ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Already have an account? Sign In Option
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Already have an account? ',
+              style: TextStyle(
+                fontSize: 13,
+                color: Color(0xFF5B403C),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                ref.read(authStateProvider.notifier).clearError();
+                setState(() => _isSignUp = false);
+              },
+              borderRadius: BorderRadius.circular(4),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: Text(
+                  'Sign In',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF990000),
+                    decoration: TextDecoration.underline,
+                    decorationColor: Color(0xFF990000),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );

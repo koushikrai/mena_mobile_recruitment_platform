@@ -32,36 +32,22 @@ class CVParserRepositoryImpl implements CVParserRepository {
       debugPrint('[CVParserRepo] Backend AI parse error, falling back to mock: $e');
     }
 
-    // Graceful fallback to mock data
-    await Future.delayed(const Duration(milliseconds: 600));
-    return const ParsedCV(
-      fullName: 'Ahmed Mansoor Al-Sayed',
-      email: 'ahmed.mansoor@example.com',
-      phone: '+966 550123456',
-      nationality: 'Egyptian',
-      residentCountry: 'Saudi Arabia',
-      targetTitle: 'Senior Offshore HSE Supervisor',
-      totalExperience: 7.5,
-      gccExperience: 4.0,
-      experiences: [
-        WorkExperience(
-          title: 'Offshore Safety Specialist',
-          company: 'Consolidated Contractors Co. (CCC)',
-          location: 'Jubail, Saudi Arabia',
-          startDate: '2020',
-          endDate: 'Present',
-          highlights: ['Zero-incident turnaround operations', 'Supervising PTW approvals'],
-        ),
-      ],
-      education: [
-        EducationEntry(
-          degree: 'B.Sc. Petroleum & Safety Engineering',
-          institution: 'Suez University',
-          year: '2017',
-          attestationStatus: 'Attested by MOFA',
-        ),
-      ],
-      skills: ['NEBOSH IGC', 'OPITO BOSIET', 'Saudi Aramco Approval', 'PTW Mastery'],
+    // Graceful fallback when backend is unreachable
+    await Future.delayed(const Duration(milliseconds: 300));
+    final rawName = file.path.split(Platform.pathSeparator).last.split('.').first;
+    final cleanName = rawName.replaceAll(RegExp(r'[_.-]+'), ' ').trim();
+    return ParsedCV(
+      fullName: cleanName.isNotEmpty ? cleanName : 'Candidate Profile',
+      email: '',
+      phone: '',
+      nationality: '',
+      residentCountry: '',
+      targetTitle: '',
+      totalExperience: 0.0,
+      gccExperience: 0.0,
+      experiences: const [],
+      education: const [],
+      skills: const [],
     );
   }
 

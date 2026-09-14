@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/core/theme/app_colors.dart';
+import 'package:mena_recruitment/features/cv_parser/providers/manual_profile_state.dart';
+import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
 
-class CvPreviewModal extends StatelessWidget {
+class CvPreviewModal extends ConsumerWidget {
   final String fileName;
   final String fileSize;
   final bool isCustom;
@@ -38,7 +41,47 @@ class CvPreviewModal extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final manual = ref.watch(manualProfileProvider);
+    final profile = ref.watch(profileProvider).valueOrNull;
+
+    final fullName = manual.basicDetails.fullName.isNotEmpty
+        ? manual.basicDetails.fullName
+        : (profile?.fullName.isNotEmpty == true ? profile!.fullName : 'Candidate Profile');
+
+    final initials = fullName.trim().isNotEmpty
+        ? fullName
+            .trim()
+            .split(RegExp(r'\s+'))
+            .where((w) => w.isNotEmpty)
+            .map((w) => w[0])
+            .take(2)
+            .join()
+            .toUpperCase()
+        : 'CP';
+
+    final targetRole = manual.basicDetails.targetTitle.isNotEmpty
+        ? manual.basicDetails.targetTitle
+        : (profile?.targetTitle.isNotEmpty == true ? profile!.targetTitle : 'Candidate');
+
+    final contactParts = <String>[];
+    if (manual.basicDetails.city.isNotEmpty) contactParts.add(manual.basicDetails.city);
+    if (manual.basicDetails.phone.isNotEmpty) {
+      contactParts.add('${manual.basicDetails.countryCode} ${manual.basicDetails.phone}');
+    } else if (profile?.phone.isNotEmpty == true) {
+      contactParts.add(profile!.phone);
+    }
+    if (manual.basicDetails.email.isNotEmpty) {
+      contactParts.add(manual.basicDetails.email);
+    } else if (profile?.email.isNotEmpty == true) {
+      contactParts.add(profile!.email);
+    }
+    final contactLine = contactParts.isNotEmpty ? contactParts.join(' • ') : 'Contact details pending candidate update';
+
+    final skillsList = manual.skills;
+    final experiences = manual.workExperiences;
+    final educations = manual.educations;
+
     final isLatest = fileName.contains('2026') || !isCustom;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
@@ -214,10 +257,10 @@ class CvPreviewModal extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(color: const Color(0xFF990000).withValues(alpha: 0.2)),
                               ),
-                              child: const Center(
+                              child: Center(
                                 child: Text(
-                                  'AM',
-                                  style: TextStyle(
+                                  initials,
+                                  style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w900,
                                     color: Color(0xFF990000),
@@ -226,31 +269,31 @@ class CvPreviewModal extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 14),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Ahmed Mansoor Al-Farooq',
-                                    style: TextStyle(
+                                    fullName,
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w800,
                                       color: Color(0xFF0F172A),
                                     ),
                                   ),
-                                  SizedBox(height: 2),
+                                  const SizedBox(height: 2),
                                   Text(
-                                    'Senior Offshore HSE Supervisor & Technical Safety Lead',
-                                    style: TextStyle(
+                                    targetRole,
+                                    style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                       color: Color(0xFF990000),
                                     ),
                                   ),
-                                  SizedBox(height: 4),
+                                  const SizedBox(height: 4),
                                   Text(
-                                    'Dammam, KSA • +966 55 012 3456 • ahmed.mansoor@hse-mena.org',
-                                    style: TextStyle(fontSize: 9.5, color: Color(0xFF64748B)),
+                                    contactLine,
+                                    style: const TextStyle(fontSize: 9.5, color: Color(0xFF64748B)),
                                   ),
                                 ],
                               ),
@@ -272,9 +315,9 @@ class CvPreviewModal extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Accredited NEBOSH & Saudi Aramco approved HSE Specialist with 7+ years total experience (4+ years GCC offshore rigs & petrochemical turnarounds). Proven record maintaining zero LTI across 450+ multinational crews. Expert in Permit-to-Work (PTW) protocols, root-cause incident analyses, and GAMEP environmental compliance.',
-                          style: TextStyle(fontSize: 11, color: Color(0xFF334155), height: 1.4),
+                        Text(
+                          'Candidate profile for $fullName. Details synchronized with Suhana Recruitment Platform for GCC relocation matching.',
+                          style: const TextStyle(fontSize: 11, color: Color(0xFF334155), height: 1.4),
                         ),
                         const SizedBox(height: 14),
 
@@ -289,23 +332,22 @@ class CvPreviewModal extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            _buildPill('NEBOSH IGC 1, 2, 3', true),
-                            _buildPill('OPITO BOSIET + EBS', true),
-                            _buildPill('Saudi Aramco SAP ID #88219', true),
-                            _buildPill('PTW Level 3 Master', true),
-                            _buildPill('H2S & Confined Space Rescue', false),
-                            _buildPill('OSHA 30-Hour Construction', false),
-                          ],
-                        ),
+                        if (skillsList.isNotEmpty)
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: skillsList.map((s) => _buildPill(s, true)).toList(),
+                          )
+                        else
+                          const Text(
+                            'No skills recorded yet. Add skills in candidate details.',
+                            style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
+                          ),
                         const SizedBox(height: 16),
 
                         // Professional Experience Section
                         const Text(
-                          'GCC WORK EXPERIENCE',
+                          'WORK EXPERIENCE',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
@@ -314,28 +356,23 @@ class CvPreviewModal extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-
-                        _buildExperienceEntry(
-                          role: 'Senior Offshore HSE Supervisor',
-                          company: 'PetroGulf Energy Ltd. — Yanbu & Jubail, KSA',
-                          duration: 'March 2021 – Present (3 yrs 8 mos)',
-                          bulletPoints: [
-                            'Direct safety supervision of jack-up drill rigs and offshore accommodation barges under Aramco guidelines.',
-                            'Supervised scheduled plant turnaround HSE permits with zero recordable incidents.',
-                            'Administered daily Tool Box Talks (TBT) and root cause analyses.',
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-
-                        _buildExperienceEntry(
-                          role: 'Offshore Safety Officer',
-                          company: 'Consolidated Contractors Co. (CCC) — Ras Laffan, Qatar',
-                          duration: 'June 2017 – February 2021 (3 yrs 9 mos)',
-                          bulletPoints: [
-                            'Conducted daily multi-gas testing in confined offshore chambers for QatarEnergy project sites.',
-                            'Maintained HSE audit checklists and coordinated emergency drills.',
-                          ],
-                        ),
+                        if (experiences.isNotEmpty)
+                          ...experiences.map(
+                            (e) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10.0),
+                              child: _buildExperienceEntry(
+                                role: e.title,
+                                company: '${e.company} — ${e.location}',
+                                duration: e.dates,
+                                bulletPoints: e.responsibilities,
+                              ),
+                            ),
+                          )
+                        else
+                          const Text(
+                            'No work experience recorded yet. Upload a resume or add experience in review.',
+                            style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
+                          ),
                         const SizedBox(height: 16),
 
                         // Education & Attestation
@@ -349,29 +386,40 @@ class CvPreviewModal extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.school, size: 16, color: Color(0xFF64748B)),
-                            const SizedBox(width: 8),
-                            const Expanded(
-                              child: Text(
-                                'B.Sc. Mechanical Engineering — Cairo University (2016)',
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                        if (educations.isNotEmpty)
+                          ...educations.map(
+                            (edu) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.school, size: 16, color: Color(0xFF64748B)),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      '${edu.degree}${edu.fieldOfStudy.isNotEmpty ? " • ${edu.fieldOfStudy}" : ""} — ${edu.institution} (${edu.graduationYear})',
+                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFD1FAE5),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'VERIFIED',
+                                      style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.w800, color: Color(0xFF065F46)),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD1FAE5),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                'MOFA ATTESTED',
-                                style: TextStyle(fontSize: 8.5, fontWeight: FontWeight.w800, color: Color(0xFF065F46)),
-                              ),
-                            ),
-                          ],
-                        ),
+                          )
+                        else
+                          const Text(
+                            'No education entries added yet.',
+                            style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
+                          ),
                       ],
                     ),
                   ),
@@ -416,7 +464,8 @@ class CvPreviewModal extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       Navigator.pop(context);
-                      context.push(RouteNames.cvReview);
+                      ref.read(manualProfileProvider.notifier).setStage(0);
+                      context.push(RouteNames.cvManualDetails);
                     },
                     icon: const Icon(Icons.edit_note, size: 18),
                     label: const Text('Edit Extracted Data'),

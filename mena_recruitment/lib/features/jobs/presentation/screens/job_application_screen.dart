@@ -9,6 +9,7 @@ import 'package:mena_recruitment/features/jobs/domain/job_entity.dart';
 import 'package:mena_recruitment/features/jobs/providers/job_details_provider.dart';
 import 'package:mena_recruitment/features/applications/providers/applications_provider.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/widgets/cv_preview_modal.dart';
+import 'package:mena_recruitment/features/cv_parser/providers/manual_profile_state.dart';
 
 class JobApplicationScreen extends ConsumerStatefulWidget {
   final String jobId;
@@ -21,7 +22,7 @@ class JobApplicationScreen extends ConsumerStatefulWidget {
 
 class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
   // Attached files state
-  String _selectedCvName = 'Ahmed_Mansoor_HSE_CV_2026.pdf';
+  String _selectedCvName = 'Candidate_CV.pdf';
   // ignore: unused_field
   String _selectedCvSize = '1.8 MB';
   bool _useVaultPassport = true;
@@ -31,6 +32,15 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
   bool _isSubmitting = false;
 
   final TextEditingController _coverNoteController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final resumeName = ref.read(manualProfileProvider).salaryRelocation.resumeFileName;
+    if (resumeName != null && resumeName.isNotEmpty) {
+      _selectedCvName = resumeName;
+    }
+  }
 
   @override
   void dispose() {
@@ -121,7 +131,7 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
             ),
             const SizedBox(height: 14),
             TextFormField(
-              initialValue: 'https://linkedin.com/in/ahmed-mansoor-hse',
+              initialValue: 'https://linkedin.com/in/candidate',
               decoration: InputDecoration(
                 labelText: 'LinkedIn Profile URL',
                 prefixIcon: const Icon(Icons.person_outline, size: 20),
@@ -140,7 +150,7 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
             onPressed: () {
               Navigator.pop(ctx);
               setState(() {
-                _selectedCvName = 'LinkedIn_Sync_Ahmed_Mansoor.pdf';
+                _selectedCvName = 'LinkedIn_Sync_Profile.pdf';
                 _selectedCvSize = '1.4 MB';
               });
               ScaffoldMessenger.of(context).showSnackBar(

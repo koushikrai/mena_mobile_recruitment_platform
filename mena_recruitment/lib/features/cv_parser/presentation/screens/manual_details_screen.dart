@@ -89,6 +89,21 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
     'Flexible / Negotiable',
   ];
 
+  final List<String> _popularGccSkills = [
+    'Offshore Safety',
+    'Aramco PTW',
+    'H2S Awareness',
+    'Scaffolding Inspection',
+    'Risk Assessment',
+    'Rig Turnaround',
+    'Gas Testing',
+    'Confined Space Entry',
+    'Emergency Response',
+    'OSHA Standards',
+    'First Aid',
+    'Mechanical Maintenance',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -99,8 +114,16 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
     _phoneCtrl = TextEditingController(text: state.basicDetails.phone);
     _cityCtrl = TextEditingController(text: state.basicDetails.city);
 
-    _currentSalaryCtrl = TextEditingController(text: state.salaryRelocation.currentSalary.toInt().toString());
-    _expectedSalaryCtrl = TextEditingController(text: state.salaryRelocation.expectedSalary.toInt().toString());
+    _currentSalaryCtrl = TextEditingController(
+      text: state.salaryRelocation.currentSalary > 0
+          ? state.salaryRelocation.currentSalary.toInt().toString()
+          : '',
+    );
+    _expectedSalaryCtrl = TextEditingController(
+      text: state.salaryRelocation.expectedSalary > 0
+          ? state.salaryRelocation.expectedSalary.toInt().toString()
+          : '',
+    );
   }
 
   @override
@@ -120,7 +143,11 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
     if (state.currentStage > 0) {
       ref.read(manualProfileProvider.notifier).prevStage();
     } else {
-      context.pop();
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go(RouteNames.profileEntryOptions);
+      }
     }
   }
 
@@ -151,8 +178,8 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
   void _showAddEditExperienceModal({ManualWorkExperience? existing, int? editIndex}) {
     final titleCtrl = TextEditingController(text: existing?.title ?? '');
     final compCtrl = TextEditingController(text: existing?.company ?? '');
-    final locCtrl = TextEditingController(text: existing?.location ?? 'Saudi Arabia');
-    final datesCtrl = TextEditingController(text: existing?.dates ?? '2021 – Present');
+    final locCtrl = TextEditingController(text: existing?.location ?? '');
+    final datesCtrl = TextEditingController(text: existing?.dates ?? '');
     final respCtrl = TextEditingController(text: existing?.responsibilities.join('\n') ?? '');
     bool isCurrent = existing?.isCurrent ?? false;
 
@@ -382,8 +409,79 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
   }
 
   // ───────────────────────────────────────────────────────────────────────────
-  // STAGE 3: CERTIFICATIONS MODAL & QUICK ADD
+  // STAGE 3: SKILLS & CERTIFICATIONS MODALS & QUICK ADD
   // ───────────────────────────────────────────────────────────────────────────
+
+  void _showAddSkillModal() {
+    final skillCtrl = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: _white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          top: 20,
+          left: 20,
+          right: 20,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.psychology_outlined, size: 20, color: _crimson),
+                    SizedBox(width: 8),
+                    Text('Add Skill or Competency', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: _ink)),
+                  ],
+                ),
+                IconButton(icon: const Icon(Icons.close, size: 20), onPressed: () => Navigator.pop(ctx)),
+              ],
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Enter a technical skill, software, safety standard, or trade specialty.',
+              style: TextStyle(fontSize: 12, color: _inkLight),
+            ),
+            const SizedBox(height: 14),
+            _buildModalTextField(skillCtrl, 'Skill Name (e.g. Scaffolding, HSE Audit, Python) *', Icons.auto_awesome),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  final text = skillCtrl.text.trim();
+                  if (text.isNotEmpty) {
+                    ref.read(manualProfileProvider.notifier).addSkill(text);
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('✓ Skill "$text" added!'),
+                        backgroundColor: _green,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _crimson,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Add Skill', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   void _showAddEditCertificationModal({ManualCertification? existing, int? editIndex}) {
     final titleCtrl = TextEditingController(text: existing?.title ?? '');
@@ -554,8 +652,8 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
   }
 
   Future<void> _handleFinalSubmit() async {
-    final currentSal = double.tryParse(_currentSalaryCtrl.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 12000.0;
-    final expSal = double.tryParse(_expectedSalaryCtrl.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 16000.0;
+    final currentSal = double.tryParse(_currentSalaryCtrl.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+    final expSal = double.tryParse(_expectedSalaryCtrl.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
 
     final state = ref.read(manualProfileProvider);
     ref.read(manualProfileProvider.notifier).updateSalaryRelocation(
@@ -601,6 +699,40 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(manualProfileProvider);
 
+    ref.listen<ManualProfileState>(manualProfileProvider, (prev, next) {
+      if (prev?.basicDetails != next.basicDetails) {
+        if (_fullNameCtrl.text != next.basicDetails.fullName) {
+          _fullNameCtrl.text = next.basicDetails.fullName;
+        }
+        if (_targetTitleCtrl.text != next.basicDetails.targetTitle) {
+          _targetTitleCtrl.text = next.basicDetails.targetTitle;
+        }
+        if (_emailCtrl.text != next.basicDetails.email) {
+          _emailCtrl.text = next.basicDetails.email;
+        }
+        if (_phoneCtrl.text != next.basicDetails.phone) {
+          _phoneCtrl.text = next.basicDetails.phone;
+        }
+        if (_cityCtrl.text != next.basicDetails.city) {
+          _cityCtrl.text = next.basicDetails.city;
+        }
+      }
+      if (prev?.salaryRelocation != next.salaryRelocation) {
+        final curStr = next.salaryRelocation.currentSalary > 0
+            ? next.salaryRelocation.currentSalary.toInt().toString()
+            : '';
+        if (_currentSalaryCtrl.text != curStr) {
+          _currentSalaryCtrl.text = curStr;
+        }
+        final expStr = next.salaryRelocation.expectedSalary > 0
+            ? next.salaryRelocation.expectedSalary.toInt().toString()
+            : '';
+        if (_expectedSalaryCtrl.text != expStr) {
+          _expectedSalaryCtrl.text = expStr;
+        }
+      }
+    });
+
     return Scaffold(
       backgroundColor: _surface,
       body: SafeArea(
@@ -626,7 +758,7 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
     final titles = [
       'STAGE 1 OF 4: BASIC DETAILS',
       'STAGE 2 OF 4: EXPERIENCE & EDUCATION',
-      'STAGE 3 OF 4: CERTIFICATIONS',
+      'STAGE 3 OF 4: SKILLS & CERTIFICATIONS',
       'STAGE 4 OF 4: SALARY & RESUME',
     ];
     final percentages = ['25%', '50%', '75%', '100%'];
@@ -641,19 +773,7 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: _cardLow,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  icon: const Icon(Icons.arrow_back, size: 18, color: _ink),
-                  onPressed: _handleBack,
-                ),
-              ),
+              _StageBackButton(onTap: _handleBack),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -691,7 +811,7 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
       case 1:
         return _buildStage2ExperienceAndEducation(state);
       case 2:
-        return _buildStage3Certifications(state);
+        return _buildStage3SkillsAndCertifications(state);
       case 3:
         return _buildStage4SalaryAndResume(state);
       default:
@@ -731,7 +851,7 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
                         controller: _fullNameCtrl,
                         label: 'Full Legal Name *',
                         icon: Icons.person_outline,
-                        hint: 'e.g. Ahmed Mansoor',
+                        hint: 'e.g. John Doe',
                         validator: (v) => (v == null || v.trim().isEmpty) ? 'Full name is required' : null,
                       ),
                       const SizedBox(height: 12),
@@ -740,7 +860,7 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
                         controller: _targetTitleCtrl,
                         label: 'Target Job Designation *',
                         icon: Icons.badge_outlined,
-                        hint: 'e.g. Senior Offshore HSE Supervisor',
+                        hint: 'e.g. HSE Supervisor, Civil Engineer',
                         validator: (v) => (v == null || v.trim().isEmpty) ? 'Target title is required' : null,
                       ),
                       const SizedBox(height: 12),
@@ -1109,7 +1229,7 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
 
         // Sticky Next CTA
         _buildStickyBottomButton(
-          text: 'Continue to Certifications (Stage 3)',
+          text: 'Continue to Skills & Certifications (Stage 3)',
           onPressed: () => ref.read(manualProfileProvider.notifier).nextStage(),
         ),
       ],
@@ -1117,10 +1237,10 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
   }
 
   // ───────────────────────────────────────────────────────────────────────────
-  // STAGE 3 VIEW: CERTIFICATIONS & ACCREDITATIONS
+  // STAGE 3 VIEW: SKILLS & CERTIFICATIONS
   // ───────────────────────────────────────────────────────────────────────────
 
-  Widget _buildStage3Certifications(ManualProfileState state) {
+  Widget _buildStage3SkillsAndCertifications(ManualProfileState state) {
     return Column(
       children: [
         Expanded(
@@ -1130,133 +1250,282 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Certifications & Accreditations',
+                  'Skills & Certifications',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _ink, letterSpacing: -0.3),
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'GCC employers prioritize candidates with verified licenses, trade cards, and safety credentials.',
+                  'GCC employers match candidates based on trade skills, safety competencies, and verified credentials.',
                   style: TextStyle(fontSize: 12, color: _inkLight),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
 
-                // Quick Add Suggestions
-                const Text(
-                  'QUICK-ADD POPULAR GCC ACCREDITATIONS',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _inkLight, letterSpacing: 0.6),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
+                // ── CORE SKILLS & TRADES ──────────────────────────────────────
+                _buildCard(
                   children: [
-                    ActionChip(
-                      avatar: const Icon(Icons.add, size: 14, color: _crimson),
-                      label: const Text('NEBOSH IGC', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
-                      backgroundColor: _cardLow,
-                      onPressed: () => _quickAddCertification('NEBOSH International General Certificate', 'NEBOSH UK', 'IGC-${DateTime.now().millisecondsSinceEpoch % 100000}'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(6)),
+                              child: const Icon(Icons.psychology_outlined, size: 18, color: _crimson),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Core Skills & Trades (${state.skills.length})',
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _ink),
+                            ),
+                          ],
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: _showAddSkillModal,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _crimson,
+                            side: const BorderSide(color: _crimson),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          ),
+                          icon: const Icon(Icons.add, size: 14),
+                          label: const Text('Add Skill', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
                     ),
-                    ActionChip(
-                      avatar: const Icon(Icons.add, size: 14, color: _crimson),
-                      label: const Text('Saudi Council of Engineers (SCE)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
-                      backgroundColor: _cardLow,
-                      onPressed: () => _quickAddCertification('Saudi Council of Engineers (SCE) Membership', 'Saudi Council of Engineers', 'SCE-${DateTime.now().millisecondsSinceEpoch % 100000}'),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Tap any skill to remove it, or choose from popular GCC industry skills below.',
+                      style: TextStyle(fontSize: 11, color: _inkLight),
                     ),
-                    ActionChip(
-                      avatar: const Icon(Icons.add, size: 14, color: _crimson),
-                      label: const Text('Aramco Work Permit (WPR)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
-                      backgroundColor: _cardLow,
-                      onPressed: () => _quickAddCertification('Saudi Aramco Work Permit Receiver (WPR)', 'Saudi Aramco', 'WPR-${DateTime.now().millisecondsSinceEpoch % 100000}'),
+                    const SizedBox(height: 12),
+
+                    if (state.skills.isEmpty)
+                      _buildEmptyPlaceholder(
+                        'No skills added yet.',
+                        'Tap "+ Add Skill" above or select from the recommended skills below.',
+                      )
+                    else
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: state.skills.map((skill) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: _cardLow,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: _cardMid),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.check_circle, size: 13, color: _green),
+                                const SizedBox(width: 6),
+                                Text(
+                                  skill,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _ink),
+                                ),
+                                const SizedBox(width: 6),
+                                GestureDetector(
+                                  onTap: () => ref.read(manualProfileProvider.notifier).removeSkill(skill),
+                                  child: const Icon(Icons.close, size: 14, color: _inkLight),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+
+                    const SizedBox(height: 16),
+                    const Text(
+                      'RECOMMENDED GCC SKILLS (TAP TO ADD)',
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _inkLight, letterSpacing: 0.6),
                     ),
-                    ActionChip(
-                      avatar: const Icon(Icons.add, size: 14, color: _crimson),
-                      label: const Text('PMP® Project Management', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
-                      backgroundColor: _cardLow,
-                      onPressed: () => _quickAddCertification('Project Management Professional (PMP)', 'PMI', 'PMP-${DateTime.now().millisecondsSinceEpoch % 100000}'),
-                    ),
-                    ActionChip(
-                      avatar: const Icon(Icons.add, size: 14, color: _crimson),
-                      label: const Text('OSHA 30-Hour Construction', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
-                      backgroundColor: _cardLow,
-                      onPressed: () => _quickAddCertification('OSHA 30-Hour General Industry & Construction', 'OSHA US', 'OSHA-${DateTime.now().millisecondsSinceEpoch % 100000}'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: _popularGccSkills.map((s) {
+                        final isAdded = state.skills.contains(s);
+                        return ActionChip(
+                          avatar: Icon(
+                            isAdded ? Icons.check : Icons.add,
+                            size: 13,
+                            color: isAdded ? _green : _crimson,
+                          ),
+                          label: Text(
+                            s,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: isAdded ? _green : _ink,
+                            ),
+                          ),
+                          backgroundColor: isAdded ? _greenBg : _cardLow,
+                          onPressed: isAdded
+                              ? () => ref.read(manualProfileProvider.notifier).removeSkill(s)
+                              : () => ref.read(manualProfileProvider.notifier).addSkill(s),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),
                 const SizedBox(height: 18),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // ── CERTIFICATIONS & ACCREDITATIONS ──────────────────────────
+                _buildCard(
                   children: [
-                    Text(
-                      'Your Accreditations (${state.certifications.length})',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _ink),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(6)),
+                              child: const Icon(Icons.verified_outlined, size: 18, color: _crimson),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Accreditations & Licenses (${state.certifications.length})',
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _ink),
+                            ),
+                          ],
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () => _showAddEditCertificationModal(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _crimson,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          ),
+                          icon: const Icon(Icons.add, size: 14),
+                          label: const Text('Add Custom', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
                     ),
-                    ElevatedButton.icon(
-                      onPressed: () => _showAddEditCertificationModal(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _crimson,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      ),
-                      icon: const Icon(Icons.add, size: 14),
-                      label: const Text('Add Custom', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+
+                    if (state.certifications.isEmpty)
+                      _buildEmptyPlaceholder(
+                        'No certifications listed yet.',
+                        'Tap "+ Add Custom" or select from the quick-add buttons below.',
+                      )
+                    else
+                      ...state.certifications.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final cert = entry.value;
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: _cardMid),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(color: _greenBg, borderRadius: BorderRadius.circular(8)),
+                                child: const Icon(Icons.verified, size: 20, color: _green),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      cert.title,
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: _ink),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${cert.issuer} • ID: ${cert.credentialNumber}',
+                                      style: const TextStyle(fontSize: 11, color: _inkLight),
+                                    ),
+                                    Text(
+                                      'Validity: ${cert.issueYear} – ${cert.expiryYear}',
+                                      style: const TextStyle(fontSize: 10, color: _inkLight),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 18, color: _inkLight),
+                                onPressed: () => _showAddEditCertificationModal(existing: cert, editIndex: index),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+
+                    const SizedBox(height: 12),
+                    const Text(
+                      'QUICK-ADD POPULAR GCC ACCREDITATIONS',
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _inkLight, letterSpacing: 0.6),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        ActionChip(
+                          avatar: const Icon(Icons.add, size: 14, color: _crimson),
+                          label: const Text('NEBOSH IGC', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
+                          backgroundColor: _cardLow,
+                          onPressed: () => _quickAddCertification(
+                            'NEBOSH International General Certificate',
+                            'NEBOSH UK',
+                            'IGC-${DateTime.now().millisecondsSinceEpoch % 100000}',
+                          ),
+                        ),
+                        ActionChip(
+                          avatar: const Icon(Icons.add, size: 14, color: _crimson),
+                          label: const Text('Saudi Council of Engineers (SCE)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
+                          backgroundColor: _cardLow,
+                          onPressed: () => _quickAddCertification(
+                            'Saudi Council of Engineers (SCE) Membership',
+                            'Saudi Council of Engineers',
+                            'SCE-${DateTime.now().millisecondsSinceEpoch % 100000}',
+                          ),
+                        ),
+                        ActionChip(
+                          avatar: const Icon(Icons.add, size: 14, color: _crimson),
+                          label: const Text('Aramco Work Permit (WPR)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
+                          backgroundColor: _cardLow,
+                          onPressed: () => _quickAddCertification(
+                            'Saudi Aramco Work Permit Receiver (WPR)',
+                            'Saudi Aramco',
+                            'WPR-${DateTime.now().millisecondsSinceEpoch % 100000}',
+                          ),
+                        ),
+                        ActionChip(
+                          avatar: const Icon(Icons.add, size: 14, color: _crimson),
+                          label: const Text('PMP® Project Management', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
+                          backgroundColor: _cardLow,
+                          onPressed: () => _quickAddCertification(
+                            'Project Management Professional (PMP)',
+                            'PMI',
+                            'PMP-${DateTime.now().millisecondsSinceEpoch % 100000}',
+                          ),
+                        ),
+                        ActionChip(
+                          avatar: const Icon(Icons.add, size: 14, color: _crimson),
+                          label: const Text('OSHA 30-Hour Construction', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
+                          backgroundColor: _cardLow,
+                          onPressed: () => _quickAddCertification(
+                            'OSHA 30-Hour General Industry & Construction',
+                            'OSHA US',
+                            'OSHA-${DateTime.now().millisecondsSinceEpoch % 100000}',
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-
-                if (state.certifications.isEmpty)
-                  _buildEmptyPlaceholder('No certifications listed yet.', 'Tap "+ Add Custom" or select from the quick-add buttons above.')
-                else
-                  ...state.certifications.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final cert = entry.value;
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: _white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: _cardMid),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: _greenBg, borderRadius: BorderRadius.circular(8)),
-                            child: const Icon(Icons.verified, size: 20, color: _green),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  cert.title,
-                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: _ink),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${cert.issuer} • ID: ${cert.credentialNumber}',
-                                  style: const TextStyle(fontSize: 11, color: _inkLight),
-                                ),
-                                Text(
-                                  'Validity: ${cert.issueYear} – ${cert.expiryYear}',
-                                  style: const TextStyle(fontSize: 10, color: _inkLight),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.edit_outlined, size: 18, color: _inkLight),
-                            onPressed: () => _showAddEditCertificationModal(existing: cert, editIndex: index),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-
                 const SizedBox(height: 20),
               ],
             ),
@@ -1769,6 +2038,44 @@ class _ManualDetailsScreenState extends ConsumerState<ManualDetailsScreen> {
                 Icon(icon, size: 16, color: Colors.white),
               ],
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StageBackButton extends StatefulWidget {
+  final VoidCallback onTap;
+  const _StageBackButton({required this.onTap});
+
+  @override
+  State<_StageBackButton> createState() => _StageBackButtonState();
+}
+
+class _StageBackButtonState extends State<_StageBackButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: _hovered ? const Color(0xFF6E0000) : const Color(0xFFF1F3FD),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.arrow_back,
+            size: 18,
+            color: _hovered ? Colors.white : const Color(0xFF181C23),
           ),
         ),
       ),

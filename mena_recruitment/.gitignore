@@ -56,9 +56,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Environment files
-.env
-.env.*
 .env.local
-!.env.example
+!.env
 !assets/.env
-
+!.env.example

@@ -9,26 +9,7 @@ import 'package:mena_recruitment/features/profile/domain/relocation_preferences.
 class ProfileRepositoryImpl implements ProfileRepository {
   final ApiClient _apiClient = ApiClient();
 
-  CandidateProfile _profile = const CandidateProfile(
-    id: 'user-001',
-    uid: 'UID-99482',
-    fullName: 'Ahmed Mansoor Al-Sayed',
-    email: 'candidate@suhana-global.com',
-    phone: '+966 550123456',
-    nationality: 'Egyptian',
-    residentCountry: 'Egypt',
-    targetTitle: 'Senior Offshore HSE Supervisor',
-    totalExperience: 7,
-    gccExperience: 4,
-    readinessScore: 85,
-    isActivelyLooking: true,
-    preferredCountries: ['Saudi Arabia', 'UAE', 'Qatar'],
-    expectedSalary: 14000.0,
-    expectedCurrency: 'SAR',
-    noticePeriod: '30 Days',
-    relocationStatus: 'Ready for Relocation',
-    isGccVerified: true,
-  );
+  CandidateProfile _profile = CandidateProfile.empty;
 
   @override
   Future<CandidateProfile> getProfile() async {

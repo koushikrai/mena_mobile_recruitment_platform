@@ -206,15 +206,15 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<AuthUser> loginDemo() async {
-    const fallbackToken = 'mock_jwt_token_ahmed_mansoor_gcc';
+    const fallbackToken = 'mock_jwt_token_candidate_gcc';
     await _apiClient.saveToken(fallbackToken);
     return const AuthUser(
       id: '2baf90ea-33dd-4482-863c-35521c68176a',
       email: 'candidate@suhana-global.com',
-      fullName: 'Ahmed Mansoor Al-Sayed',
+      fullName: 'Candidate',
       role: 'candidate',
       phoneCountryCode: '+966',
-      phoneNumber: '550123456',
+      phoneNumber: '',
       token: fallbackToken,
     );
   }
@@ -247,7 +247,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return AuthUser(
       id: 'stored-session-user',
       email: 'candidate@suhana-global.com',
-      fullName: 'Ahmed Mansoor Al-Sayed',
+      fullName: 'Candidate',
       role: 'candidate',
       token: token,
     );

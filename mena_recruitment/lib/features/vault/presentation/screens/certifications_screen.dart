@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
+import 'package:mena_recruitment/features/cv_parser/providers/manual_profile_state.dart';
 import 'package:mena_recruitment/features/vault/domain/vault_document_entity.dart';
 import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 
@@ -15,14 +16,12 @@ class CertificationsScreen extends ConsumerStatefulWidget {
 class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
   bool _isMedicalActive = false;
   bool _isMedicalVerified = false;
-  final TextEditingController _medicalLicenseController = TextEditingController(text: 'DHA-P-0029319');
+  final TextEditingController _medicalLicenseController = TextEditingController();
 
   bool _hasAramcoCard = false;
-  String _aramcoCardNumber = 'SAP-772918';
+  String _aramcoCardNumber = '';
 
-  final List<String> _gccDrivingLicenses = [
-    'Saudi Driving License (Valid) • Exp: 2028',
-  ];
+  final List<String> _gccDrivingLicenses = [];
 
   final List<Map<String, String>> _extraCredentials = [];
 
@@ -232,14 +231,14 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
   }
 
   void _showAddLicenseDialog() {
-    final nameCtrl = TextEditingController(text: 'UAE Light Vehicle License (Valid) • Exp: 2029');
+    final nameCtrl = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Add GCC Driving License', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         content: TextField(
           controller: nameCtrl,
-          decoration: const InputDecoration(labelText: 'License details', border: OutlineInputBorder(), isDense: true),
+          decoration: const InputDecoration(labelText: 'License details', hintText: 'e.g. Saudi / UAE Light Vehicle License • Exp: 2028', border: OutlineInputBorder(), isDense: true),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
@@ -263,6 +262,12 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final manualProfile = ref.watch(manualProfileProvider);
+    final vaultDocsAsync = ref.watch(vaultDocumentsProvider);
+    final vaultDocs = vaultDocsAsync.valueOrNull ?? [];
+    final vaultTradeCerts = vaultDocs.where((d) => d.category == DocumentCategory.tradeLicense || d.category == DocumentCategory.educationAttestation).toList();
+    final resumeCerts = manualProfile.certifications;
+
     return Scaffold(
       backgroundColor: _surface,
       body: SafeArea(
@@ -407,27 +412,55 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                           icon: Icons.verified,
                         )),
 
-                    // Certificate 1: NEBOSH
-                    _buildCertificateCard(
-                      issuer: 'NEBOSH UK',
-                      code: '#NEB-0049281',
-                      title: 'NEBOSH International General Certificate (IGC)',
-                      validText: 'Valid: Nov 2027',
-                      fileName: 'nebosh_igc_cert_ahmed.pdf',
-                      fileMeta: 'PDF Document • 2.4 MB',
-                      icon: Icons.picture_as_pdf,
-                    ),
+                    // Certifications Extracted from Parsed Resume
+                    ...resumeCerts.map((cert) => _buildCertificateCard(
+                          issuer: cert.issuer.isNotEmpty ? cert.issuer : 'Accredited Authority',
+                          code: cert.credentialNumber.isNotEmpty ? cert.credentialNumber : null,
+                          title: cert.title,
+                          validText: cert.expiryYear.isNotEmpty ? 'Valid: ${cert.expiryYear}' : 'Verified Credential',
+                          fileName: '${cert.title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}_cert.pdf',
+                          fileMeta: 'From Parsed CV • Verified',
+                          icon: Icons.verified,
+                        )),
 
-                    // Certificate 2: OPITO BOSIET
-                    _buildCertificateCard(
-                      issuer: 'OPITO Approved Center',
-                      code: null,
-                      title: 'OPITO BOSIET + CA-EBS (Offshore Survival)',
-                      validText: 'Valid: Jun 2026',
-                      fileName: 'bosiet_card_scan.jpg',
-                      fileMeta: 'JPEG Image • 1.8 MB',
-                      icon: Icons.sailing,
-                    ),
+                    // Certifications in Suhana Vault
+                    ...vaultTradeCerts.where((vd) => !resumeCerts.any((rc) => rc.title == vd.title)).map((doc) => _buildCertificateCard(
+                          issuer: doc.issuingCountry.isNotEmpty ? doc.issuingCountry : 'Accredited Authority',
+                          code: doc.documentNumber.isNotEmpty ? doc.documentNumber : null,
+                          title: doc.title,
+                          validText: doc.expiryDate != null ? 'Valid: ${doc.expiryDate!.year}' : 'Active Credential',
+                          fileName: '${doc.title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_')}.pdf',
+                          fileMeta: 'Suhana Vault Encrypted',
+                          icon: Icons.verified_user,
+                        )),
+
+                    if (_extraCredentials.isEmpty && resumeCerts.isEmpty && vaultTradeCerts.isEmpty)
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: _white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: _cardMid),
+                        ),
+                        child: const Column(
+                          children: [
+                            Icon(Icons.military_tech_outlined, size: 36, color: _inkLight),
+                            SizedBox(height: 8),
+                            Text(
+                              'No Certifications Added Yet',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: _ink),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Upload your resume with certifications or tap "Add New" above.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 11, color: _inkLight),
+                            ),
+                          ],
+                        ),
+                      ),
                     const SizedBox(height: 10),
 
                     // ── 2. Saudi Aramco Approval Card ─────────────────────────
@@ -671,25 +704,31 @@ class _CertificationsScreenState extends ConsumerState<CertificationsScreen> {
                             ],
                           ),
                           const SizedBox(height: 8),
-                          ..._gccDrivingLicenses.map((lic) => Container(
-                                margin: const EdgeInsets.only(bottom: 6),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
-                                child: Row(
-                                  children: [
-                                    const Text('🇸🇦', style: TextStyle(fontSize: 18)),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(lic, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(color: _greenBg, borderRadius: BorderRadius.circular(4)),
-                                      child: const Text('Valid', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF065F46))),
-                                    ),
-                                  ],
-                                ),
-                              )),
+                          if (_gccDrivingLicenses.isEmpty)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 6),
+                              child: Text('No GCC driving license added yet. Tap "Add" to upload.', style: TextStyle(fontSize: 11, color: _inkLight)),
+                            )
+                          else
+                            ..._gccDrivingLicenses.map((lic) => Container(
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  decoration: BoxDecoration(color: _cardLow, borderRadius: BorderRadius.circular(8)),
+                                  child: Row(
+                                    children: [
+                                      const Text('🇸🇦', style: TextStyle(fontSize: 18)),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(lic, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(color: _greenBg, borderRadius: BorderRadius.circular(4)),
+                                        child: const Text('Valid', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF065F46))),
+                                      ),
+                                    ],
+                                  ),
+                                )),
                         ],
                       ),
                     ),

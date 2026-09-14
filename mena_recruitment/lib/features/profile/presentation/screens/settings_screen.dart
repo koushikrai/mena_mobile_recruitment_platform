@@ -9,7 +9,9 @@ import 'package:mena_recruitment/features/auth/providers/auth_provider.dart';
 import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
 import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/widgets/cv_preview_modal.dart';
+import 'package:mena_recruitment/features/cv_parser/providers/manual_profile_state.dart';
 import 'package:mena_recruitment/features/jobs/providers/regional_vacancies_provider.dart';
+import 'package:mena_recruitment/features/vault/domain/vault_document_entity.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -21,7 +23,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // ── Privacy state ──────────────────────────────────────────────────────────
   String _visibilityMode = 'sponsors_only'; // 'sponsors_only' | 'all_recruiters' | 'private'
-  String _hiddenFromCompany = 'PetroGulf Energy Ltd.';
+  String _hiddenFromCompany = '';
 
   // ── Region filter ──────────────────────────────────────────────────────────
   String _selectedRegion = 'GCC';
@@ -99,10 +101,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _relocationTimeline = 'Within 15 days';
   String _minSalary = 'SAR 15,000 / mo';
 
-  // CV document state
-  bool _hasCv = true;
-  final String _cvFileName = 'Ahmed_Mansoor_HSE_CV_2026.pdf';
-
   void _confirmDeleteCv() {
     showDialog(
       context: context,
@@ -126,9 +124,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              setState(() {
-                _hasCv = false;
-              });
+              ref.read(manualProfileProvider.notifier).setResumeFileName(null);
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -351,13 +347,65 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     final profile = profileAsync.value;
     final currentUser = authState.user;
-    final name = profile?.fullName ?? currentUser?.fullName ?? 'Ahmed Mansoor Al-Sayed';
-    final title = profile?.targetTitle ?? 'Senior Offshore HSE Supervisor';
-    final gccExp = profile?.gccExperience ?? 4;
-    final uid = profile?.uid ?? currentUser?.id ?? 'SUH-GCC-88219';
-    final score = (profile?.readinessScore ?? 85);
+    final name = (profile != null && profile.fullName.isNotEmpty)
+        ? profile.fullName
+        : (currentUser != null && currentUser.fullName.isNotEmpty)
+            ? currentUser.fullName
+            : 'Candidate Profile';
+    final title = (profile != null && profile.targetTitle.isNotEmpty)
+        ? profile.targetTitle
+        : 'Tap Edit to Complete Profile';
+    final gccExp = profile?.gccExperience ?? 0;
+    final uid = (profile != null && profile.uid.isNotEmpty)
+        ? profile.uid
+        : (currentUser != null && currentUser.id.isNotEmpty
+            ? currentUser.id
+            : 'SUH-GCC-NEW');
+    final score = (profile?.readinessScore ?? 0);
     final scoreFraction = score / 100.0;
-    final docCount = vaultDocsAsync.value?.length ?? 4;
+
+    final manualProfile = ref.watch(manualProfileProvider);
+    final resumeFileName = manualProfile.salaryRelocation.resumeFileName;
+    final hasCv = (resumeFileName != null && resumeFileName.isNotEmpty) || manualProfile.basicDetails.fullName.isNotEmpty;
+    final cvDisplayFileName = (resumeFileName != null && resumeFileName.isNotEmpty)
+        ? resumeFileName
+        : (manualProfile.basicDetails.fullName.isNotEmpty
+            ? '${manualProfile.basicDetails.fullName.replaceAll(' ', '_')}_CV.pdf'
+            : 'Candidate_CV.pdf');
+
+    final vaultDocs = vaultDocsAsync.valueOrNull ?? [];
+    final passportDoc = vaultDocs.where((d) => d.category == DocumentCategory.passport).firstOrNull;
+    final hasPassport = passportDoc != null && passportDoc.documentNumber.isNotEmpty;
+    String passportSubtitle = 'Not uploaded · Tap to upload';
+    if (hasPassport) {
+      if (passportDoc.expiryDate != null) {
+        final exp = passportDoc.expiryDate!;
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        passportSubtitle = 'Exp: ${months[exp.month - 1]} ${exp.year}';
+      } else {
+        passportSubtitle = 'Passport #${passportDoc.documentNumber}';
+      }
+    }
+
+    final manualCerts = manualProfile.certifications;
+    final vaultTradeCerts = vaultDocs.where((d) => d.category == DocumentCategory.tradeLicense || d.category == DocumentCategory.educationAttestation).toList();
+    final List<String> certTitles = [];
+    for (final c in manualCerts) {
+      if (c.title.isNotEmpty && !certTitles.contains(c.title)) {
+        certTitles.add(c.title);
+      }
+    }
+    for (final v in vaultTradeCerts) {
+      if (v.title.isNotEmpty && !certTitles.contains(v.title)) {
+        certTitles.add(v.title);
+      }
+    }
+    final hasCerts = certTitles.isNotEmpty;
+
+    final gamcaDoc = vaultDocs.where((d) => d.category == DocumentCategory.medicalGamca).firstOrNull;
+    final hasGamca = gamcaDoc != null;
+
+    final totalActiveDocCount = (hasCv ? 1 : 0) + (hasPassport ? 1 : 0) + certTitles.length + (hasGamca ? 1 : 0);
 
     final regionalStatsAsync = ref.watch(regionalVacanciesStatsProvider(_selectedRegion));
     final regionalStats = regionalStatsAsync.valueOrNull;
@@ -486,7 +534,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       ),
                                       const Spacer(),
                                       GestureDetector(
-                                        onTap: () => context.push(RouteNames.cvUpload),
+                                        onTap: () => context.push(RouteNames.profileEntryOptions),
                                         child: const Row(
                                           children: [
                                             Text('Edit', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _crimson)),
@@ -594,7 +642,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     trailing: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(color: _cardMid, borderRadius: BorderRadius.circular(6)),
-                      child: Text('${_hasCv ? docCount : docCount - 1} files',
+                      child: Text('$totalActiveDocCount ${totalActiveDocCount == 1 ? 'file' : 'files'}',
                           style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: _inkLight)),
                     ),
                   ),
@@ -603,12 +651,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Column(
                       children: [
                         _DocTile(
-                          icon: _hasCv ? Icons.description_rounded : Icons.upload_file_rounded,
+                          icon: hasCv ? Icons.description_rounded : Icons.upload_file_rounded,
                           title: 'CV / Resume',
-                          subtitle: _hasCv ? _cvFileName : 'Not uploaded · Tap to upload',
-                          status: _hasCv ? 'Verified' : 'Missing',
-                          statusColor: _hasCv ? _crimson : const Color(0xFFBA1A1A),
-                          onTap: () => context.push(RouteNames.cvUpload),
+                          subtitle: hasCv ? cvDisplayFileName : 'Not uploaded · Tap to upload',
+                          status: hasCv ? 'Verified' : 'Missing',
+                          statusColor: hasCv ? _crimson : const Color(0xFFBA1A1A),
+                          onTap: hasCv
+                              ? () => CvPreviewModal.show(
+                                    context: context,
+                                    fileName: cvDisplayFileName,
+                                    fileSize: '1.8 MB',
+                                    isCustom: false,
+                                    onReplaceCv: () => context.push(RouteNames.profileEntryOptions),
+                                  )
+                              : () => context.push(RouteNames.cvUpload),
                           trailing: PopupMenuButton<String>(
                             icon: const Icon(Icons.more_vert, size: 20, color: _inkLight),
                             padding: EdgeInsets.zero,
@@ -617,21 +673,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               if (action == 'preview') {
                                 CvPreviewModal.show(
                                   context: context,
-                                  fileName: _cvFileName,
+                                  fileName: cvDisplayFileName,
                                   fileSize: '1.8 MB',
                                   isCustom: false,
-                                  onReplaceCv: () => context.push(RouteNames.cvUpload),
+                                  onReplaceCv: () => context.push(RouteNames.profileEntryOptions),
                                 );
                               } else if (action == 'review') {
-                                context.push('/cv/review');
+                                ref.read(manualProfileProvider.notifier).setStage(0);
+                                context.push(RouteNames.cvManualDetails);
                               } else if (action == 'update') {
-                                context.push('/cv/upload');
+                                context.push(RouteNames.cvUpload);
                               } else if (action == 'delete') {
                                 _confirmDeleteCv();
                               }
                             },
                             itemBuilder: (ctx) => [
-                              if (_hasCv) ...[
+                              if (hasCv) ...[
                                 const PopupMenuItem(
                                   value: 'preview',
                                   child: Row(
@@ -692,28 +749,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         _DocTile(
                           icon: Icons.badge_rounded,
                           title: 'Passport',
-                          subtitle: 'Exp: Jan 2028',
-                          status: 'MRZ OK',
-                          statusColor: _crimson,
+                          subtitle: passportSubtitle,
+                          status: hasPassport ? 'MRZ OK' : 'Missing',
+                          statusColor: hasPassport ? _crimson : const Color(0xFFBA1A1A),
                           onTap: () => context.push('/vault/passport-update'),
                         ),
                         const _CardDivider(),
                         _DocTile(
                           icon: Icons.military_tech_rounded,
                           title: 'Certifications',
-                          subtitle: 'NEBOSH IGC, OPITO BOSIET',
-                          status: '2 docs',
-                          statusColor: _crimson,
+                          subtitle: hasCerts ? certTitles.join(', ') : 'Not uploaded · Tap to add',
+                          status: hasCerts ? '${certTitles.length} doc${certTitles.length > 1 ? 's' : ''}' : 'Missing',
+                          statusColor: hasCerts ? _crimson : const Color(0xFFBA1A1A),
                           onTap: () => context.push('/vault/certifications'),
                         ),
                         const _CardDivider(),
                         _DocTile(
                           icon: Icons.health_and_safety_rounded,
                           title: 'GAMCA Medical Clearance',
-                          subtitle: 'Required for KSA visa',
-                          status: 'Pending',
-                          statusColor: const Color(0xFFB45309),
-                          onTap: () {},
+                          subtitle: hasGamca ? gamcaDoc.title : 'Not uploaded · Required for GCC visa',
+                          status: hasGamca ? (gamcaDoc.isValidForGccVisa ? 'Fit for GCC' : 'Pending') : 'Missing',
+                          statusColor: hasGamca ? _crimson : const Color(0xFFBA1A1A),
+                          onTap: () => context.push(RouteNames.medicalClearance),
                         ),
                         const SizedBox(height: 10),
                         SizedBox(
@@ -1215,9 +1272,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
                   // ── Sign out ─────────────────────────────────────────
                   Center(
-                    child: TextButton(
-                      onPressed: () {},
-                      child: const Text('Sign Out', style: TextStyle(fontSize: 12, color: Color(0xFFBA1A1A))),
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        final shouldLogout = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: const Text(
+                              'Sign Out',
+                              style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1E1B1B)),
+                            ),
+                            content: const Text(
+                              'Are you sure you want to sign out of your account?',
+                              style: TextStyle(fontSize: 14, color: Color(0xFF5B403C)),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(ctx).pop(false),
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(color: Color(0xFF5B403C), fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFBA1A1A),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                onPressed: () => Navigator.of(ctx).pop(true),
+                                child: const Text(
+                                  'Sign Out',
+                                  style: TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (shouldLogout == true && context.mounted) {
+                          await ref.read(authStateProvider.notifier).logout();
+                          if (context.mounted) {
+                            context.go(RouteNames.login);
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.logout_rounded, size: 16, color: Color(0xFFBA1A1A)),
+                      label: const Text(
+                        'Sign Out',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFBA1A1A)),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1285,7 +1389,7 @@ class _DocTile extends StatelessWidget {
   final String subtitle;
   final String status;
   final Color statusColor;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _DocTile({
     required this.icon,
@@ -1293,7 +1397,7 @@ class _DocTile extends StatelessWidget {
     required this.subtitle,
     required this.status,
     required this.statusColor,
-    required this.onTap,
+    this.onTap,
     this.trailing,
   });
 

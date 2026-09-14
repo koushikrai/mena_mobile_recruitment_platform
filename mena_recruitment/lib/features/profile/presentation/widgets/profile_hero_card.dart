@@ -35,7 +35,7 @@ class ProfileHeroCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              profile.fullName,
+              profile.fullName.isNotEmpty ? profile.fullName : 'Candidate Profile',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -44,17 +44,19 @@ class ProfileHeroCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              profile.targetTitle,
+              profile.targetTitle.isNotEmpty ? profile.targetTitle : 'Complete your profile to unlock GCC matching',
               style: const TextStyle(color: Colors.white70),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'UID: ${profile.uid}',
-              style: const TextStyle(
-                color: Colors.white54,
-                fontFamily: 'JetBrains Mono',
+            if (profile.uid.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                'UID: ${profile.uid}',
+                style: const TextStyle(
+                  color: Colors.white54,
+                  fontFamily: 'JetBrains Mono',
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 16),
             if (profile.isGccVerified)
               Container(

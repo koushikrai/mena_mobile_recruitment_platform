@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mena_recruitment/core/routing/route_names.dart';
+import 'package:mena_recruitment/features/cv_parser/providers/manual_profile_state.dart';
 import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
 
 class WorkExperienceItem {
@@ -46,49 +47,35 @@ class CVReviewScreen extends ConsumerStatefulWidget {
 }
 
 class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
-  final List<String> skills = [
-    'NEBOSH IGC',
-    'Offshore Drilling',
-    'Aramco PTW',
-    'H2S Awareness',
-    'Scaffolding Inspection',
-  ];
+  late final List<String> skills;
+  late final List<WorkExperienceItem> _workHistory;
+  late final List<EducationItem> _educationList;
 
-  final List<WorkExperienceItem> _workHistory = [
-    WorkExperienceItem(
-      isCurrent: true,
-      title: 'Senior Offshore HSE Supervisor',
-      company: 'PetroGulf Energy Ltd.',
-      location: 'Yanbu, Saudi Arabia',
-      dates: 'Mar 2021 – Present (3 yrs 8 mos)',
-      responsibilities: [
-        'Mandatory Saudi Aramco PTW compliance and Rig Turnaround HSE protocol.',
-        'Incident root-cause investigations, audits, and safety drill logistics.',
-        'Zero LTI target sustained across 450+ multinational personnel on platform.',
-      ],
-    ),
-    WorkExperienceItem(
-      isCurrent: false,
-      title: 'Offshore Safety Officer',
-      company: 'Consolidated Contractors Co (CCC)',
-      location: 'Ras Laffan, Qatar',
-      dates: 'Jun 2017 – Feb 2021 (3 yrs 9 mos)',
-      responsibilities: [
-        'Conducted daily multi-gas testing in confined offshore chambers.',
-        'Ensured adherence to OSHA, NEBOSH, and QatarEnergy safety codes.',
-      ],
-    ),
-  ];
-
-  final List<EducationItem> _educationList = [
-    EducationItem(
-      degree: 'Bachelor of Science',
-      fieldOfStudy: 'Mechanical Engineering',
-      institution: 'Cairo University, Faculty of Engineering',
-      graduationYear: '2016',
-      isVerified: true,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    final manual = ref.read(manualProfileProvider);
+    skills = List<String>.from(manual.skills);
+    _workHistory = manual.workExperiences
+        .map((e) => WorkExperienceItem(
+              title: e.title,
+              company: e.company,
+              location: e.location,
+              dates: e.dates,
+              isCurrent: e.isCurrent,
+              responsibilities: List<String>.from(e.responsibilities),
+            ))
+        .toList();
+    _educationList = manual.educations
+        .map((e) => EducationItem(
+              degree: e.degree,
+              fieldOfStudy: e.fieldOfStudy,
+              institution: e.institution,
+              graduationYear: e.graduationYear,
+              isVerified: false,
+            ))
+        .toList();
+  }
 
   void _showAddEducationModal({EducationItem? existing, int? editIndex}) {
     final degreeCtrl = TextEditingController(text: existing?.degree ?? '');
@@ -222,9 +209,9 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
   void _showAddExperienceModal({WorkExperienceItem? existing, int? editIndex}) {
     final titleCtrl = TextEditingController(text: existing?.title ?? '');
     final companyCtrl = TextEditingController(text: existing?.company ?? '');
-    final locationCtrl = TextEditingController(text: existing?.location ?? 'Dammam, Saudi Arabia');
-    final datesCtrl = TextEditingController(text: existing?.dates ?? '2015 – 2017 (2 yrs)');
-    final respCtrl = TextEditingController(text: existing?.responsibilities.join('\n') ?? 'Led safety toolbox talks and verified site gas monitors.\nMaintained HSE permit logs.');
+    final locationCtrl = TextEditingController(text: existing?.location ?? '');
+    final datesCtrl = TextEditingController(text: existing?.dates ?? '');
+    final respCtrl = TextEditingController(text: existing?.responsibilities.join('\n') ?? '');
     bool isCurrent = existing?.isCurrent ?? false;
 
     showModalBottomSheet(

@@ -1,39 +1,28 @@
-import 'package:flutter/foundation.dart';
-import 'package:mena_recruitment/core/network/api_client.dart';
-import 'package:mena_recruitment/core/network/api_endpoints.dart';
 import 'package:mena_recruitment/features/vault/domain/vault_repository.dart';
 import 'package:mena_recruitment/features/vault/domain/vault_document_entity.dart';
 import 'package:mena_recruitment/features/vault/domain/certification_entity.dart';
-import 'package:mena_recruitment/features/vault/data/mock_vault_data.dart';
 
 class VaultRepositoryImpl implements VaultRepository {
-  final ApiClient _apiClient = ApiClient();
-  final List<VaultDocument> _documents = List.from(MockVaultData.mockDocuments);
-  final List<Certification> _certifications = List.from(MockVaultData.mockCertifications);
+  static final VaultRepositoryImpl _instance = VaultRepositoryImpl._internal();
+  factory VaultRepositoryImpl() => _instance;
+  VaultRepositoryImpl._internal();
+
+  final List<VaultDocument> _documents = [];
+  final List<Certification> _certifications = [];
 
   @override
   Future<List<VaultDocument>> getDocuments() async {
-    try {
-      final response = await _apiClient.get(ApiEndpoints.vaultDocuments);
-      if (response.statusCode == 200 && response.data is List) {
-        final rawList = response.data as List;
-        if (rawList.isNotEmpty) {
-          final liveDocs = rawList
-              .map((json) => VaultDocument.fromJson(json as Map<String, dynamic>))
-              .toList();
-          return liveDocs;
-        }
-      }
-    } catch (e) {
-      debugPrint('[VaultRepo] Backend getDocuments error, falling back: $e');
-    }
-
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _documents;
+    await Future.delayed(const Duration(milliseconds: 100));
+    return List.unmodifiable(_documents);
   }
 
   @override
   Future<void> addDocument(VaultDocument document) async {
+    if (document.category == DocumentCategory.passport) {
+      _documents.removeWhere((doc) => doc.category == DocumentCategory.passport);
+    } else {
+      _documents.removeWhere((doc) => doc.id == document.id);
+    }
     _documents.add(document);
   }
 

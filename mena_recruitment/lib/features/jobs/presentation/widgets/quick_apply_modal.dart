@@ -6,6 +6,7 @@ import 'package:mena_recruitment/core/theme/app_colors.dart';
 import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
 import 'package:mena_recruitment/features/applications/providers/applications_provider.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/widgets/cv_preview_modal.dart';
+import 'package:mena_recruitment/features/cv_parser/providers/manual_profile_state.dart';
 import 'package:mena_recruitment/features/jobs/domain/job_entity.dart';
 
 class QuickApplyModal extends ConsumerStatefulWidget {
@@ -30,9 +31,18 @@ class _QuickApplyModalState extends ConsumerState<QuickApplyModal> {
   bool _usePassport = true;
   bool _useCertificates = true;
   bool _isSubmitting = false;
-  final String _activeCvName = 'Ahmed_Mansoor_HSE_CV_2026.pdf';
+  String _activeCvName = 'Candidate_CV.pdf';
   final String _activeCvSize = '1.8 MB';
   final TextEditingController _noteController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final resumeName = ref.read(manualProfileProvider).salaryRelocation.resumeFileName;
+    if (resumeName != null && resumeName.isNotEmpty) {
+      _activeCvName = resumeName;
+    }
+  }
 
   @override
   void dispose() {

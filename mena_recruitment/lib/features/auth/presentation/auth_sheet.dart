@@ -21,9 +21,9 @@ class AuthSheet extends ConsumerStatefulWidget {
 
 class _AuthSheetState extends ConsumerState<AuthSheet> {
   bool _isSignUp = false;
-  final _emailController = TextEditingController(text: 'candidate@suhana-global.com');
-  final _passwordController = TextEditingController(text: 'Secret123!');
-  final _nameController = TextEditingController(text: 'Ahmed Mansoor Al-Sayed');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
   bool _obscurePassword = true;
 
   @override

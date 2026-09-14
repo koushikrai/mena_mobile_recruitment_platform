@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/core/utils/whatsapp_service.dart';
-import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
-import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
+import 'package:mena_recruitment/features/cv_parser/providers/manual_profile_state.dart';
 import 'package:mena_recruitment/features/jobs/providers/regional_vacancies_provider.dart';
+import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
+import 'package:mena_recruitment/features/vault/domain/vault_document_entity.dart';
+import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 
 class VaultScreen extends ConsumerWidget {
   const VaultScreen({super.key});
@@ -14,14 +17,33 @@ class VaultScreen extends ConsumerWidget {
     final profileAsync = ref.watch(profileProvider);
     final vaultDocsAsync = ref.watch(vaultDocumentsProvider);
     final candidate = profileAsync.valueOrNull;
-    final readinessScore = candidate?.readinessScore ?? 85;
+    final readinessScore = candidate?.readinessScore ?? 0;
     final candidateName = candidate != null && candidate.fullName.isNotEmpty
         ? candidate.fullName
-        : 'Ahmed Mansoor Al-Sayed';
+        : 'Candidate Profile';
     final candidateHeadline = candidate != null && candidate.targetTitle.isNotEmpty
         ? candidate.targetTitle
-        : 'Senior HSE Supervisor';
-    final candidateExp = candidate?.gccExperience ?? 4;
+        : 'Complete your profile';
+    final candidateExp = candidate?.gccExperience ?? 0;
+    final manualProfile = ref.watch(manualProfileProvider);
+    final resumeFileName = manualProfile.salaryRelocation.resumeFileName;
+    final hasCv = resumeFileName != null && resumeFileName.isNotEmpty;
+    final cvName = hasCv ? resumeFileName : 'Resume_Document.pdf';
+
+    final vaultDocs = vaultDocsAsync.valueOrNull ?? [];
+    final passportDoc = vaultDocs.where((d) => d.category == DocumentCategory.passport).firstOrNull;
+    final hasPassport = passportDoc != null && passportDoc.documentNumber.isNotEmpty;
+
+    final manualCerts = manualProfile.certifications;
+    final vaultTradeCerts = vaultDocs.where((d) => d.category == DocumentCategory.tradeLicense || d.category == DocumentCategory.educationAttestation).toList();
+    final List<String> allCerts = [];
+    for (final c in manualCerts) {
+      if (c.title.isNotEmpty && !allCerts.contains(c.title)) allCerts.add(c.title);
+    }
+    for (final v in vaultTradeCerts) {
+      if (v.title.isNotEmpty && !allCerts.contains(v.title)) allCerts.add(v.title);
+    }
+    final hasCerts = allCerts.isNotEmpty;
 
     final statsAsync = ref.watch(activeRegionVacanciesStatsProvider);
     final stats = statsAsync.valueOrNull;
@@ -397,34 +419,43 @@ class VaultScreen extends ConsumerWidget {
 
                           // Asset 1: CV Document
                           _buildAssetItem(
-                            icon: Icons.description,
-                            title: 'Ahmed_Mansoor_HSE_CV_2025.pdf',
-                            subtitle: 'Parsed & Active',
-                            statusColor: primaryCrimson,
-                            onTap: () => context.push('/cv/review'),
-                            buttonText: 'View',
+                            icon: hasCv ? Icons.description : Icons.upload_file,
+                            title: hasCv ? cvName : 'CV / Resume',
+                            subtitle: hasCv ? 'Parsed & Active' : 'Not uploaded · Tap to parse',
+                            statusColor: hasCv ? primaryCrimson : textSecondary,
+                            onTap: () {
+                              if (hasCv) {
+                                ref.read(manualProfileProvider.notifier).setStage(0);
+                                context.push(RouteNames.cvManualDetails);
+                              } else {
+                                context.push(RouteNames.cvUpload);
+                              }
+                            },
+                            buttonText: hasCv ? 'View' : 'Upload',
                           ),
                           const SizedBox(height: 8),
 
                           // Asset 2: Passport Bio-Page
                           _buildAssetItem(
                             icon: Icons.badge,
-                            title: 'Passport_N8492014_Bio.jpg',
-                            subtitle: 'MRZ Validated • Exp Jan 2028',
-                            statusColor: primaryCrimson,
+                            title: hasPassport ? 'Passport_${passportDoc.documentNumber}.jpg' : 'Passport Bio-Page',
+                            subtitle: hasPassport
+                                ? (passportDoc.expiryDate != null ? 'MRZ Validated • Exp ${passportDoc.expiryDate!.year}' : 'MRZ Validated')
+                                : 'Not uploaded · Tap to add',
+                            statusColor: hasPassport ? primaryCrimson : textSecondary,
                             onTap: () => context.push('/vault/passport-update'),
-                            buttonText: 'View',
+                            buttonText: hasPassport ? 'View' : 'Upload',
                           ),
                           const SizedBox(height: 8),
 
                           // Asset 3: Safety Certificates
                           _buildAssetItem(
                             icon: Icons.military_tech,
-                            title: 'NEBOSH_IGC.pdf, OPITO_BOSIET.jpg',
-                            subtitle: '2 Certified GCC Credentials',
-                            statusColor: primaryCrimson,
+                            title: hasCerts ? allCerts.join(', ') : 'Safety & Trade Certificates',
+                            subtitle: hasCerts ? '${allCerts.length} Certified GCC Credential${allCerts.length > 1 ? 's' : ''}' : 'Not uploaded · Tap to add',
+                            statusColor: hasCerts ? primaryCrimson : textSecondary,
                             onTap: () => context.push('/vault/certifications'),
-                            buttonText: 'View',
+                            buttonText: hasCerts ? 'View' : 'Add',
                           ),
                           const SizedBox(height: 8),
 

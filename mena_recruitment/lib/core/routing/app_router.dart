@@ -12,10 +12,12 @@ import 'package:mena_recruitment/features/vault/presentation/screens/vault_scree
 import 'package:mena_recruitment/features/vault/presentation/screens/passport_scan_screen.dart';
 import 'package:mena_recruitment/features/vault/presentation/screens/passport_update_screen.dart';
 import 'package:mena_recruitment/features/vault/presentation/screens/certifications_screen.dart';
+import 'package:mena_recruitment/features/vault/presentation/screens/medical_clearance_screen.dart';
 import 'package:mena_recruitment/features/profile/presentation/screens/settings_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_upload_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/manual_details_screen.dart';
 import 'package:mena_recruitment/features/cv_parser/presentation/screens/cv_review_screen.dart';
+import 'package:mena_recruitment/features/cv_parser/presentation/screens/profile_entry_options_screen.dart';
 import 'package:mena_recruitment/features/sectors/presentation/screens/sectors_screen.dart';
 import 'package:mena_recruitment/features/auth/presentation/screens/auth_screen.dart';
 
@@ -24,8 +26,29 @@ final isAuthenticatedProvider = StateProvider<bool>((ref) => true);
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: RouteNames.jobs,
+    initialLocation: RouteNames.login,
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Color(0xFF6E0000)),
+            const SizedBox(height: 16),
+            const Text('Page not found', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => context.go(RouteNames.login),
+              child: const Text('Go to Login', style: TextStyle(color: Color(0xFF6E0000))),
+            ),
+          ],
+        ),
+      ),
+    ),
     routes: [
+      GoRoute(
+        path: '/',
+        redirect: (context, state) => RouteNames.login,
+      ),
       GoRoute(
         path: RouteNames.onboarding,
         builder: (context, state) => const OnboardingScreen(),
@@ -116,6 +139,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: 'certifications',
             builder: (context, state) => const CertificationsScreen(),
           ),
+          GoRoute(
+            path: 'medical-clearance',
+            builder: (context, state) => const MedicalClearanceScreen(),
+          ),
         ],
       ),
       GoRoute(
@@ -131,6 +158,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id'] ?? '1';
           return JobApplicationScreen(jobId: id);
         },
+      ),
+      GoRoute(
+        path: RouteNames.profileEntryOptions,
+        builder: (context, state) => const ProfileEntryOptionsScreen(),
       ),
       GoRoute(
         path: RouteNames.cvUpload,

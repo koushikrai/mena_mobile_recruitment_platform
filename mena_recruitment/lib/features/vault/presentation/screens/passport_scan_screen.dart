@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mena_recruitment/core/routing/route_names.dart';
 import 'package:mena_recruitment/core/theme/app_colors.dart';
+import 'package:mena_recruitment/features/profile/providers/profile_provider.dart';
 import 'package:mena_recruitment/features/vault/domain/vault_document_entity.dart';
 import 'package:mena_recruitment/features/vault/providers/vault_provider.dart';
 
@@ -20,18 +20,44 @@ class _PassportScanScreenState extends ConsumerState<PassportScanScreen> {
   String? _capturedImageName;
   bool _isScanning = false;
 
-  String _passportNumber = 'N8492014';
-  String _fullName = 'AHMED MANSOOR AL-FAROOQ';
-  String _nationality = '🇪🇬 Egyptian (EGY)';
-  String _issuingCountry = 'Egypt';
+  String _passportNumber = '';
+  String _fullName = '';
+  String _nationality = '';
+  String _issuingCountry = '';
   String _gender = 'Male (M)';
-  String _dateOfBirth = '14 APR 1989';
-  String _placeOfIssue = 'Cairo, Egypt';
-  String _dateOfIssue = '10 JAN 2021';
-  String _dateOfExpiry = '09 JAN 2028';
-  DateTime _expiryDateTime = DateTime(2028, 1, 9);
-  String _rawMrz = 'P<EGYAL<FAROOQ<<AHMED<<<<<<<<<<<<<<<<<<<<<<<\nN8492014<8EGY8904146M2801095<<<<<<<<<<<<<<<<';
+  String _dateOfBirth = '';
+  String _placeOfIssue = '';
+  String _dateOfIssue = '';
+  String _dateOfExpiry = '';
+  DateTime? _expiryDateTime;
+  String _rawMrz = '';
   final bool _isValidForGccVisa = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = ref.read(profileProvider).valueOrNull;
+    if (profile != null && profile.fullName.isNotEmpty) {
+      _fullName = profile.fullName.toUpperCase();
+    } else {
+      _fullName = 'CANDIDATE NAME';
+    }
+    if (profile != null && profile.nationality.isNotEmpty) {
+      _nationality = profile.nationality;
+      _issuingCountry = profile.nationality;
+    }
+    final existing = ref.read(vaultDocumentsProvider).valueOrNull?.where((d) => d.category == DocumentCategory.passport).firstOrNull;
+    if (existing != null) {
+      _passportNumber = existing.documentNumber;
+      _issuingCountry = existing.issuingCountry;
+      _expiryDateTime = existing.expiryDate;
+      if (existing.expiryDate != null) {
+        final exp = existing.expiryDate!;
+        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        _dateOfExpiry = '${exp.day.toString().padLeft(2, '0')} ${months[exp.month - 1]} ${exp.year}';
+      }
+    }
+  }
 
   Future<void> _showScanSourceBottomSheet() async {
     showModalBottomSheet(
@@ -889,14 +915,24 @@ class _PassportScanScreenState extends ConsumerState<PassportScanScreen> {
             // Confirm & Save Button
             ElevatedButton.icon(
               onPressed: () async {
+                if (_passportNumber.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      backgroundColor: Color(0xFFDC2626),
+                      content: Text('Please scan or edit your passport details before saving.'),
+                    ),
+                  );
+                  return;
+                }
                 try {
+                  final exp = _expiryDateTime ?? DateTime.now().add(const Duration(days: 365 * 5));
                   final passportDoc = VaultDocument(
                     id: 'doc-passport-${DateTime.now().millisecondsSinceEpoch}',
                     category: DocumentCategory.passport,
-                    title: 'Passport (ICAO Verified)',
+                    title: 'Passport ($_passportNumber)',
                     documentNumber: _passportNumber,
-                    issuingCountry: _issuingCountry,
-                    expiryDate: _expiryDateTime,
+                    issuingCountry: _issuingCountry.isNotEmpty ? _issuingCountry : (_nationality.isNotEmpty ? _nationality : 'Passport Office'),
+                    expiryDate: exp,
                     isValidForGccVisa: _isValidForGccVisa,
                     isVerified: true,
                     reminder6Months: true,
@@ -909,10 +945,10 @@ class _PassportScanScreenState extends ConsumerState<PassportScanScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       backgroundColor: const Color(0xFF059669),
-                      content: Text('✓ Passport $_passportNumber encrypted and saved to Suhana Vault!'),
+                      content: Text('✓ Passport $_passportNumber saved to Suhana Vault!'),
                     ),
                   );
-                  context.go(RouteNames.vault);
+                  context.pop();
                 }
               },
               style: ElevatedButton.styleFrom(

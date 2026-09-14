@@ -17,14 +17,14 @@ class ManualBasicDetails {
   final String city;
 
   const ManualBasicDetails({
-    this.fullName = 'Ahmed Mansoor',
-    this.targetTitle = 'Senior Offshore HSE Supervisor',
-    this.email = 'ahmed.mansoor@suhana-global.com',
-    this.phone = '550123456',
+    this.fullName = '',
+    this.targetTitle = '',
+    this.email = '',
+    this.phone = '',
     this.countryCode = '+966',
-    this.nationality = 'Egyptian',
-    this.residentCountry = 'Saudi Arabia',
-    this.city = 'Yanbu',
+    this.nationality = '',
+    this.residentCountry = '',
+    this.city = '',
   });
 
   ManualBasicDetails copyWith({
@@ -177,15 +177,24 @@ class ManualSalaryRelocation {
   final String? resumeFileName;
 
   const ManualSalaryRelocation({
-    this.currentSalary = 12000.0,
+    this.currentSalary = 0.0,
     this.currentCurrency = 'SAR',
-    this.expectedSalary = 16000.0,
+    this.expectedSalary = 0.0,
     this.expectedCurrency = 'SAR',
-    this.noticePeriod = 'Within 30 days',
-    this.relocationDate = 'Immediately available',
-    this.preferredCountries = const ['Saudi Arabia', 'UAE', 'Qatar'],
+    this.noticePeriod = '',
+    this.relocationDate = '',
+    this.preferredCountries = const [],
     this.resumeFileName,
   });
+
+  const ManualSalaryRelocation.empty({this.resumeFileName})
+      : currentSalary = 0.0,
+        currentCurrency = 'SAR',
+        expectedSalary = 0.0,
+        expectedCurrency = 'SAR',
+        noticePeriod = '',
+        relocationDate = '',
+        preferredCountries = const [];
 
   ManualSalaryRelocation copyWith({
     double? currentSalary,
@@ -213,11 +222,12 @@ class ManualSalaryRelocation {
 // ── Overall Multi-Stage State ────────────────────────────────────────────────
 
 class ManualProfileState {
-  final int currentStage; // 0 = Basic Details, 1 = Experience & Education, 2 = Certifications, 3 = Salary & Relocation
+  final int currentStage; // 0 = Basic Details, 1 = Experience & Education, 2 = Skills & Certifications, 3 = Salary & Relocation
   final ManualBasicDetails basicDetails;
   final List<ManualWorkExperience> workExperiences;
   final List<ManualEducation> educations;
   final List<ManualCertification> certifications;
+  final List<String> skills;
   final ManualSalaryRelocation salaryRelocation;
   final bool isSubmitting;
 
@@ -227,7 +237,8 @@ class ManualProfileState {
     this.workExperiences = const [],
     this.educations = const [],
     this.certifications = const [],
-    this.salaryRelocation = const ManualSalaryRelocation(),
+    this.skills = const [],
+    this.salaryRelocation = const ManualSalaryRelocation.empty(),
     this.isSubmitting = false,
   });
 
@@ -237,6 +248,7 @@ class ManualProfileState {
     List<ManualWorkExperience>? workExperiences,
     List<ManualEducation>? educations,
     List<ManualCertification>? certifications,
+    List<String>? skills,
     ManualSalaryRelocation? salaryRelocation,
     bool? isSubmitting,
   }) {
@@ -246,6 +258,7 @@ class ManualProfileState {
       workExperiences: workExperiences ?? this.workExperiences,
       educations: educations ?? this.educations,
       certifications: certifications ?? this.certifications,
+      skills: skills ?? this.skills,
       salaryRelocation: salaryRelocation ?? this.salaryRelocation,
       isSubmitting: isSubmitting ?? this.isSubmitting,
     );
@@ -260,93 +273,17 @@ class ManualProfileNotifier extends StateNotifier<ManualProfileState> {
   static ManualProfileState _initialState() {
     return const ManualProfileState(
       currentStage: 0,
-      basicDetails: ManualBasicDetails(
-        fullName: 'Ahmed Mansoor',
-        targetTitle: 'Senior Offshore HSE Supervisor',
-        email: 'ahmed.mansoor@suhana-global.com',
-        phone: '550123456',
-        countryCode: '+966',
-        nationality: 'Egyptian',
-        residentCountry: 'Saudi Arabia',
-        city: 'Yanbu',
-      ),
-      workExperiences: [
-        ManualWorkExperience(
-          id: 'exp-1',
-          title: 'Senior Offshore HSE Supervisor',
-          company: 'PetroGulf Energy Ltd.',
-          location: 'Yanbu, Saudi Arabia',
-          dates: 'Mar 2021 – Present (3 yrs 8 mos)',
-          isCurrent: true,
-          responsibilities: [
-            'Mandatory Saudi Aramco PTW compliance and Rig Turnaround HSE protocol.',
-            'Incident root-cause investigations, audits, and safety drill logistics.',
-            'Zero LTI target sustained across 450+ multinational personnel on platform.',
-          ],
-        ),
-        ManualWorkExperience(
-          id: 'exp-2',
-          title: 'Offshore Safety Officer',
-          company: 'Consolidated Contractors Co (CCC)',
-          location: 'Ras Laffan, Qatar',
-          dates: 'Jun 2017 – Feb 2021 (3 yrs 9 mos)',
-          isCurrent: false,
-          responsibilities: [
-            'Conducted daily multi-gas testing in confined offshore chambers.',
-            'Ensured adherence to OSHA, NEBOSH, and QatarEnergy safety codes.',
-          ],
-        ),
-      ],
-      educations: [
-        ManualEducation(
-          id: 'edu-1',
-          degree: 'Bachelor of Science',
-          fieldOfStudy: 'Mechanical Engineering',
-          institution: 'Cairo University, Faculty of Engineering',
-          graduationYear: '2016',
-          grade: 'First Class Honours',
-        ),
-      ],
-      certifications: [
-        ManualCertification(
-          id: 'cert-1',
-          title: 'NEBOSH International General Certificate (IGC)',
-          issuer: 'NEBOSH UK Accredited',
-          credentialNumber: 'IGC-00392182',
-          issueYear: '2020',
-          expiryYear: 'Lifetime Validity',
-          isVerified: true,
-        ),
-        ManualCertification(
-          id: 'cert-2',
-          title: 'Saudi Council of Engineers (SCE) Professional License',
-          issuer: 'Saudi Council of Engineers',
-          credentialNumber: 'SCE-ENG-99201',
-          issueYear: '2021',
-          expiryYear: '2026',
-          isVerified: true,
-        ),
-        ManualCertification(
-          id: 'cert-3',
-          title: 'Saudi Aramco Work Permit Receiver (WPR)',
-          issuer: 'Saudi Aramco Training Center',
-          credentialNumber: 'WPR-SAP-88319',
-          issueYear: '2022',
-          expiryYear: '2025',
-          isVerified: true,
-        ),
-      ],
-      salaryRelocation: ManualSalaryRelocation(
-        currentSalary: 12500.0,
-        currentCurrency: 'SAR',
-        expectedSalary: 16000.0,
-        expectedCurrency: 'SAR',
-        noticePeriod: 'Within 30 days',
-        relocationDate: 'Immediately available',
-        preferredCountries: ['Saudi Arabia', 'UAE', 'Qatar'],
-        resumeFileName: 'Ahmed_Mansoor_CV_2026.pdf',
-      ),
+      basicDetails: ManualBasicDetails(),
+      workExperiences: [],
+      educations: [],
+      certifications: [],
+      skills: [],
+      salaryRelocation: ManualSalaryRelocation.empty(),
     );
+  }
+
+  void reset() {
+    state = _initialState();
   }
 
   void setStage(int stage) {
@@ -365,6 +302,27 @@ class ManualProfileNotifier extends StateNotifier<ManualProfileState> {
     if (state.currentStage > 0) {
       state = state.copyWith(currentStage: state.currentStage - 1);
     }
+  }
+
+  /// Injects structured resume data parsed by Gemini AI into the candidate form.
+  /// Sets currentStage to 0 (Stage 1: Basic Details) for step-by-step verification.
+  void applyParsedResumeData({
+    required ManualBasicDetails basicDetails,
+    required List<ManualWorkExperience> workExperiences,
+    required List<ManualEducation> educations,
+    required List<ManualCertification> certifications,
+    required List<String> skills,
+    required ManualSalaryRelocation salaryRelocation,
+  }) {
+    state = state.copyWith(
+      currentStage: 0,
+      basicDetails: basicDetails,
+      workExperiences: workExperiences,
+      educations: educations,
+      certifications: certifications,
+      skills: skills,
+      salaryRelocation: salaryRelocation,
+    );
   }
 
   // ── Stage 1: Basic Details ─────────────────────────────────────────────────
@@ -429,6 +387,24 @@ class ManualProfileNotifier extends StateNotifier<ManualProfileState> {
       final updated = List<ManualCertification>.from(state.certifications)..removeAt(index);
       state = state.copyWith(certifications: updated);
     }
+  }
+
+  // ── Stage 3: Skills ────────────────────────────────────────────────────────
+  void addSkill(String skill) {
+    final trimmed = skill.trim();
+    if (trimmed.isNotEmpty && !state.skills.contains(trimmed)) {
+      state = state.copyWith(skills: [...state.skills, trimmed]);
+    }
+  }
+
+  void removeSkill(String skill) {
+    state = state.copyWith(
+      skills: state.skills.where((s) => s != skill).toList(),
+    );
+  }
+
+  void setSkills(List<String> skills) {
+    state = state.copyWith(skills: skills);
   }
 
   // ── Stage 4: Salary & Relocation ───────────────────────────────────────────
