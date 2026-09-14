@@ -29,6 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd mena_recruitment
+          touch .env
           flutter pub get
 
       - name: Build Android Release APK

@@ -84,7 +84,6 @@ flutter:
   generate: true
 
   assets:
-    - .env
     - assets/.env
     - assets/images/flags/
     - assets/images/icons/
