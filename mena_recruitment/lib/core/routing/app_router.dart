@@ -7,6 +7,7 @@ import 'package:mena_recruitment/features/onboarding/presentation/screens/onboar
 import 'package:mena_recruitment/features/jobs/presentation/screens/home_screen.dart';
 import 'package:mena_recruitment/features/jobs/presentation/screens/job_details_screen.dart';
 import 'package:mena_recruitment/features/jobs/presentation/screens/job_application_screen.dart';
+import 'package:mena_recruitment/features/jobs/presentation/screens/saved_jobs_screen.dart';
 import 'package:mena_recruitment/features/applications/presentation/screens/applications_screen.dart';
 import 'package:mena_recruitment/features/vault/presentation/screens/vault_screen.dart';
 import 'package:mena_recruitment/features/vault/presentation/screens/passport_scan_screen.dart';
@@ -72,8 +73,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             currentIndex = 1;
           } else if (location.startsWith(RouteNames.applications)) {
             currentIndex = 2;
-          } else if (location.startsWith(RouteNames.profile)) {
+          } else if (location.startsWith(RouteNames.saved)) {
             currentIndex = 3;
+          } else if (location.startsWith(RouteNames.profile)) {
+            currentIndex = 4;
           }
 
           return Scaffold(
@@ -92,6 +95,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     context.go(RouteNames.applications);
                     break;
                   case 3:
+                    context.go(RouteNames.saved);
+                    break;
+                  case 4:
                     context.go(RouteNames.profile);
                     break;
                 }
@@ -115,6 +121,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: RouteNames.applications,
             builder: (context, state) => const ApplicationsScreen(),
+          ),
+          GoRoute(
+            path: RouteNames.saved,
+            builder: (context, state) => const SavedJobsScreen(),
           ),
           GoRoute(
             path: RouteNames.profile,
