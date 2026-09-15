@@ -525,11 +525,14 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
                   ],
                 ),
               ),
-              _buildStatusPill(
-                app.statusLabel.toUpperCase(),
-                isRed: isInterview,
-                isOrange: hasMissingDoc,
-                isGreen: isOffer || isVisa,
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 80),
+                child: _buildStatusPill(
+                  app.statusLabel.toUpperCase(),
+                  isRed: isInterview,
+                  isOrange: hasMissingDoc,
+                  isGreen: isOffer || isVisa,
+                ),
               ),
             ],
           ),
@@ -1105,7 +1108,7 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
-      child: Text(text, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: fg)),
+      child: Text(text, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: fg), overflow: TextOverflow.ellipsis, maxLines: 2),
     );
   }
 

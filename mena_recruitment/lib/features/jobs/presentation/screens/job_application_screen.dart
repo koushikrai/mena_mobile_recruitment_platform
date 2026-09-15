@@ -25,8 +25,6 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
   String _selectedCvName = 'Candidate_CV.pdf';
   // ignore: unused_field
   String _selectedCvSize = '1.8 MB';
-  bool _useVaultPassport = true;
-  bool _useVaultCertificates = true;
   bool _isUploadingNew = false;
   double _uploadProgress = 1.0;
   bool _isSubmitting = false;
@@ -109,68 +107,6 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
     }
   }
 
-  void _showLinkedInImportDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.link, color: Color(0xFF0A66C2)),
-            SizedBox(width: 8),
-            Text('Import from LinkedIn', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Suhana AI will extract your headline, GCC work experiences, and skills directly from your public LinkedIn profile.',
-              style: TextStyle(fontSize: 12, color: Color(0xFF5B403C)),
-            ),
-            const SizedBox(height: 14),
-            TextFormField(
-              initialValue: 'https://linkedin.com/in/candidate',
-              decoration: InputDecoration(
-                labelText: 'LinkedIn Profile URL',
-                prefixIcon: const Icon(Icons.person_outline, size: 20),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                isDense: true,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              setState(() {
-                _selectedCvName = 'LinkedIn_Sync_Profile.pdf';
-                _selectedCvSize = '1.4 MB';
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('✓ Profile imported from LinkedIn & synced with Suhana Vault!'),
-                  backgroundColor: Color(0xFF0A66C2),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0A66C2),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Import & Auto-Fill'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _submitApplication(Job job) async {
     setState(() => _isSubmitting = true);
     try {
@@ -184,10 +120,7 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
         coverNote: _coverNoteController.text.trim().isNotEmpty
             ? _coverNoteController.text.trim()
             : 'Priority application submitted with verified credentials.',
-        documentIds: [
-          if (_useVaultPassport) 'doc-passport-01',
-          if (_useVaultCertificates) 'doc-cert-01',
-        ],
+        documentIds: const [],
       );
       ref.read(applicationsProvider.notifier).recordNewApplication(newApp);
       ref.invalidate(applicationsProvider);
@@ -463,6 +396,34 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 6),
+                                  InkWell(
+                                    onTap: _handleDeviceUpload,
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1D4ED8).withValues(alpha: 0.08),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: const Color(0xFF1D4ED8).withValues(alpha: 0.25)),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.swap_horiz_rounded, size: 12, color: Color(0xFF1D4ED8)),
+                                          SizedBox(width: 3),
+                                          Text(
+                                            'Change',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF1D4ED8),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
@@ -470,7 +431,7 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
-                                      _isCustomCv ? '✓ Custom Selected' : '✓ Auto-Attached',
+                                      _isCustomCv ? '✓ Custom' : '✓ Vault',
                                       style: TextStyle(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w700,
@@ -484,7 +445,7 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
                               Text(
                                 _isCustomCv
                                     ? '$_selectedCvSize • Custom resume selected for this application'
-                                    : '1.8 MB • GCC HSE Specialist • Suhana Parsed',
+                                    : '1.8 MB • Vault CV • Auto-Attached',
                                 style: const TextStyle(fontSize: 10, color: Color(0xFF5B403C)),
                               ),
                             ],
@@ -504,176 +465,6 @@ class _JobApplicationScreenState extends ConsumerState<JobApplicationScreen> {
                     ],
                   ],
                 ),
-              ),
-              const SizedBox(height: 10),
-
-              // Auto-attached Passport Card
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE4DADB)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFDF2F2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.assignment_ind, color: AppColors.primary, size: 20),
-                    ),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Passport: N8492014 (Valid till 2028)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                          Text('ICAO-Compliant MRZ Verified • 2.4 Years Validity', style: TextStyle(fontSize: 10, color: Color(0xFF5B403C))),
-                        ],
-                      ),
-                    ),
-                    Checkbox(
-                      value: _useVaultPassport,
-                      activeColor: AppColors.primary,
-                      onChanged: (v) => setState(() => _useVaultPassport = v ?? true),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Auto-attached NEBOSH & BOSIET Certifications
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE4DADB)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFDF2F2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.workspace_premium, color: AppColors.primary, size: 20),
-                    ),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('NEBOSH IGC & OPITO BOSIET Scans', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                          Text('2 Certificates Attached • Verified Active', style: TextStyle(fontSize: 10, color: Color(0xFF5B403C))),
-                        ],
-                      ),
-                    ),
-                    Checkbox(
-                      value: _useVaultCertificates,
-                      activeColor: AppColors.primary,
-                      onChanged: (v) => setState(() => _useVaultCertificates = v ?? true),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Section: Want to Replace or Upload New?
-              const Row(
-                children: [
-                  Expanded(child: Divider(color: Color(0xFFE4DADB))),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text('OR UPLOAD / IMPORT REPLACEMENT CV', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Color(0xFF8F706B))),
-                  ),
-                  Expanded(child: Divider(color: Color(0xFFE4DADB))),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Three Action Buttons: Manual Upload, LinkedIn Import, WhatsApp Upload
-              Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: _handleDeviceUpload,
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE4DADB)),
-                        ),
-                        child: const Column(
-                          children: [
-                            Icon(Icons.folder_open, color: AppColors.primary, size: 22),
-                            SizedBox(height: 4),
-                            Text('Device Upload', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF1E1B1B))),
-                            Text('PDF / DOCX', style: TextStyle(fontSize: 9, color: Color(0xFF64748B))),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: InkWell(
-                      onTap: _showLinkedInImportDialog,
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE4DADB)),
-                        ),
-                        child: const Column(
-                          children: [
-                            Icon(Icons.link, color: Color(0xFF0A66C2), size: 22),
-                            SizedBox(height: 4),
-                            Text('LinkedIn Import', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF1E1B1B))),
-                            Text('Auto-Extract', style: TextStyle(fontSize: 9, color: Color(0xFF64748B))),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        WhatsAppService.showWhatsAppAssistantSheet(
-                          context: context,
-                          title: job.title,
-                          referenceCode: 'PG-HSE-908',
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE4DADB)),
-                        ),
-                        child: const Column(
-                          children: [
-                            Icon(Icons.chat_bubble_outline, color: Color(0xFF25D366), size: 22),
-                            SizedBox(height: 4),
-                            Text('WhatsApp Bot', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF1E1B1B))),
-                            Text('Send via WA', style: TextStyle(fontSize: 9, color: Color(0xFF64748B))),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
               const SizedBox(height: 16),
 

@@ -476,7 +476,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         job: job,
                         isBookmarked: isSaved,
                         onTap: () => context.go('${RouteNames.jobs}/${job.id}'),
-                        onApply: () => context.go('${RouteNames.jobs}/${job.id}'),
+                        onApply: () => context.push('/jobs/${job.id}/apply'),
                         onBookmark: () =>
                             ref.read(bookmarkProvider.notifier).toggleBookmark(job.id),
                       );
