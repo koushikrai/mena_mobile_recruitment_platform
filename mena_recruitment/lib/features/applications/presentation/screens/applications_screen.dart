@@ -815,72 +815,79 @@ class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(2)),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(color: Color(0xFFDCFCE7), shape: BoxShape.circle),
-                  child: const Icon(Icons.verified, color: Color(0xFF16A34A), size: 24),
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 24,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(2)),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(app.jobTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                      Text('${app.companyName} • ${app.city}, ${app.countryCode}', style: const TextStyle(fontSize: 12, color: Color(0xFF5B403C))),
-                    ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(color: Color(0xFFDCFCE7), shape: BoxShape.circle),
+                    child: const Icon(Icons.verified, color: Color(0xFF16A34A), size: 24),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 12),
-            const Text('Hiring Pipeline Timeline', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            _buildTimelineStep('1. Application Transmitted', 'Directly dispatched to licensed employer HR portal with verified passport.', isDone: true, isCurrent: app.currentStage == RelocationStage.applied),
-            _buildTimelineStep('2. HR Screening & Shortlist', 'Recruiter review against offshore/onshore requirements.', isDone: app.currentStage.index > 0, isCurrent: app.currentStage == RelocationStage.screening),
-            _buildTimelineStep('3. Technical Video Interview', 'Direct panel interview via Microsoft Teams with engineering lead.', isDone: app.currentStage.index > 1, isCurrent: app.currentStage == RelocationStage.interview),
-            _buildTimelineStep('4. Formal Offer & Salary Package', 'Official contract issued with expatriate benefits and accommodation.', isDone: app.currentStage.index > 2, isCurrent: app.currentStage == RelocationStage.offerIssued),
-            _buildTimelineStep('5. Visa Stamping & GAMCA Medical', 'Direct employer visa issuance through MHRSD/Qiwa portal.', isDone: app.currentStage.index > 3, isCurrent: app.currentStage == RelocationStage.visaProcessing),
-            _buildTimelineStep('6. Flight Ticket & Mobilization', 'Expedited arrival and site induction handover.', isDone: app.currentStage.index > 4, isCurrent: app.currentStage == RelocationStage.flightOnboarding),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  WhatsAppService.showWhatsAppAssistantSheet(
-                    context: context,
-                    title: app.jobTitle,
-                    referenceCode: app.id.length > 8 ? app.id.substring(0, 8).toUpperCase() : app.id.toUpperCase(),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF16A34A),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                icon: const Icon(Icons.chat),
-                label: const Text('Direct Recruiter WhatsApp Query', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(app.jobTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                        Text('${app.companyName} • ${app.city}, ${app.countryCode}', style: const TextStyle(fontSize: 12, color: Color(0xFF5B403C))),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 12),
+              const Text('Hiring Pipeline Timeline', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              _buildTimelineStep('1. Application Transmitted', 'Directly dispatched to licensed employer HR portal with verified passport.', isDone: true, isCurrent: app.currentStage == RelocationStage.applied),
+              _buildTimelineStep('2. HR Screening & Shortlist', 'Recruiter review against offshore/onshore requirements.', isDone: app.currentStage.index > 0, isCurrent: app.currentStage == RelocationStage.screening),
+              _buildTimelineStep('3. Technical Video Interview', 'Direct panel interview via Microsoft Teams with engineering lead.', isDone: app.currentStage.index > 1, isCurrent: app.currentStage == RelocationStage.interview),
+              _buildTimelineStep('4. Formal Offer & Salary Package', 'Official contract issued with expatriate benefits and accommodation.', isDone: app.currentStage.index > 2, isCurrent: app.currentStage == RelocationStage.offerIssued),
+              _buildTimelineStep('5. Visa Stamping & GAMCA Medical', 'Direct employer visa issuance through MHRSD/Qiwa portal.', isDone: app.currentStage.index > 3, isCurrent: app.currentStage == RelocationStage.visaProcessing),
+              _buildTimelineStep('6. Flight Ticket & Mobilization', 'Expedited arrival and site induction handover.', isDone: app.currentStage.index > 4, isCurrent: app.currentStage == RelocationStage.flightOnboarding),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    WhatsAppService.showWhatsAppAssistantSheet(
+                      context: context,
+                      title: app.jobTitle,
+                      referenceCode: app.id.length > 8 ? app.id.substring(0, 8).toUpperCase() : app.id.toUpperCase(),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF16A34A),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  icon: const Icon(Icons.chat),
+                  label: const Text('Direct Recruiter WhatsApp Query', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
