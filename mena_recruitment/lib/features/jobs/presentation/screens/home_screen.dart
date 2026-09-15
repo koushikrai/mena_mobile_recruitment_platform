@@ -52,80 +52,89 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Logo + Title: Suhana Logo + Global Jobs By Suhana
-                  Row(
-                    children: [
-                      Container(
-                        height: 40,
-                        width: 40,
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE4BEB8), width: 0.6),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color.fromRGBO(0, 0, 0, 0.04),
-                              blurRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            'https://lh3.googleusercontent.com/aida-public/AB6AXuBwOYlqgz9hq3-QkZMTQKrk8RqrIN4FGFSQc8QYsxhhqAIMh_0WMqnASqOsLPc_vS7CyE4sGCpDEhxgxQNeb6FsaDYR5rhekKgxiLZ64De4x3HsSZK5ss2AYmsXBmy1BY1SrS4grQdpvIouVZGmQH5ZUS8_L9xTWRa7GAEVahNwg5BkdcvG_XN6HVAzKVzzoUp8fcHBj7tVCeSmF0NSxyslYdH0omLOececpwsH4PC2zFbdZh82i7R-QAQnjr4ZrP-BI_0',
-                            fit: BoxFit.contain,
-                            errorBuilder: (ctx, err, stack) => const Icon(
-                              Icons.public_rounded,
-                              color: AppColors.primary,
-                              size: 22,
+                  Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          height: 36,
+                          width: 36,
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFE4BEB8), width: 0.6),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color.fromRGBO(0, 0, 0, 0.04),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(7),
+                            child: Image.network(
+                              'https://lh3.googleusercontent.com/aida-public/AB6AXuBwOYlqgz9hq3-QkZMTQKrk8RqrIN4FGFSQc8QYsxhhqAIMh_0WMqnASqOsLPc_vS7CyE4sGCpDEhxgxQNeb6FsaDYR5rhekKgxiLZ64De4x3HsSZK5ss2AYmsXBmy1BY1SrS4grQdpvIouVZGmQH5ZUS8_L9xTWRa7GAEVahNwg5BkdcvG_XN6HVAzKVzzoUp8fcHBj7tVCeSmF0NSxyslYdH0omLOececpwsH4PC2zFbdZh82i7R-QAQnjr4ZrP-BI_0',
+                              fit: BoxFit.contain,
+                              errorBuilder: (ctx, err, stack) => const Icon(
+                                Icons.public_rounded,
+                                color: AppColors.primary,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Global Jobs',
-                            style: TextStyle(
-                              fontSize: 19,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF990000),
-                              letterSpacing: -0.5,
-                              height: 1.0,
-                            ),
+                        const SizedBox(width: 8),
+                        const Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Global Jobs',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF990000),
+                                  letterSpacing: -0.5,
+                                  height: 1.0,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'BY SUHANA',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF5B403C),
+                                  letterSpacing: 0.8,
+                                ),
+                                maxLines: 1,
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 2),
-                          Text(
-                            'BY SUHANA',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF5B403C),
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 6),
                   // Top right actions: GCC location button + Notifications badge + Profile
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       // Active Recruitment Region Switcher Button
                       InkWell(
                         onTap: () => RegionSelectorSheet.show(context),
                         borderRadius: BorderRadius.circular(9999),
                         child: Container(
-                          height: 32,
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          height: 30,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFEF2F2),
                             borderRadius: BorderRadius.circular(9999),
@@ -146,12 +155,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               Text(
                                 selectedRegion == RecruitmentRegion.global
                                     ? 'Global'
-                                    : '${selectedRegion.shortLabel} / Global',
+                                    : selectedRegion.shortLabel,
                                 style: const TextStyle(
                                   fontSize: 11,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                   color: Color(0xFF990000),
-                                  fontFamily: 'monospace',
                                 ),
                               ),
                               const SizedBox(width: 2),
@@ -160,21 +168,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       Stack(
+                        clipBehavior: Clip.none,
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.notifications_outlined, size: 22),
+                            icon: const Icon(Icons.notifications_outlined, size: 21),
                             color: const Color(0xFF5B403C),
                             onPressed: () => NotificationsSheet.show(context),
-                            padding: const EdgeInsets.all(6),
-                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                            padding: const EdgeInsets.all(4),
+                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                           ),
                           Positioned(
-                            top: 4,
-                            right: 4,
+                            top: 2,
+                            right: 2,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF990000),
                                 borderRadius: BorderRadius.circular(9999),
@@ -183,7 +192,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 '3',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 9,
+                                  fontSize: 8,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -191,23 +200,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ],
                       ),
+                      const SizedBox(width: 4),
                       InkWell(
                         onTap: () => context.go(RouteNames.profile),
                         borderRadius: BorderRadius.circular(9999),
                         child: Container(
-                          padding: const EdgeInsets.all(2),
+                          padding: const EdgeInsets.all(1.5),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFFFEE2E2), width: 2),
+                            border: Border.all(color: const Color(0xFFFEE2E2), width: 1.5),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(9999),
                             child: Image.network(
                               'https://lh3.googleusercontent.com/aida-public/AB6AXuAzJ992QdS9CilPYhNuYNFkGwU5BnHG2W7sRwQMB21nJfpnCdP0RmTAtTi0lAWeKS81Nu7QR26Y7kK0JPBzMva_TER6MuPTV1lEJ0fcDj7aMWGiH8ta0vX3k9ia1VphDVwk7-if6ruXF4iZY-skuffMpbicfPMJm7OVXLdUbVhYDSTB8Ttsz0aq2pNO5d6ZmJYiUFx9NCmgQ1aNESg-u-fA7MteMQAf33DVAK5NIEeUz1feWl-mJOleuw',
-                              width: 32,
-                              height: 32,
+                              width: 30,
+                              height: 30,
                               fit: BoxFit.cover,
-                              errorBuilder: (ctx, err, stack) => const Icon(Icons.person, size: 24),
+                              errorBuilder: (ctx, err, stack) => const Icon(Icons.person, size: 20),
                             ),
                           ),
                         ),
