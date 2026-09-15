@@ -1073,28 +1073,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('⬇ Generating your GCC Candidate Dossier…'),
-                                  backgroundColor: Color(0xFF334155),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.download_rounded, size: 16, color: _crimson),
-                            label: const Text('Download My Dossier (PDF)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _ink)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _cardMid,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),

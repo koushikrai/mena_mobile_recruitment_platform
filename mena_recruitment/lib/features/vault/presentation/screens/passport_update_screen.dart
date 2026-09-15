@@ -275,7 +275,7 @@ class _PassportUpdateScreenState extends ConsumerState<PassportUpdateScreen> {
                       Icon(Icons.verified_user, size: 13, color: primaryCrimson),
                       SizedBox(width: 4),
                       Text(
-                        'EXECUTIVE GLOBAL MOBILITY DOSSIER',
+                        'CANDIDATE DOCUMENT VAULT',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,

@@ -743,7 +743,7 @@ class _CVReviewScreenState extends ConsumerState<CVReviewScreen> {
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Encrypted relocation dossiers are compliant with GCC labor ministries and Saudi Arabia MHRSD guidelines.',
+                        'Encrypted candidate profiles and documents are compliant with GCC labor ministries and Saudi Arabia MHRSD guidelines.',
                         style: TextStyle(fontSize: 9, color: Color(0xFF64748B)),
                       ),
                     ),
